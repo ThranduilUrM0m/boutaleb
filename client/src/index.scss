@@ -1,0 +1,40 @@
+/*Look for stuff that can be replaced by a bootstrap class*/
+$enable-grid-classes: false;
+$enable-cssgrid: true;
+
+@import '~bootstrap/scss/bootstrap';
+@import './assets/colors';
+@import './assets/fonts';
+@import './assets/placeholders';
+@import './assets/mixins';
+@import './assets/globals';
+@import './assets/variables';
+
+body {
+    margin: 0;
+    font-family: $mainFont;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    color: $black;
+    background-color: $white;
+    font-size: 2.5vh !important;
+    scroll-behavior: smooth;
+
+    @import './assets/offcanvas';
+
+    .container-fluid {
+        position: relative;
+        flex-wrap: unset;
+
+        @import './assets/header';
+
+        @import './assets/main';
+
+        @import './assets/footer';
+
+        &._app {
+            padding: 0;
+        }
+    }
+}

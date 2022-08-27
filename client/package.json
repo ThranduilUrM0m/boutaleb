@@ -1,0 +1,53 @@
+{
+    "name": "client",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "start": "react-scripts start",
+        "build": "react-scripts build",
+        "test": "react-scripts test",
+        "eject": "react-scripts eject"
+    },
+    "eslintConfig": {
+        "extends": [
+            "react-app",
+            "react-app/jest"
+        ]
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "proxy": "http://localhost:8800",
+    "dependencies": {
+        "@fingerprintjs/fingerprintjs": "*",
+        "@fortawesome/fontawesome-svg-core": "*",
+        "@fortawesome/free-brands-svg-icons": "*",
+        "@fortawesome/free-regular-svg-icons": "*",
+        "@fortawesome/free-solid-svg-icons": "*",
+        "@fortawesome/react-fontawesome": "*",
+        "axios": "*",
+        "bootstrap": "*",
+        "lodash": "*",
+        "moment": "*",
+        "react": "*",
+        "react-bootstrap": "*",
+        "react-dom": "*",
+        "react-router": "*",
+        "react-router-dom": "*",
+        "react-scripts": "*",
+        "sass": "*",
+        "socket.io-client": "*",
+        "web-vitals": "*",
+        "zustand": "*"
+    },
+    "devDependencies": {}
+}

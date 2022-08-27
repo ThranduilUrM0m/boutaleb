@@ -1,0 +1,265 @@
+a {
+    position: relative;
+    text-decoration: none;
+
+    &::before {
+        content: '';
+        position: absolute;
+        background: rgba($pink, .8);
+        @include _transform($top: '', $left: 0, $bottom: 0, $right: '', $t_x: 0, $t_y: 1vh, $r_deg: 0, $s_x: 1, $s_y: 1);
+        @include _dimensions($width: 0, $height: .35vh);
+        @extend %transition_holder;
+    }
+
+    &:hover {
+        &::before {
+            @include _dimensions($width: 100%, $height: .35vh);
+        }
+    }
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+        monospace;
+}
+
+.pink_dot {
+    color: $purple;
+}
+
+form {
+    ._formGroup {
+        position: relative;
+
+        ._formControl {
+            outline: none;
+            box-shadow: none;
+            margin: 2vh 0;
+            @extend %transition_holder;
+        }
+
+        ._formLabel {
+            position: absolute;
+            margin: 0;
+            font-size: 2vh;
+            opacity: .8;
+            @include _transform($top: 50%, $left: .75rem, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+            @extend %transition_holder;
+
+            &.active {
+                font-size: 1.5vh;
+                @include _transform($top: 0, $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+            }
+        }
+
+        &::before {
+            position: absolute;
+            content: '';
+            background: rgba($pink, .8);
+            @include _transform($top: '', $left: 0, $bottom: 0, $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+            @include _dimensions($width: 10vh, $height: .25vh);
+            @extend %transition_holder;
+        }
+
+        &.focused {
+            &::before {
+                @include _dimensions($width: 100%, $height: .25vh);
+            }
+        }
+    }
+
+    .btn {
+        position: relative;
+        margin: 2vh 0;
+        border: none;
+        background: none;
+        box-shadow: 0 0 0 0 adjust-hue($black, 45deg), inset 0 0 0 0 $black;
+        @include _transitions($property: '', $duration: .25s, $timing: '', $delay: '');
+
+        .buttonBorders {
+            position: absolute;
+            border: .1vh solid rgba($color: $white, $alpha: .25);
+            background: none;
+            @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+            @include _dimensions($width: 100%, $height: 100%);
+            @include _transitions($property: '', $duration: .75s, $timing: ease, $delay: '');
+
+            .borderTop,
+            .borderRight,
+            .borderBottom,
+            .borderLeft {
+                position: absolute;
+                background: $black;
+            }
+
+            .borderTop,
+            .borderBottom {
+                @include _dimensions($width: 100%, $height: .1vh);
+            }
+
+            .borderLeft,
+            .borderRight {
+                @include _dimensions($width: .1vh, $height: 100%);
+            }
+
+            .borderTop {
+                transform-origin: left;
+                @include _transform($top: 0, $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 0, $s_y: 1);
+            }
+
+            .borderRight {
+                transform-origin: top;
+                @include _transform($top: '', $left: '', $bottom: '', $right: 0, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 0);
+            }
+
+            .borderBottom {
+                transform-origin: right;
+                @include _transform($top: '', $left: '', $bottom: 0, $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 0, $s_y: 1);
+            }
+
+            .borderLeft {
+                transform-origin: bottom;
+                @include _transform($top: '', $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 0);
+            }
+
+            // when unhover
+            .borderTop {
+                @include _transitions($property: '', $duration: .15s, $timing: ease-in-out, $delay: .45s);
+            }
+
+            .borderRight {
+                @include _transitions($property: '', $duration: .15s, $timing: ease-in-out, $delay: .30s);
+            }
+
+            .borderBottom {
+                @include _transitions($property: '', $duration: .15s, $timing: ease-in-out, $delay: .15s);
+            }
+
+            .borderLeft {
+                @include _transitions($property: '', $duration: .15s, $timing: ease-in-out, $delay: 0s);
+            }
+        }
+
+        &:hover {
+            border: none;
+            background: none;
+            color: $white !important;
+            /*50vh needs to be changed for every button*/
+            box-shadow: 0 0 0 2vh transparent, inset 50vh 0 0 0 $black;
+
+            .buttonBorders {
+                border: .1vh solid $black !important;
+
+                .borderTop,
+                .borderRight,
+                .borderBottom,
+                .borderLeft {
+                    background: $black;
+                }
+            }
+        }
+
+        &.inverse {
+            color: rgba($color: $black, $alpha: .25);
+
+            .buttonBorders {
+                border: .1vh solid rgba($color: $black, $alpha: .25);
+            }
+        }
+    }
+
+    &:hover {
+        .btn {
+            color: $black;
+
+            .buttonBorders {
+                border: .1vh solid $black;
+
+                .borderTop,
+                .borderBottom,
+                .borderLeft,
+                .borderRight {
+                    @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                }
+
+                // when hover
+                .borderTop {
+                    @include _transitions($property: '', $duration: .15s, $timing: ease-in-out, $delay: 0s);
+                }
+
+                .borderRight {
+                    @include _transitions($property: '', $duration: .15s, $timing: ease-in-out, $delay: .15s);
+                }
+
+                .borderBottom {
+                    @include _transitions($property: '', $duration: .15s, $timing: ease-in-out, $delay: .30s);
+                }
+
+                .borderLeft {
+                    @include _transitions($property: '', $duration: .15s, $timing: ease-in-out, $delay: .45s);
+                }
+            }
+        }
+    }
+}
+
+.modal {
+    .modal-dialog {
+        border-radius: 0;
+
+        .modal-content {
+            border-radius: inherit;
+            overflow: hidden;
+
+            .modal-header {
+                padding: 4vh 4vh 2vh 4vh;
+                border: 0;
+                border-radius: inherit;
+
+                .btn-close {
+                    position: relative;
+
+                    &::after {
+                        content: 'ESC';
+                        position: absolute;
+                        color: rgba($color: $black, $alpha: .5);
+                        font-size: x-small;
+                        @include _transform($top: 100%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -25%, $r_deg: 0, $s_x: 1, $s_y: 1)
+                    }
+                }
+            }
+
+            .modal-body {
+                padding: 2vh 4vh 4vh 4vh;
+                border: 0;
+                border-radius: inherit;
+            }
+
+            .modal-footer {
+                position: relative;
+                padding: 0 calc(var(--bs-modal-padding) - var(--bs-modal-footer-gap) * 0.5);
+                border: 0;
+                border-radius: inherit;
+
+                svg {
+                    position: absolute;
+                    color: rgba($color: $pink, $alpha: .2);
+                    @include _dimensions($width: 25%, $height: 200%);
+                    @include _transform($top: 50%, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: -30deg, $s_x: 1, $s_y: 1);
+                }
+
+                .btn {
+                    @include _dimensions($width: 25%, $height: '');
+                }
+            }
+
+            &::before {
+                content: '';
+                position: absolute;
+                background: $pink;
+                @include _dimensions($width: 100%, $height: 1.5vh);
+                @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+            }
+        }
+    }
+}

@@ -1,0 +1,10 @@
+@import url('https://rsms.me/inter/inter.css');
+
+$mainFont: 'Inter',
+sans-serif;
+
+@supports (font-variation-settings: normal) {
+    html {
+        $mainFont: 'Inter var', sans-serif;
+    }
+}

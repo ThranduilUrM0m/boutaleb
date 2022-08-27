@@ -1,0 +1,32 @@
+{
+    "name": "INIT",
+    "version": "1.0.0",
+    "main": "server.js",
+    "scripts": {
+        "start": "npm install && node server.js",
+        "heroku-postbuild": "cd ../client && npm install && npm run build"
+    },
+    "author": "boutaleb_zakariae",
+    "licence": "ISC",
+    "dependencies": {
+        "@types/node": "*",
+        "body-parser": "*",
+        "cluster": "*",
+        "cors": "*",
+        "dotenv": "*",
+        "express": "*",
+        "express-session": "*",
+        "http": "*",
+        "https": "*",
+        "jwt-simple": "*",
+        "mongoose": "*",
+        "morgan": "*",
+        "password-hash": "*",
+        "sib-api-v3-sdk": "*",
+        "socket.io": "*"
+    },
+    "engines": {
+        "node": "*"
+    },
+    "type": "module"
+}
