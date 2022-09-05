@@ -6,6 +6,8 @@ import {
 } from 'react-router-dom';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
+import FloatingLabel from 'react-bootstrap/FloatingLabel';
+import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import API from '../../utils/API';
@@ -74,7 +76,7 @@ const Signup = (props) => {
 					setModalBody('We have sent you a verification email, all you have to do next is just click the link in the email and boom you are one of us now.');
 					setModalIcon(<FontAwesomeIcon icon={faSquareCheck} />);
 					_handleShow();
-					_socket.emit('action', { type:'_userCreated', data: res.data._user });
+					_socket.emit('action', { type: '_userCreated', data: res.data._user });
 				})
 				.catch((error) => {
 					setModalHeader('We\'re sorry !');
@@ -119,7 +121,7 @@ const Signup = (props) => {
 										<div className='borderLeft'></div>
 									</div>
 									<span>
-										login<b className='pink_dot'>.</b>
+										Login<b className='pink_dot'>.</b>
 									</span>
 								</Button>
 							</Form>
@@ -132,47 +134,69 @@ const Signup = (props) => {
 							<h3>Signup<b className='pink_dot'>.</b></h3>
 						</Card.Header>
 						<Card.Body>
-							<Form>
-								<Form.Group controlId='_userEmailInput' className={`_formGroup ${_userEmailFocused ? 'focused' : ''}`}>
-									<Form.Control autoComplete='new-password' type='email' className='_formControl border border-0 rounded-0' name='_userEmailInput' value={_userEmailValue} onChange={(event) => setUserEmailValue(event.target.value)} onFocus={() => setUserEmailFocused(true)} onBlur={() => setUserEmailFocused(false)} />
-									<Form.Label className={`_formLabel ${_userEmailValue ? 'active' : ''}`}>
-										Email.
-									</Form.Label>
-								</Form.Group>
-								<Form.Group controlId='_userUsernameInput' className={`_formGroup ${_userUsernameFocused ? 'focused' : ''}`}>
-									<Form.Control autoComplete='new-password' type='text' className='_formControl border border-0 rounded-0' name='_userUsernameInput' value={_userUsernameValue} onChange={(event) => setUserUsernameValue(event.target.value)} onFocus={() => setUserUsernameFocused(true)} onBlur={() => setUserUsernameFocused(false)} />
-									<Form.Label className={`_formLabel ${_userUsernameValue ? 'active' : ''}`}>
-										Username.
-									</Form.Label>
-								</Form.Group>
-								<Form.Group controlId='_userPasswordInput' className={`_formGroup ${_userPasswordFocused ? 'focused' : ''}`}>
-									<Form.Control autoComplete='new-password' type='password' className='_formControl border border-0 rounded-0' name='_userPasswordInput' value={_userPasswordValue} onChange={(event) => setUserPasswordValue(event.target.value)} onFocus={() => setUserPasswordFocused(true)} onBlur={() => setUserPasswordFocused(false)} />
-									<Form.Label className={`_formLabel ${_userPasswordValue ? 'active' : ''}`}>
-										Password.
-									</Form.Label>
-								</Form.Group>
-								<Form.Group controlId='_userPasswordConfirmInput' className={`_formGroup ${_userPasswordConfirmFocused ? 'focused' : ''}`}>
-									<Form.Control autoComplete='new-password' type='password' className='_formControl border border-0 rounded-0' name='_userPasswordConfirmInput' value={_userPasswordConfirmValue} onChange={(event) => setUserPasswordConfirmValue(event.target.value)} onFocus={() => setUserPasswordConfirmFocused(true)} onBlur={() => setUserPasswordConfirmFocused(false)} />
-									<Form.Label className={`_formLabel ${_userPasswordConfirmValue ? 'active' : ''}`}>
-										Confirm your Password.
-									</Form.Label>
-								</Form.Group>
-								<Button
-									type='button'
-									className='border border-0 rounded-0'
-									variant='outline-light'
-									onClick={(event) => _signup(event)}
-								>
-									<div className='buttonBorders'>
-										<div className='borderTop'></div>
-										<div className='borderRight'></div>
-										<div className='borderBottom'></div>
-										<div className='borderLeft'></div>
-									</div>
-									<span>
-										signup<b className='pink_dot'>.</b>
-									</span>
-								</Button>
+							<Form className='grid'>
+								<Row className='g-col-12'>
+									<Form.Group controlId='_userEmailInput' className={`_formGroup ${_userEmailFocused ? 'focused' : ''}`}>
+										<FloatingLabel
+											controlId='_userEmailInput'
+											label='Email.'
+											className='_formLabel'
+										>
+											<Form.Control placeholder="Email." autoComplete='new-password' type='email' className='_formControl border border-0 rounded-0' name='_userEmailInput' value={_userEmailValue} onChange={(event) => setUserEmailValue(event.target.value)} onFocus={() => setUserEmailFocused(true)} onBlur={() => setUserEmailFocused(false)} />
+										</FloatingLabel>
+									</Form.Group>
+								</Row>
+								<Row className='g-col-12'>
+									<Form.Group controlId='_userUsernameInput' className={`_formGroup ${_userUsernameFocused ? 'focused' : ''}`}>
+										<FloatingLabel
+											controlId='_userUsernameInput'
+											label='Username.'
+											className='_formLabel'
+										>
+											<Form.Control placeholder="Username." autoComplete='new-password' type='email' className='_formControl border border-0 rounded-0' name='_userUsernameInput' value={_userUsernameValue} onChange={(event) => setUserUsernameValue(event.target.value)} onFocus={() => setUserUsernameFocused(true)} onBlur={() => setUserUsernameFocused(false)} />
+										</FloatingLabel>
+									</Form.Group>
+								</Row>
+								<Row className='g-col-12'>
+									<Form.Group controlId='_userPasswordInput' className={`_formGroup ${_userPasswordFocused ? 'focused' : ''}`}>
+										<FloatingLabel
+											controlId='_userPasswordInput'
+											label='Password.'
+											className='_formLabel'
+										>
+											<Form.Control placeholder="Password." autoComplete='new-password' type='email' className='_formControl border border-0 rounded-0' name='_userPasswordInput' value={_userPasswordValue} onChange={(event) => setUserPasswordValue(event.target.value)} onFocus={() => setUserPasswordFocused(true)} onBlur={() => setUserPasswordFocused(false)} />
+										</FloatingLabel>
+									</Form.Group>
+								</Row>
+								<Row className='g-col-12'>
+									<Form.Group controlId='_userPasswordConfirmInput' className={`_formGroup ${_userPasswordConfirmFocused ? 'focused' : ''}`}>
+										<FloatingLabel
+											controlId='_userPasswordConfirmInput'
+											label='Confirm Password.'
+											className='_formLabel'
+										>
+											<Form.Control placeholder="Confirm Password." autoComplete='new-password' type='email' className='_formControl border border-0 rounded-0' name='_userPasswordConfirmInput' value={_userPasswordConfirmValue} onChange={(event) => setUserPasswordConfirmValue(event.target.value)} onFocus={() => setUserPasswordConfirmFocused(true)} onBlur={() => setUserPasswordConfirmFocused(false)} />
+										</FloatingLabel>
+									</Form.Group>
+								</Row>
+								<Row className='g-col-12'>
+									<Button
+										type='button'
+										className='border border-0 rounded-0'
+										variant='outline-light'
+										onClick={(event) => _signup(event)}
+									>
+										<div className='buttonBorders'>
+											<div className='borderTop'></div>
+											<div className='borderRight'></div>
+											<div className='borderBottom'></div>
+											<div className='borderLeft'></div>
+										</div>
+										<span>
+											signup<b className='pink_dot'>.</b>
+										</span>
+									</Button>
+								</Row>
 							</Form>
 						</Card.Body>
 					</Card>

@@ -35,6 +35,15 @@ const api = {
             }
         );
     },
+    _sendMessage: async (send) => {
+        return axios.post(
+            `${burl}/user/sendMessage`, 
+            send, 
+            { 
+                headers: headers
+            }
+        );
+    },
     update: async (send) => {
         return axios.patch(`${burl}/user/update`, send, { headers: headers });
     },
@@ -52,6 +61,17 @@ const api = {
     get_users: async () => {
         return axios.post(
             `${burl}/user/get_users`,
+            {
+                headers: headers
+            }
+        );
+    },
+    logout: async (_user) => {
+        return axios.post(
+            `${burl}/user/logout`,
+            {
+                _user,
+            },
             {
                 headers: headers
             }

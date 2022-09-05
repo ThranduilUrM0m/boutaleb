@@ -9,19 +9,19 @@ import { faCopyright } from '@fortawesome/free-regular-svg-icons';
 
 const Footer = (props) => {
     return (
-        <footer className='fixed-bottom'>
+        <footer>
             <Container fluid>
                 <Row className='grid'>
                     <Col className='g-col-6'>
                         <ul className='list-inline'>
                             <li className='list-inline-item'>
-                                <a href='https://www.instagram.com/boutaleblcoder/'>Instagram</a>
+                                <a className='hoverEffect' href='https://www.instagram.com/boutaleblcoder/'>Instagram</a>
                             </li>
                             <li className='list-inline-item'>
-                                <a href='https://fb.me/boutaleblcoder'>Facebook</a>
+                                <a className='hoverEffect' href='https://fb.me/boutaleblcoder'>Facebook</a>
                             </li>
                             <li className='list-inline-item'>
-                                <a href='https://www.behance.net/boutaleblcoder/'>Behance</a>
+                                <a className='hoverEffect' href='https://www.behance.net/boutaleblcoder/'>Behance</a>
                             </li>
                             <li className='list-inline-item'>
                                 <FontAwesomeIcon icon={faCopyright} />
@@ -32,10 +32,10 @@ const Footer = (props) => {
                     <Col className='g-col-6 d-flex justify-content-end'>
                         <ul className='list-inline'>
                             <li className='list-inline-item'>
-                                <a href='# '>Legal Notice</a>
+                                <a className='hoverEffect' href='# '>Legal Notice</a>
                             </li>
                             <li className='list-inline-item'>
-                                <a href='# '>Newsroom</a>
+                                <a className='hoverEffect' href='# '>Newsroom</a>
                             </li>
                             <li className='list-inline-item'>
                                 <span className='name'>Zakariae.</span>

@@ -7,30 +7,6 @@ import crypto from 'crypto';
 
 dotenv.config();
 
-/* Sending Mail Function */
-const _emailVerification = async (_userEmailValue, text) => {
-    SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey = process.env.API_KEY;
-    new SibApiV3Sdk.TransactionalEmailsApi().sendTransacEmail({
-        'sender': { 'email': process.env.EMAIL, 'name': 'Boutaleb.' },
-        'subject': 'Hello ✔ and Welcome',
-        'htmlContent': '<!DOCTYPE html><html><body><h1>We are happy to be working with you</h1><p>' + text + '</p></body></html>',
-        'messageVersions': [
-            {
-                'to': [
-                    {
-                        'email': _userEmailValue
-                    }
-                ]
-            }
-        ]
-    }).then((data) => {
-        console.log(data);
-    }, (error) => {
-        console.error(error);
-    });
-}
-/* Sending Mail Function */
-
 const login = async (req, res) => {
     const { _userEmailValue, _userPasswordValue } = req.body;
     try {
@@ -125,11 +101,29 @@ const signup = async (req, res) => {
         await token.save();
 
         //send a verification mail to the user's email
-        _emailVerification(userData._user_email, 'Hello,\n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/confirmation\/' + token.token + '.\n')
-
-        return res.status(200).json({
-            _user: userData,
-            text: 'And that\'s it, only thing left is verify your email. \nWe have sent you an email verification.'
+        SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey = process.env.API_KEY;
+        new SibApiV3Sdk.TransactionalEmailsApi().sendTransacEmail({
+            'sender': { 'email': process.env.EMAIL, 'name': 'Boutaleb.' },
+            'subject': 'Hello ✔ and Welcome',
+            'htmlContent': '<!DOCTYPE html><html><body><h1>We are happy to be working with you</h1><p>' + 'Hello,\n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/confirmation\/' + token.token + '.\n' + '</p></body></html>',
+            'messageVersions': [
+                {
+                    'to': [
+                        {
+                            'email': userData._user_email
+                        }
+                    ]
+                }
+            ]
+        }).then((data) => {
+            return res.status(200).json({
+                _user: userData,
+                text: 'And that\'s it, only thing left is verify your email. \nWe have sent you an email verification.'
+            });
+        }, (error) => {
+            return res.status(200).json({
+                error: error,
+            });
         });
     } catch (error) {
         return res.status(500).json({ error });
@@ -149,6 +143,34 @@ const confirmation = async (req, res, next) => {
                     text: 'And that\'s it, Ur account has been verified. \nU\'r part of us now. \nYou will be redirected to the login page upon closing this message.'
                 });
             });
+        });
+    });
+}
+const sendMessage = async (req, res) => {
+    const { _userNameValue, _userPhoneValue, _userEmailValue, _userNewsletterValue, _userMessageValue } = req.body;
+
+    //send a verification mail to the user's email
+    SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey = process.env.API_KEY;
+    new SibApiV3Sdk.TransactionalEmailsApi().sendTransacEmail({
+        'sender': { 'email': _userEmailValue, 'name': _userNameValue, 'phone': _userPhoneValue, 'newsletter': _userNewsletterValue },
+        'subject': 'Feedback',
+        'htmlContent': '<!DOCTYPE html><html><body><p>' + _userMessageValue + '</p></body></html>',
+        'messageVersions': [
+            {
+                'to': [
+                    {
+                        'email': process.env.EMAIL
+                    }
+                ]
+            }
+        ]
+    }).then((data) => {
+        return res.status(200).json({
+            _message: data
+        });
+    }, (error) => {
+        return res.status(200).json({
+            _message: error
         });
     });
 }
@@ -193,7 +215,7 @@ const update = async (req, res) => {
         return res.status(500).json({ error });
     }
 }
-const get_user = async (req, res) => {
+const getUser = async (req, res) => {
     const { _user_email } = req.body;
     if (!_user_email) {
         // Le cas où l'email ne serait pas soumit ou nul
@@ -221,7 +243,7 @@ const get_user = async (req, res) => {
         });
     }
 }
-const get_users = async (req, res) => {
+const getUsers = async (req, res) => {
     try {
         const findUsers = await User
             .find()
@@ -264,8 +286,9 @@ export default {
     login,
     signup,
     confirmation,
+    sendMessage,
     update,
-    get_user,
-    get_users,
+    getUser,
+    getUsers,
     logout
 };

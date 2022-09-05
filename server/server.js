@@ -1,3 +1,8 @@
+//Models
+import Article from './models/Article.js';
+import Permission from './models/Permission.js';
+import Project from './models/Project.js';
+
 import path from 'path';
 import { fileURLToPath } from 'url';
 import express from 'express';
@@ -10,7 +15,6 @@ import http from 'http';
 import { Server } from "socket.io";
 import os from 'os';
 import cluster from 'cluster';
-import Permission from './models/Permission.js';
 import userController from './controllers/userController.js';
 import router from './routes/index.js';
 

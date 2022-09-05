@@ -1,3 +1,656 @@
-.container-fluid {
-    
+section {
+    position: relative;
+    padding: 10vh;
+    overflow: hidden;
+
+    &._s1 {
+        .Hello {
+            position: absolute;
+            opacity: .1;
+            @include _transform($top: 50%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+            @include _dimensions($width: calc(100% - 20vh), $height: calc(100% - 20vh));
+
+            .word {
+                position: absolute;
+                font-weight: bold;
+                opacity: 0;
+                white-space: nowrap;
+                @include _dimensions($width: 100%, $height: 100%);
+
+                &.w1 {
+                    animation: _firstWordAnimation 1s infinite ease-in-out;
+                }
+
+                &.w2 {
+                    animation: _secondWordAnimation 1s infinite ease-in-out;
+                }
+
+                &.w3 {
+                    animation: _thirdWordAnimation 1s infinite ease-in-out;
+                }
+
+                &.w4 {
+                    animation: _fourthWordAnimation 1s infinite ease-in-out;
+                }
+
+                &.w5 {
+                    animation: _fifthWordAnimation 1s infinite ease-in-out;
+                }
+            }
+        }
+
+        .g-col-7 {
+            form {
+                &>div {
+                    font-family: 'Abril Fatface', cursive;
+                    margin: 0 0 2.5vh 0;
+
+                    &.name {
+                        font-weight: normal;
+                        color: rgba($color: $black, $alpha: .8);
+
+                        p {
+                            font-size: 12vh;
+                            line-height: 1;
+                            @include _dimensions($width: fit-content, $height: '');
+                        }
+
+                        p:last-of-type {
+                            @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 25.5vh, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+
+                            &::before {
+                                content: '';
+                                position: absolute;
+                                background-color: $blue;
+                                @include _transform($top: 50%, $left: -2.5vh, $bottom: '', $right: '', $t_x: -23vh, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                @include _dimensions($width: 23vh, $height: 1.25vh);
+                            }
+                        }
+                    }
+
+                    p {
+                        font-size: 5vh;
+                        line-height: 1;
+                        margin: 0;
+                        margin-block-start: 0;
+                        margin-block-end: 0;
+
+                        .web {
+                            position: relative;
+                            font-weight: 900;
+
+                            &::before {
+                                content: '';
+                                position: absolute;
+                                background-color: $blue;
+                                opacity: .6;
+                                clip-path: inset(0 30% 0 0);
+                                @extend %transition_holder;
+                                z-index: 0;
+
+                                @include _transform($top: '', $left: 20%, $bottom: 0, $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                @include _dimensions($width: 100%, $height: 40%);
+                            }
+
+                            &:hover {
+                                &::before {
+                                    clip-path: inset(0 0 0 0);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        .g-col-5 {
+            ._sliderProjects {
+                position: relative;
+
+                ._title {
+                    p {
+                        font-size: 3.25vh;
+                        font-family: 'Abril Fatface', cursive;
+                    }
+                }
+
+                .slick-slider {
+                    position: relative;
+
+                    .slick-arrow {
+                        color: $black;
+                        z-index: 10001;
+
+                        &.slick-prev {
+                            @include _transform($top: 5vh, $left: unset, $bottom: '', $right: 0, $t_x: 0, $t_y: 0, $r_deg: 90deg, $s_x: 1, $s_y: 1);
+                        }
+
+                        &.slick-next {
+                            @include _transform($top: unset, $left: unset, $bottom: 5vh, $right: 0, $t_x: 0, $t_y: -50%, $r_deg: 90deg, $s_x: 1, $s_y: 1);
+                        }
+                    }
+
+                    .slick-list {
+                        .slick-track {
+                            .slick-slide {
+                                &>div {
+                                    .card {
+                                        background: none;
+                                        margin: 0;
+                                        padding: 5vh;
+
+                                        .card-header {
+                                            background: none;
+                                            border: none;
+                                        }
+
+                                        .card-body {
+                                            position: relative;
+                                            background: $white;
+
+                                            a {
+                                                ._projectImage {
+                                                    p {
+                                                        margin: 0;
+
+                                                        img {
+                                                            @include _dimensions($width: 100%, $height: '');
+                                                            box-shadow: 0 .5vh 1vh rgba(0, 0, 0, .16), 0 .5vh 1vh rgba(0, 0, 0, .23);
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            .author {
+                                                position: absolute;
+                                                font-size: 1.5vh;
+                                                margin: 0;
+                                                @include _transform($top: 100%, $left: '', $bottom: '', $right: 0, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                @include _dimensions($width: fit-content, $height: fit-content);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    .slick-dots {
+                        li {
+                            margin: .5vh;
+                            @include _dimensions($width: 2.5vh, $height: 2.5vh);
+                            @extend %transition_holder;
+
+                            button {
+                                padding: 0;
+                                @include _dimensions($width: 100%, $height: 100%);
+
+                                &::before {
+                                    content: '';
+                                    border-radius: 2.5vh;
+                                    background: $black;
+                                    @include _dimensions($width: 100%, $height: 100%);
+                                }
+                            }
+                        }
+
+                        .slick-active {
+                            box-shadow: 0 0 3.25vh rgba($blue, .3);
+                            @include _dimensions($width: 5vh, $height: '');
+                        }
+                    }
+                }
+
+                ._shadowIndex {
+                    position: absolute;
+                    opacity: .25;
+                    margin: 0;
+                    font-size: 30vw;
+                    line-height: 30vw;
+                    font-weight: bold;
+                    color: lighten($color: $blue, $amount: 2);
+                    z-index: -1;
+                    @include _transform($top: 50%, $left: 50%, $bottom: '', $right: '', $t_x: -25%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                    @include _dimensions($width: fit-content, $height: fit-content);
+
+                    &._smaller {
+                        opacity: .75;
+                        font-size: 5vw;
+                        line-height: 5vw;
+                        @include _transform($top: 100%, $left: 50%, $bottom: '', $right: '', $t_x: 50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                    }
+
+                    p {
+                        margin: 0;
+                    }
+                }
+
+                ._dotsPattern {
+                    position: absolute;
+                    background: url('../_images/DOTS.png') repeat center;
+                    background-size: 100px 100px;
+                    opacity: .5;
+                    z-index: -1;
+                    @include _transform($top: 50%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                    @include _dimensions($width: 100%, $height: 45vh);
+                }
+            }
+        }
+    }
+
+    &._s2 {
+        .g-col-5 {
+            position: relative;
+
+            ._pulsingDots {
+                &>div {
+                    position: absolute;
+                    background: $blue;
+                    opacity: 0;
+                    @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 0, $s_y: 0);
+                    @include _dimensions($width: 4vh, $height: 4vh);
+
+                    &.p1 {
+                        animation: _pulsingDots 3s infinite ease-in-out;
+                        @include _transform($top: percentage(calc(random(100) / 100)), $left: percentage(calc(random(100) / 100)), $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 0, $s_y: 0);
+                    }
+
+                    &.p2 {
+                        animation: _pulsingDots 3s 1s infinite ease-in-out;
+                        @include _transform($top: percentage(calc(random(100) / 100)), $left: percentage(calc(random(100) / 100)), $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 0, $s_y: 0);
+                    }
+
+                    &.p3 {
+                        animation: _pulsingDots 3s 2s infinite ease-in-out;
+                        @include _transform($top: percentage(calc(random(100) / 100)), $left: percentage(calc(random(100) / 100)), $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 0, $s_y: 0);
+                    }
+                }
+            }
+
+            &::before {
+                content: '';
+                position: absolute;
+                background: url('../_images/b_white_orange..svg') no-repeat;
+                background-size: contain;
+                @include _transform($top: 50%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                @include _dimensions($width: 50%, $height: 50%);
+            }
+        }
+
+        .g-col-7 {
+            position: relative;
+
+            ._moon {
+                position: absolute;
+                background: url('../_images/LUNA.png') no-repeat center;
+                background-size: contain;
+                @include _dimensions($width: 25.5vh, $height: 25.5vh);
+                @include _transform($top: percentage(calc(random(100) / 100)), $left: percentage(calc(random(100) / 100)), $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+            }
+
+            ._sliderArticles {
+                position: relative;
+
+                .slick-slider {
+                    position: relative;
+
+                    .slick-arrow {
+                        color: $black;
+                        z-index: 10001;
+
+                        &.slick-prev {
+                            @include _transform($top: 5vh, $left: unset, $bottom: '', $right: 0, $t_x: 0, $t_y: 0, $r_deg: 90deg, $s_x: 1, $s_y: 1);
+                        }
+
+                        &.slick-next {
+                            @include _transform($top: unset, $left: unset, $bottom: 5vh, $right: 0, $t_x: 0, $t_y: 0, $r_deg: 90deg, $s_x: 1, $s_y: 1);
+                        }
+                    }
+
+                    .slick-list {
+                        .slick-track {
+                            .slick-slide {
+                                background: $white;
+
+                                &>div {
+                                    .card {
+                                        background: $white;
+                                        margin: 0;
+                                        padding: 5vh;
+
+                                        .card-body {
+                                            position: relative;
+
+                                            h2 {
+                                                position: relative;
+                                                color: $black;
+                                                letter-spacing: 0;
+                                                @extend %transition_holder;
+                                            }
+
+                                            .information {
+                                                position: absolute;
+                                                font-size: 1.5vh;
+                                                margin: 0;
+                                                @include _transform($top: 100%, $left: '', $bottom: '', $right: 0, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                @include _dimensions($width: fit-content, $height: fit-content);
+                                                @extend %transition_holder;
+                                            }
+
+                                            &::before {
+                                                position: absolute;
+                                                /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#a29ca9+0,95909b+99 */
+                                                background: lighten($color: $blue, $amount: 2);
+                                                /* Old browsers */
+                                                background: -moz-linear-gradient(-45deg, lighten($color: $blue, $amount: 2) 0, lighten($color: $blue, $amount: 0) 99%);
+                                                /* FF3.6-15 */
+                                                background: -webkit-linear-gradient(-45deg, lighten($color: $blue, $amount: 2) 0, lighten($color: $blue, $amount: 0) 99%);
+                                                /* Chrome10-25, Safari5.1-6 */
+                                                background: linear-gradient(135deg, lighten($color: $blue, $amount: 2) 0, lighten($color: $blue, $amount: 0) 99%);
+                                                /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+                                                content: '';
+                                                opacity: 0;
+                                                @include _transform($top: -5vh, $left: -5vh, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                @include _dimensions($width: calc(100% + 10vh), $height: calc(100% + 10vh));
+                                                @extend %transition_holder;
+                                            }
+
+                                            &:hover {
+                                                h2 {
+                                                    @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: -1.5vh, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                }
+
+                                                .information {
+                                                    @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 1.5vh, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                }
+
+                                                &::before {
+                                                    opacity: .4;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    .slick-dots {
+                        li {
+                            margin: .5vh;
+                            @include _dimensions($width: 2.5vh, $height: 2.5vh);
+                            @extend %transition_holder;
+
+                            button {
+                                padding: 0;
+                                @include _dimensions($width: 100%, $height: 100%);
+
+                                &::before {
+                                    content: '';
+                                    border-radius: 2.5vh;
+                                    background: $black;
+                                    @include _dimensions($width: 100%, $height: 100%);
+                                }
+                            }
+                        }
+
+                        .slick-active {
+                            box-shadow: 0 0 3.25vh rgba($blue, .3);
+                            @include _dimensions($width: 5vh, $height: '');
+                        }
+                    }
+                }
+
+                ._shadowIndex {
+                    position: absolute;
+                    opacity: .25;
+                    margin: 0;
+                    font-size: 20vh;
+                    line-height: 20vh;
+                    font-family: 'Abril Fatface', cursive;
+                    font-weight: bold;
+                    color: lighten($color: $blue, $amount: 2);
+                    white-space: nowrap;
+                    @include _transform($top: 100%, $left: 50%, $bottom: '', $right: '', $t_x: -65%, $t_y: -80%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                    @include _dimensions($width: fit-content, $height: fit-content);
+
+                    &._smaller {
+                        opacity: .75;
+                        font-family: $mainFont;
+                        font-size: 5vw;
+                        line-height: 5vw;
+                        @include _transform($top: 100%, $left: 0, $bottom: '', $right: '', $t_x: 50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                    }
+
+                    p {
+                        margin: 0;
+                    }
+                }
+            }
+        }
+    }
+
+    &._s3 {
+
+        .card {
+            position: absolute;
+            @include _transform($top: 12vh, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+            @include _dimensions($width: 90%, $height: calc(100% - 18vh));
+
+            &-body {
+                box-shadow: 0vh 2vh 4vh -1.5vh rgba($black, .5);
+
+                .g-col-4 {
+                    position: relative;
+
+                    ._head {
+
+                        svg,
+                        h5 {
+                            margin: 1vh 0 0 0;
+                        }
+
+                        svg {
+                            color: $blue;
+                            @include _dimensions($width: 7.5vh, $height: 7.5vh);
+                        }
+
+                        h5 {
+                            font-size: 3vh;
+                            font-weight: bold;
+                        }
+                    }
+
+                    ._content {
+                        margin: 1vh 0 0 0;
+                        flex: auto;
+
+                        h6 {
+                            font-size: 3vh;
+                            font-weight: bold;
+                            color: $blue;
+                        }
+
+                        .tags {
+                            width: 100%;
+                            margin-bottom: 0 !important;
+                            margin-top: 1.25vh;
+                            display: flex;
+                            flex-wrap: wrap;
+
+                            li {
+                                position: relative;
+                                box-sizing: border-box;
+                                color: $black;
+                                background: lighten($color: $blue, $amount: 20);
+                                height: 4.5vh;
+                                border-radius: .5vh 0 0 .5vh;
+                                font-size: 2vh;
+                                line-height: 4.5vh;
+                                padding: 0 3.75vh 0 3.75vh;
+                                margin: 0 calc(2.5vh / 2) calc(2.5vh / 2) 0;
+                                transition: color .2s ease-out;
+
+                                &::before {
+                                    position: absolute;
+                                    content: '';
+                                    background: #fff;
+                                    width: 1.25vh;
+                                    height: 1.25vh;
+                                    border-radius: 1.25vh;
+                                    left: 1.25vh;
+                                    top: 50%;
+                                    transform: translateY(-50%);
+                                    box-shadow: inset .25vh .25vh rgba(0, 0, 0, .25);
+                                }
+
+                                &::after {
+                                    background: #fff;
+                                    border-bottom: calc(4.5vh / 2) solid transparent;
+                                    border-left: 1.25vh solid lighten($color: $blue, $amount: 20);
+                                    border-top: calc(4.5vh / 2) solid transparent;
+                                    content: '';
+                                    position: absolute;
+                                    right: 0;
+                                    top: 0;
+                                }
+
+                                &:hover {
+                                    background-color: $blue;
+                                    color: white;
+
+                                    &::after {
+                                        border-left-color: $blue;
+                                    }
+                                }
+                            }
+                        }
+
+                        ._vector {
+                            background: url('../_images/FOUR.png') no-repeat;
+                            background-size: contain;
+                            @include _dimensions($width: 40vh, $height: 40vh);
+                        }
+                    }
+                }
+            }
+        }
+
+        &>h1 {
+            position: absolute;
+            font-weight: bold;
+            font-family: 'Abril Fatface', cursive;
+            font-size: 20vh;
+            opacity: .2;
+            color: $blue;
+        }
+
+        &::before {
+            content: '';
+            position: absolute;
+            background-color: $blue;
+            @include _transform($top: '', $left: '', $bottom: 0, $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+            @include _dimensions($width: 100%, $height: 30%);
+        }
+    }
+
+    &._s4 {
+        grid-template-rows: 45% calc(55% - 1vh);
+        background: radial-gradient(circle at top left, $blue 0, $blue 50%);
+
+        .letter-grid {
+            position: absolute;
+            overflow: hidden;
+            opacity: .4;
+            @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+            @include _dimensions($width: 100%, $height: 100%);
+
+            span {
+                font-size: 10px;
+                padding: 5px;
+                background-color: transparent;
+                color: rgba($black, .25);
+                display: table;
+                float: left;
+                opacity: 0;
+                text-transform: uppercase;
+                user-select: none;
+                visibility: hidden;
+                @include _dimensions($width: 30px, $height: 30px);
+
+                &:nth-child(3n+1) {
+                    color: darken($color: $blue, $amount: 20);
+                    font-weight: bold;
+                    @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 45deg, $s_x: 1, $s_y: 1);
+                }
+
+                &:nth-child(6n+1) {
+                    @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: -45deg, $s_x: 1, $s_y: 1);
+                }
+            }
+
+            &.js-show-letters {
+                span {
+                    opacity: 1;
+                    visibility: visible;
+                }
+            }
+        }
+
+        .g-col-12 {
+
+            .before {
+                background: url('../_images/b_white..svg') no-repeat center;
+                position: absolute;
+                @include _transform($top: 0, $left: '', $bottom: '', $right: 0, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                @include _dimensions($width: 50%, $height: 50%);
+            }
+
+            .g-col-4,
+            .g-col-8 {
+                position: relative;
+                box-shadow: 0 .35vh 3.25vh rgba(0, 0, 0, .25);
+                padding: 0;
+                margin: 0 2.5vh;
+                background: $white;
+            }
+
+            .g-col-4 {
+                div {
+                    position: relative;
+                    margin: 0 0 1.5vh 0;
+
+                    &:first-of-type {
+                        margin: 0 0 4vh 0;
+                    }
+
+                    &:not(:first-of-type) {
+                        width: 80%;
+                    }
+
+                    svg {
+                        margin: 0 2.5vh;
+                        color: $blue;
+                        @include _dimensions($width: 2.5vh, $height: 3vh);
+                    }
+
+                    span {
+                        p {
+                            margin: 0;
+                            font-size: 2.25vh;
+                            line-height: 3vh;
+                        }
+                    }
+                }
+            }
+
+            .g-col-8 {
+                form {
+                    grid-template-rows: auto auto 1fr auto;
+                    margin: 2.5vh;
+                    @include _dimensions($width: calc(100% - 5vh), $height: calc(100% - 5vh));
+                }
+            }
+        }
+    }
 }

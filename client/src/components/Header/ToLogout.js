@@ -46,7 +46,6 @@ const ToLogout = (props) => {
                 </Dropdown.Item>
             }
             <Dropdown.Item
-                href='/login'
                 onClick={() => _handleClick()}
             >
                 Logout<b className='pink_dot'>.</b>

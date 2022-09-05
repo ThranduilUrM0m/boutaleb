@@ -1,5 +1,8 @@
 header {
+    position: fixed;
     z-index: 1046;
+    @include _dimensions($width: 100%, $height:  '');
+    @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
 
     nav {
         padding: 0;
@@ -71,17 +74,12 @@ header {
 
             .navbar-collapse {
                 .navbar-nav {
-                    flex-direction: row;
-
                     .nav-item {
-
                         .logo {
-                            display: flex;
-                            align-items: center;
-                            @include _dimensions($width: '', $height:  10vh);
+                            margin: 0 0 0 5vh;
 
                             img {
-                                @include _dimensions($width: '', $height:  6vh);
+                                @include _dimensions($width: '', $height:  3vh);
                             }
                         }
 
@@ -105,23 +103,29 @@ header {
                                 @include _dimensions($width: 10vh, $height:  10vh);
                                 @extend %transition_holder;
 
-                                ._formControl {
-                                    position: absolute;
-                                    background: $black;
-                                    color: $whiteLite;
-                                    padding: 0 10vh 0 .75rem;
-                                    margin: 0;
-                                    transform-origin: right center;
-                                    @include _transform($top: 50%, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 0, $s_y: 0);
-                                    @include _dimensions($width: '', $height:  8vh);
-                                }
-
                                 ._formLabel {
                                     display: none;
                                     color: $white;
 
-                                    &.active {
-                                        @include _transform($top: 1vh, $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                    ._formControl {
+                                        position: absolute;
+                                        background: $black;
+                                        color: $whiteLite;
+                                        padding: 0 10vh 0 .75rem;
+                                        margin: 0;
+                                        transform-origin: right center;
+                                        @include _transform($top: 50%, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 0, $s_y: 0);
+                                    }
+
+                                    label {
+                                        @include _transform($top: 5vh, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                    }
+
+                                    &>._formControl:focus~label,
+                                    &>._formControl:not(:placeholder-shown)~label,
+                                    &>._formControl-plaintext~label,
+                                    &>.form-select~label {
+                                        @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: .85, $s_y: .85);
                                     }
                                 }
 
@@ -150,13 +154,13 @@ header {
                                 &.focused {
                                     @include _dimensions($width: 50vh, $height:  '');
 
-                                    ._formControl {
-                                        @include _dimensions($width: 100%, $height:  '');
-                                        @include _transform($top: 50%, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
-                                    }
-
                                     ._formLabel {
-                                        display: initial;
+                                        display: block;
+
+                                        ._formControl {
+                                            @include _dimensions($width: 100%, $height:  '');
+                                            @include _transform($top: 50%, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                        }
                                     }
 
                                     ._searchButton {

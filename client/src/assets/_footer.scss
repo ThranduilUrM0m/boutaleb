@@ -1,5 +1,8 @@
 footer {
+    position: absolute;
     font-size: 2vh;
+    @include _dimensions($width: 100%, $height: '');
+    @include _transform($top: '', $left: '', $bottom: 0, $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
 
     .container-fluid {
         .row {

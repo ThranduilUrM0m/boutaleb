@@ -36,6 +36,7 @@
         "@fortawesome/react-fontawesome": "*",
         "axios": "*",
         "bootstrap": "*",
+        "jquery": "*",
         "lodash": "*",
         "moment": "*",
         "react": "*",
@@ -44,7 +45,9 @@
         "react-router": "*",
         "react-router-dom": "*",
         "react-scripts": "*",
+        "react-slick": "*",
         "sass": "*",
+        "slick-carousel": "*",
         "socket.io-client": "*",
         "web-vitals": "*",
         "zustand": "*"

@@ -9,7 +9,8 @@ import Navbar from 'react-bootstrap/Navbar';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import Form from 'react-bootstrap/Form';
-import logo from '../../logo.svg';
+import FloatingLabel from 'react-bootstrap/FloatingLabel';
+import logo from '../../assets/_images/logo.svg';
 import ToLogin from './ToLogin';
 import ToLogout from './ToLogout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -32,7 +33,7 @@ const Header = (props) => {
     }
 
     return (
-        <header className='sticky-top'>
+        <header>
             <Navbar key='xxl' collapseOnSelect expand='xxl'>
                 <Container fluid>
                     <Navbar.Toggle aria-controls='offcanvasNavbar-expand-xxl'>
@@ -46,17 +47,23 @@ const Header = (props) => {
                         </span>
                     </Navbar.Toggle>
                     <Navbar.Collapse id='responsive-navbar-nav' className='show'>
-                        <Nav className='justify-content-end'>
+                        <Nav className='d-flex flex-row justify-content-end'>
                             <Nav.Item className='me-auto'>
-                                <NavLink to='/' className='logo'>
+                                <NavLink to='/' className='logo d-flex align-items-center h-100'>
                                     <img className='img-fluid' src={logo} alt='#' />
                                 </NavLink>
                             </Nav.Item>
                             <Nav.Item>
+                                {/* ref.current returns the correct input with the ref, but for some reason, as long as the Form.Control is inside FloatingLabel, it won't fire focus */}
                                 <Form onClick={() => ref.current.focus()}>
                                     <Form.Group controlId='_searchControl' className={`_formGroup _searchGroup ${_searchFocused ? 'focused' : ''}`}>
-                                        <Form.Control type='text' className='_formControl border border-0 rounded-0' name='_searchControl' value={_searchValue} onChange={(event) => setSearchValue(event.target.value)} onFocus={() => setSearchFocused(true)} onBlur={() => setSearchFocused(false)} ref={ref} />
-                                        <Form.Label className={`_formLabel ${_searchValue ? 'active' : ''}`}>Search.</Form.Label>
+                                        <FloatingLabel
+                                            controlId='_searchControl'
+                                            label='Search.'
+                                            className='_formLabel'
+                                        >
+                                            <Form.Control placeholder='Search.' autoComplete='new-password' type='text' className='_formControl border border-0 rounded-0' name='_searchControl' value={_searchValue} onChange={(event) => setSearchValue(event.target.value)} onFocus={() => setSearchFocused(true)} onBlur={() => setSearchFocused(false)} ref={ref} />
+                                        </FloatingLabel>
                                         {/* onClick={(event) => _handleSearch(event.target.value)} */}
                                         <div className='_searchButton'></div>
                                     </Form.Group>

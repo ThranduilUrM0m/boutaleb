@@ -2,6 +2,11 @@
 $enable-grid-classes: false;
 $enable-cssgrid: true;
 
+@use 'sass:math';
+
+@import "slick-carousel/slick/slick.css";
+@import "slick-carousel/slick/slick-theme.css";
+
 @import '~bootstrap/scss/bootstrap';
 @import './assets/colors';
 @import './assets/fonts';
@@ -9,6 +14,7 @@ $enable-cssgrid: true;
 @import './assets/mixins';
 @import './assets/globals';
 @import './assets/variables';
+@import './assets/keyframes';
 
 body {
     margin: 0;

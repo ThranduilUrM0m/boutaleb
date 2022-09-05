@@ -6,6 +6,8 @@ import {
 } from 'react-router-dom';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
+import FloatingLabel from 'react-bootstrap/FloatingLabel';
+import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import API from '../../utils/API';
@@ -15,8 +17,8 @@ import _ from 'lodash';
 import { io } from "socket.io-client";
 
 const _socketURL = _.isEqual(process.env.NODE_ENV, 'production')
-    ? window.location.hostname
-    : 'localhost:8800';
+	? window.location.hostname
+	: 'localhost:8800';
 const _socket = io(_socketURL, { 'transports': ['websocket', 'polling'] });
 
 const Login = (props) => {
@@ -42,28 +44,20 @@ const Login = (props) => {
 		}
 	}, [location, navigate, _user]);
 
-	const _handleClose = () => {
-		setShowModal(false);
-	}
-
-	const _handleShow = () => {
-		setShowModal(true);
-	}
-
 	const _login = async (event) => {
 		event.preventDefault();
 
 		await API.login(_userEmailValue, _userPasswordValue)
 			.then((res) => {
 				setUser(res.data._user);
-                _socket.emit('action', { type:'_userConnected', data: res.data._user });
+				_socket.emit('action', { type: '_userConnected', data: res.data._user });
 				navigate('/dashboard', { replace: true, state: { from: location } });
 			})
 			.catch((error) => {
 				setModalHeader('We\'re sorry !');
 				setModalBody(error.response.data.text);
 				setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
-				_handleShow();
+				setShowModal(true);
 			});
 	}
 
@@ -81,31 +75,47 @@ const Login = (props) => {
 							<h3>Login<b className='pink_dot'>.</b></h3>
 						</Card.Header>
 						<Card.Body>
-							<Form>
-								<Form.Group controlId='_userEmailInput' className={`_formGroup ${_userEmailFocused ? 'focused' : ''}`}>
-									<Form.Control type='email' className='_formControl border border-0 rounded-0' name='_userEmailInput' value={_userEmailValue} onChange={(event) => setUserEmailValue(event.target.value)} onFocus={() => setUserEmailFocused(true)} onBlur={() => setUserEmailFocused(false)} />
-									<Form.Label className={`_formLabel ${_userEmailValue ? 'active' : ''}`}>Email.</Form.Label>
-								</Form.Group>
-								<Form.Group controlId='_userPasswordInput' className={`_formGroup ${_userPasswordFocused ? 'focused' : ''}`}>
-									<Form.Control type='password' className='_formControl border border-0 rounded-0' name='_userPasswordInput' value={_userPasswordValue} onChange={(event) => setUserPasswordValue(event.target.value)} onFocus={() => setUserPasswordFocused(true)} onBlur={() => setUserPasswordFocused(false)} />
-									<Form.Label className={`_formLabel ${_userPasswordValue ? 'active' : ''}`}>Password.</Form.Label>
-								</Form.Group>
-								<Button
-									type='button'
-									className='border border-0 rounded-0'
-									variant='outline-light'
-									onClick={(event) => _login(event)}
-								>
-									<div className='buttonBorders'>
-										<div className='borderTop'></div>
-										<div className='borderRight'></div>
-										<div className='borderBottom'></div>
-										<div className='borderLeft'></div>
-									</div>
-									<span>
-										login<b className='pink_dot'>.</b>
-									</span>
-								</Button>
+							<Form className='grid'>
+								<Row className='g-col-12'>
+									<Form.Group controlId='_userEmailInput' className={`_formGroup ${_userEmailFocused ? 'focused' : ''}`}>
+										<FloatingLabel
+											controlId='_userEmailInput'
+											label='Email.'
+											className='_formLabel'
+										>
+											<Form.Control placeholder="Name." autoComplete='new-password' type='email' className='_formControl border rounded-0' name='_userEmailInput' value={_userEmailValue} onChange={(event) => setUserEmailValue(event.target.value)} onFocus={() => setUserEmailFocused(true)} onBlur={() => setUserEmailFocused(false)}></Form.Control>
+										</FloatingLabel>
+									</Form.Group>
+								</Row>
+								<Row className='g-col-12'>
+									<Form.Group controlId='_userPasswordInput' className={`_formGroup ${_userPasswordFocused ? 'focused' : ''}`}>
+										<FloatingLabel
+											controlId='_userPasswordInput'
+											label='Password.'
+											className='_formLabel'
+										>
+											<Form.Control placeholder="Name." autoComplete='new-password' type='password' className='_formControl border rounded-0' name='_userPasswordInput' value={_userPasswordValue} onChange={(event) => setUserPasswordValue(event.target.value)} onFocus={() => setUserPasswordFocused(true)} onBlur={() => setUserPasswordFocused(false)}></Form.Control>
+										</FloatingLabel>
+									</Form.Group>
+								</Row>
+								<Row className='g-col-12'>
+									<Button
+										type='button'
+										className='border border-0 rounded-0'
+										variant='outline-light'
+										onClick={(event) => _login(event)}
+									>
+										<div className='buttonBorders'>
+											<div className='borderTop'></div>
+											<div className='borderRight'></div>
+											<div className='borderBottom'></div>
+											<div className='borderLeft'></div>
+										</div>
+										<span>
+											login<b className='pink_dot'>.</b>
+										</span>
+									</Button>
+								</Row>
 							</Form>
 						</Card.Body>
 					</Card>
@@ -131,7 +141,7 @@ const Login = (props) => {
 										<div className='borderLeft'></div>
 									</div>
 									<span>
-										signup<b className='pink_dot'>.</b>
+										Signup<b className='pink_dot'>.</b>
 									</span>
 								</Button>
 							</Form>
@@ -140,7 +150,7 @@ const Login = (props) => {
 				</div>
 			</section>
 
-			<Modal show={_showModal} onHide={() => _handleClose()} centered>
+			<Modal show={_showModal} onHide={() => setShowModal(false)} centered>
 				<Form>
 					<Modal.Header closeButton>
 						<Modal.Title>{_modalHeader}</Modal.Title>
@@ -148,7 +158,7 @@ const Login = (props) => {
 					<Modal.Body className='text-muted'>{_modalBody}</Modal.Body>
 					<Modal.Footer>
 						{_modalIcon}
-						<Button className='border border-0 rounded-0 inverse' variant='outline-light' onClick={() => _handleClose()}>
+						<Button className='border border-0 rounded-0 inverse' variant='outline-light' onClick={() => setShowModal(false)}>
 							<div className='buttonBorders'>
 								<div className='borderTop'></div>
 								<div className='borderRight'></div>
