@@ -67,7 +67,7 @@ const setUpExpress = () => {
     //Connexion à la base de donnée
     mongoose.Promise = global.Promise;
     mongoose
-        .connect(process.env.MONGODB_URI || "mongodb+srv://thranduilUrMom:ThranduilUrM0m@db.v9erl.mongodb.net/boutaleb", { useUnifiedTopology: true, useNewUrlParser: true })
+        .connect(process.env.MONGODB_URI, { useUnifiedTopology: true, useNewUrlParser: true })
         .then(() => {
             console.log("Connected to mongoDB");
         })
