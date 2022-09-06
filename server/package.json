@@ -3,8 +3,7 @@
     "version": "1.0.0",
     "main": "server.js",
     "scripts": {
-        "start": "npm install && node server.js",
-        "heroku-postbuild": "cd ../client && npm install && npm run build"
+        "start": "npm install && node server.js"
     },
     "author": "boutaleb_zakariae",
     "licence": "ISC",
