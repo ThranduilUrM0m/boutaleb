@@ -10,6 +10,7 @@ import Home from './components/Home/Home';
 import Login from './components/Login/Login.js';
 import Signup from './components/Signup/Signup.js';
 import Confirmation from './components/Confirmation/Confirmation';
+import Blog from './components/Blog/Blog';
 import Dashboard from './components/Dashboard/Dashboard';
 import NotFound from './components/NotFound/NotFound';
 import RequireAuth from './components/RequireAuth';
@@ -56,6 +57,7 @@ let App = (props) => {
 					<Route path='/login' element={<Login />} />
 					<Route path='/signup' element={<Signup />} />
 					<Route path={`/confirmation/:token_id`} element={<Confirmation />} />
+					<Route path='/blog' element={<Blog />} />
 					<Route
 						path='/dashboard'
 						element={

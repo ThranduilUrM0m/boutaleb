@@ -104,6 +104,14 @@ const Header = (props) => {
                                     >
                                         Home<b className='pink_dot'>.</b>
                                     </Nav.Link>
+                                    <Nav.Link
+                                        as={NavLink}
+                                        to='/blog'
+                                        eventKey='1'
+                                        className='nav-link d-flex align-items-center'
+                                    >
+                                        Blog<b className='pink_dot'>.</b>
+                                    </Nav.Link>
                                 </Nav.Item>
                             </Nav>
                         </Offcanvas.Body>

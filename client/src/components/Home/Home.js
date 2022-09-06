@@ -20,12 +20,6 @@ import { faEnvelope, faObjectGroup, faRectangleXmark, faSquareCheck } from '@for
 import { faJs } from '@fortawesome/free-brands-svg-icons'
 import _ from 'lodash';
 import $ from 'jquery';
-import { io } from "socket.io-client";
-
-const _socketURL = _.isEqual(process.env.NODE_ENV, 'production')
-    ? window.location.hostname
-    : 'localhost:8800';
-const _socket = io(_socketURL, { 'transports': ['websocket', 'polling'] });
 
 const Home = (props) => {
     const _articles = _useStore((state) => state._articles);
@@ -266,7 +260,6 @@ const Home = (props) => {
                     setModalBody('Hello and welcome our stranger, Thank you for reaching out to us, \nHow about you joins us, not only you can give a feedback, but you can discover much more about our community.');
                     setModalIcon(<FontAwesomeIcon icon={faSquareCheck} />);
                     setShowModal(true);
-                    _socket.emit('action', { type: '_messageSent', data: res.data._message });
                 })
                 .catch((error) => {
                     setModalHeader('We\'re sorry !');
