@@ -34,7 +34,6 @@ const Home = (props) => {
     const [_userEmailValue, setUserEmailValue] = useState('');
     const [_userEmailFocused, setUserEmailFocused] = useState(false);
     const [_userNewsletterValue, setUserNewsletterValue] = useState('');
-    const [_userNewsletterFocused, setUserNewsletterFocused] = useState(false);
     const [_userMessageValue, setUserMessageValue] = useState('');
     const [_userMessageFocused, setUserMessageFocused] = useState(false);
 
@@ -74,7 +73,7 @@ const Home = (props) => {
         prevArrow: <FontAwesomeIcon icon={faLeftLong} />,
         onInit: () => $('._sliderArticles ._shadowIndex._smaller p').html('01'),
         beforeChange: (current, next) =>
-            next < 9
+            next < 10
                 ? $('._sliderArticles ._shadowIndex._smaller p').html('0' + (next + 1))
                 : $('._sliderArticles ._shadowIndex._smaller p').html('' + (next + 1))
     };
@@ -281,31 +280,31 @@ const Home = (props) => {
         _handleAlphabet();
         _handleWords();
 
-        $('._s2').on('mousemove', (event) => {
-            let width = $('._s2').width() / 2;
-            let height = $('._s2').height() / 2;
+        $('._home ._s2').on('mousemove', (event) => {
+            let width = $('._home ._s2').width() / 2;
+            let height = $('._home ._s2').height() / 2;
             let amountMovedX = ((width - event.pageX) * -1 / 12);
             let amountMovedY = ((height - event.pageY) * -1 / 12);
 
-            $('._moon').css('marginLeft', amountMovedX);
-            $('._moon').css('marginTop', amountMovedY);
+            $('._home ._s2 ._moon').css('marginLeft', amountMovedX);
+            $('._home ._s2 ._moon').css('marginTop', amountMovedY);
         });
 
-        $('._s3').on('mousemove', (event) => {
-            let width = $('._s3').width() / 2;
-            let height = $('._s3').height() / 2;
+        $('._home ._s3').on('mousemove', (event) => {
+            let width = $('._home ._s3').width() / 2;
+            let height = $('._home ._s3').height() / 2;
             let amountMovedX = ((width - event.pageX) * -1 / 12);
             let amountMovedY = ((height - event.pageY) * -1 / 12);
 
-            $('._s3>h1').css('marginLeft', amountMovedX);
-            $('._s3>h1').css('marginTop', amountMovedY);
+            $('._home ._s3>h1').css('marginLeft', amountMovedX);
+            $('._home ._s3>h1').css('marginTop', amountMovedY);
         });
 
-        $('._s4').on('mousemove', (event) => {
-            let width = $('._s4').width() / 2;
+        $('._home ._s4').on('mousemove', (event) => {
+            let width = $('._home ._s4').width() / 2;
             let amountMovedX = ((width - event.pageX) * 1 / 64);
 
-            $('.before').css('right', amountMovedX);
+            $('._home ._s4 .before').css('right', amountMovedX);
         });
     }, [_getArticles, _getProjects, _handleAlphabet, _handleWords]);
 
@@ -340,9 +339,11 @@ const Home = (props) => {
                         </div>
                         <Button
                             type='button'
+                            as='button'
                             className='border border-0 rounded-0 inverse w-25'
                             variant='outline-light'
-                            onClick={() => $()}
+                            href='#_userMessageInput'
+                            onClick={() => document.getElementById('_userMessageInput').focus()}
                         >
                             <div className='buttonBorders'>
                                 <div className='borderTop'></div>
@@ -411,7 +412,7 @@ const Home = (props) => {
                                                 <Form className='d-flex justify-content-end'>
                                                     <Button
                                                         type='button'
-                                                        className='border border-0 rounded-0 inverse'
+                                                        className='border border-0 rounded-0 inverse w-25'
                                                         variant='outline-light'
                                                     >
                                                         <div className='buttonBorders'>
@@ -583,15 +584,16 @@ const Home = (props) => {
                                     </Form.Group>
                                 </Col>
                                 <Col className='g-col-6'>
-                                    <Form.Group controlId='_userNewsletterInput' className={`_checkGroup _formGroup ${_userNewsletterFocused ? 'focused' : ''}`}>
+                                    <Form.Group controlId='_userNewsletterInput' className='_checkGroup _formGroup'>
                                         <FloatingLabel
                                             controlId='_userNewsletterInput'
                                             label='Subscribe to receive our newsletter.'
                                             className='_formLabel'
                                         >
                                             <Form.Check
-                                                type='checkbox'
-                                                name='_userNewsletterInput' value={_userNewsletterValue} onChange={(event) => setUserNewsletterValue(event.target.value)} onFocus={() => setUserNewsletterFocused(true)} onBlur={() => setUserNewsletterFocused(false)}
+                                                type='switch'
+                                                className='_formSwitch'
+                                                name='_userNewsletterInput' checked={_userNewsletterValue} onChange={(event) => setUserNewsletterValue(event.target.checked)}
                                             />
                                         </FloatingLabel>
                                     </Form.Group>
@@ -632,7 +634,6 @@ const Home = (props) => {
                     </div>
                 </div>
             </section>
-
             <Modal show={_showModal} onHide={() => setShowModal(false)} centered>
                 <Form>
                     <Modal.Header closeButton>

@@ -8,12 +8,12 @@ $enable-cssgrid: true;
 @import "slick-carousel/slick/slick-theme.css";
 
 @import '~bootstrap/scss/bootstrap';
+@import './assets/variables';
 @import './assets/colors';
 @import './assets/fonts';
 @import './assets/placeholders';
 @import './assets/mixins';
 @import './assets/globals';
-@import './assets/variables';
 @import './assets/keyframes';
 
 body {

@@ -182,15 +182,12 @@ header {
 
                         .dropdown {
                             .dropdown-toggle {
-                                .account {
+                                span {
                                     position: relative;
                                     fill: $black;
                                     stroke: $black;
                                     color: $black;
                                     cursor: pointer;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
                                     @include _dimensions($width: 10vh, $height:  10vh);
                                     @extend %transition_holder;
 

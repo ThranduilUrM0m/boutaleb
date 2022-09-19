@@ -25,13 +25,6 @@ const Header = (props) => {
     const [_showAccountDropdown, setShowAccountDropdown] = useState(false);
     const ref = useRef(null);
 
-    const showDropdown = () => {
-        setShowAccountDropdown(!_showAccountDropdown);
-    }
-    const hideDropdown = () => {
-        setShowAccountDropdown(false);
-    }
-
     return (
         <header>
             <Navbar key='xxl' collapseOnSelect expand='xxl'>
@@ -72,10 +65,10 @@ const Header = (props) => {
                             <Nav.Item>
                                 <Dropdown
                                     show={_showAccountDropdown}
-                                    onMouseEnter={() => showDropdown()}
-                                    onMouseLeave={() => hideDropdown()}>
+                                    onMouseEnter={() => setShowAccountDropdown(true)}
+                                    onMouseLeave={() => setShowAccountDropdown(false)}>
                                     <Dropdown.Toggle as='span'>
-                                        <span className='account'>
+                                        <span className='d-flex align-items-center justify-content-center'>
                                             <FontAwesomeIcon icon={faUser} />
                                             <span className='hover_effect'></span>
                                         </span>

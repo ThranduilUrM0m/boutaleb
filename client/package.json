@@ -36,6 +36,7 @@
         "@fortawesome/react-fontawesome": "*",
         "axios": "*",
         "bootstrap": "*",
+        "downshift": "*",
         "jquery": "*",
         "lodash": "*",
         "moment": "*",

@@ -116,6 +116,7 @@ section {
 
                 .slick-slider {
                     position: relative;
+                    cursor: grab;
 
                     .slick-arrow {
                         color: $black;
@@ -155,7 +156,7 @@ section {
 
                                                         img {
                                                             @include _dimensions($width: 100%, $height: '');
-                                                            box-shadow: 0 .5vh 1vh rgba(0, 0, 0, .16), 0 .5vh 1vh rgba(0, 0, 0, .23);
+                                                            box-shadow: 0 .5vh 1vh rgba($black, .16), 0 .5vh 1vh rgba($black, .23);
                                                         }
                                                     }
                                                 }
@@ -293,6 +294,7 @@ section {
 
                 .slick-slider {
                     position: relative;
+                    cursor: grab;
 
                     .slick-arrow {
                         color: $black;
@@ -318,7 +320,7 @@ section {
                                         margin: 0;
                                         padding: 5vh;
 
-                                        .card-body {
+                                        &-body {
                                             position: relative;
 
                                             h2 {
@@ -494,18 +496,18 @@ section {
                                 &::before {
                                     position: absolute;
                                     content: '';
-                                    background: #fff;
+                                    background: $white;
                                     width: 1.25vh;
                                     height: 1.25vh;
                                     border-radius: 1.25vh;
                                     left: 1.25vh;
                                     top: 50%;
                                     transform: translateY(-50%);
-                                    box-shadow: inset .25vh .25vh rgba(0, 0, 0, .25);
+                                    box-shadow: inset .25vh .25vh rgba($black, .25);
                                 }
 
                                 &::after {
-                                    background: #fff;
+                                    background: $white;
                                     border-bottom: calc(4.5vh / 2) solid transparent;
                                     border-left: 1.25vh solid lighten($color: $blue, $amount: 20);
                                     border-top: calc(4.5vh / 2) solid transparent;
@@ -517,7 +519,7 @@ section {
 
                                 &:hover {
                                     background-color: $blue;
-                                    color: white;
+                                    color: $white;
 
                                     &::after {
                                         border-left-color: $blue;
@@ -568,7 +570,7 @@ section {
             span {
                 font-size: 10px;
                 padding: 5px;
-                background-color: transparent;
+                background: transparent;
                 color: rgba($black, .25);
                 display: table;
                 float: left;
@@ -609,7 +611,7 @@ section {
             .g-col-4,
             .g-col-8 {
                 position: relative;
-                box-shadow: 0 .35vh 3.25vh rgba(0, 0, 0, .25);
+                box-shadow: 0 .35vh 3.25vh rgba($black, .25);
                 padding: 0;
                 margin: 0 2.5vh;
                 background: $white;

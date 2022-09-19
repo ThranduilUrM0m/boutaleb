@@ -1,0 +1,317 @@
+section {
+    position: relative;
+    overflow: hidden;
+
+    &._s1 {
+        overflow: hidden;
+
+        .f_name,
+        .l_name {
+            position: absolute;
+            opacity: 1;
+            font-size: 20.5vh;
+            line-height: 15.25vh;
+            z-index: 1;
+        }
+
+        .f_name {
+            color: transparent;
+            -webkit-text-stroke: .25vh $blue;
+            @include _transform($top: 25%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+        }
+
+        .l_name {
+            color: rgba($color: $black, $alpha: .5);
+            @include _transform($top: calc(25% + 20.5vh), $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+        }
+
+        .g-col-6 {
+            position: relative;
+
+            ._caption {
+                position: absolute;
+                color: $black;
+                font-size: 2vh;
+                line-height: 2vh;
+                padding: 0 5vh;
+                @include _dimensions($width: 20vw, $height: 25vh);
+            }
+
+            &::before {
+                content: '';
+                position: absolute;
+                background-color: $blue;
+                @include _dimensions($width: 20vw, $height: 25vh);
+            }
+
+            &:first-of-type {
+                ._caption {
+                    @include _transform($top: 60%, $left: 0, $bottom: '', $right: '', $t_x: 50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                }
+
+                &::before {
+                    @include _transform($top: 60%, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                }
+            }
+
+            &:last-of-type {
+                ._caption {
+                    @include _transform($top: 60%, $left: '', $bottom: '', $right: 0, $t_x: -50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                }
+
+                &::before {
+                    @include _transform($top: 60%, $left: '', $bottom: '', $right: 0, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                }
+            }
+        }
+
+        &::after {
+            content: '';
+            position: absolute;
+            background: url('../_images/b_white_orange..svg') no-repeat center;
+            background-size: contain;
+            @include _dimensions($width: 100%, $height: 70%);
+            @include _transform($top: '', $left: 25%, $bottom: 0, $right: '', $t_x: -50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+        }
+    }
+
+    &._s2 {
+        .before {
+            background: url('../_images/b_white_orange..svg') no-repeat center;
+            position: absolute;
+            @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+            @include _dimensions($width: 50%, $height: 50%);
+        }
+
+        .g-col-4 {
+            position: relative;
+            justify-self: center;
+            margin: 0 0 4.5vh 0;
+            @include _dimensions($width: 75%, $height: '');
+
+            h1 {
+                font-weight: 300;
+            }
+        }
+
+        .g-col-8 {
+            margin: 0 0 2.5vh 0;
+
+            ._sliderArticles {
+                position: relative;
+
+                .slick-slider {
+                    position: relative;
+                    cursor: grab;
+
+                    .slick-arrow {
+                        color: $black;
+                        z-index: 10001;
+
+                        &.slick-prev {
+                            @include _transform($top: -5vh, $left: unset, $bottom: '', $right: 12vh, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                        }
+
+                        &.slick-next {
+                            @include _transform($top: -5vh, $left: '', $bottom: '', $right: 2vh, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                        }
+
+                        &.slick-disabled {
+                            color: rgba($color: $black, $alpha: .25);
+                            cursor: default;
+                        }
+                    }
+
+                    .slick-list {
+                        .slick-track {
+                            .slick-slide {
+                                &>div {
+                                    .card {
+                                        background: none;
+                                        margin: 0;
+                                        padding: 2vh;
+                                        @include _dimensions($width: '', $height: 55vh);
+
+                                        &-body {
+                                            position: relative;
+                                            border: 2vh solid lighten($color: $purple, $amount: 20);
+                                            background-image: linear-gradient(120deg, #a1c4fd 0, #c2e9fb 100%);
+                                            backdrop-filter: blur(2vh);
+                                            padding: 2vh;
+                                            overflow: hidden;
+                                            @include _dimensions($width: '', $height: 100%);
+
+                                            figure {
+                                                position: relative;
+                                                margin: -4vh 0 0 -4vh;
+                                                border: 0;
+                                                @include _dimensions($width: calc(100% + 8vh), $height: 20vh);
+
+                                                img {
+                                                    object-fit: cover;
+                                                    object-position: top;
+                                                    @include _dimensions($width: 100%, $height: 100%);
+                                                }
+                                            }
+
+                                            .author {
+                                                text-align: -webkit-left;
+                                                font-size: 1.5vh;
+                                                margin: 1.25vh 0 0 0;
+                                            }
+
+                                            h4 {
+                                                color: $black;
+                                                text-align: -webkit-left;
+                                                letter-spacing: 0;
+                                                position: relative;
+                                                margin: 0;
+                                                overflow-x: hidden;
+                                                white-space: nowrap;
+                                                text-overflow: ellipsis;
+                                                z-index: 10;
+                                                @extend %transition_holder;
+                                            }
+
+                                            .categorie {
+                                                font-size: 2vh;
+                                                color: $white;
+                                                border: .15vh solid $white;
+                                                padding: .5vh 1.25vh;
+                                                margin: 0;
+                                                @include _dimensions($width: fit-content, $height: fit-content);
+                                            }
+
+                                            [data-am-linearrow] {
+                                                position: relative;
+                                                padding: 2vh;
+                                                cursor: pointer;
+                                                box-sizing: content-box;
+                                                @include _dimensions($width: (($arrow-width * 2) - $arrow-height), $height: $arrow-height);
+
+                                                .line {
+                                                    position: absolute;
+                                                    margin: calc(-1 * ($arrow-height / 2)) 0 0 0;
+                                                    background-color: $black;
+                                                    @include _transform($top: 50%, $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                    @include _dimensions($width: $arrow-width, $height: $arrow-height);
+                                                    @extend %transition_holder;
+                                                }
+
+                                                .line-1 {
+                                                    @include _transform($top: '', $left: 2vh, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                }
+
+                                                .line-2 {
+                                                    @include _transform($top: '', $left: '', $bottom: '', $right: 2vh, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                }
+
+                                                &:hover,
+                                                &:focus {
+                                                    background: none;
+
+                                                    .line-1 {
+                                                        @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: $arrow-angle, $s_x: 1, $s_y: 1);
+                                                    }
+
+                                                    .line-2 {
+                                                        @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: -($arrow-angle), $s_x: 1, $s_y: 1);
+                                                    }
+                                                }
+
+                                                &:focus {
+                                                    outline: none;
+
+                                                    .line {
+                                                        background-color: darken($black, 20%);
+                                                    }
+                                                }
+                                            }
+
+                                            [data-am-linearrow~='inverted'] {
+
+                                                &:hover,
+                                                &:focus {
+                                                    .line-1 {
+                                                        @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: -($arrow-angle), $s_x: 1, $s_y: 1);
+                                                    }
+
+                                                    .line-2 {
+                                                        @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: $arrow-angle, $s_x: 1, $s_y: 1);
+                                                    }
+                                                }
+                                            }
+
+                                            [data-am-linearrow~='tooltip'] {
+                                                &::after {
+                                                    position: absolute;
+                                                    content: attr(display-name);
+                                                    font-size: 1.6vh;
+                                                    white-space: nowrap;
+                                                    opacity: 0;
+                                                    color: $black;
+                                                    @include _transform($top: '', $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                    @extend %transition_holder;
+                                                }
+
+                                                &:hover,
+                                                &:focus {
+                                                    &::after {
+                                                        opacity: 1;
+                                                    }
+                                                }
+
+                                                &:focus {
+                                                    &::after {
+                                                        color: darken($black, 20%);
+                                                    }
+                                                }
+                                            }
+
+                                            [data-am-linearrow~='tooltip-bottom'] {
+                                                &::after {
+                                                    @include _transform($top: 100%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                }
+                                            }
+
+                                            ._footerInformation {
+                                                padding: 1.25vh 0 0 0;
+                                                @include _dimensions($width: 100%, $height: '');
+
+                                                p {
+                                                    margin: 0;
+                                                }
+
+                                                ._views {
+                                                    text-align: -webkit-left;
+                                                    font-size: 1.5vh;
+                                                    flex: 1;
+
+                                                    svg {
+                                                        padding: 0 0 0 .5vh;
+                                                    }
+                                                }
+
+                                                ._upvotes,
+                                                ._downvotes,
+                                                ._comments {
+                                                    text-align: -webkit-right;
+                                                    font-size: 1.6vh;
+                                                    margin: 0 0 0 2.5vh;
+
+                                                    svg {
+                                                        padding: 0 0 0 .5vh;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

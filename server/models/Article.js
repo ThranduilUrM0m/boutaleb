@@ -14,9 +14,9 @@ const Article = new Schema({
         type: String,
         required: [true, 'Please provide an author']
     },
-    _article_genre: {
+    _article_category: {
         type: String,
-        required: [true, 'Please choose a genre']
+        required: [true, 'Please choose a category']
     },
     _article_hide: {
         type: Boolean

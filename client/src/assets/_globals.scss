@@ -23,7 +23,7 @@ a {
 ul {
     margin: 0;
     padding: 0;
-    
+
     li {
         list-style-type: none;
         margin: 0;
@@ -104,7 +104,11 @@ form {
             }
 
             ._formLabel {
-                div {
+                ._formSwitch {
+                    padding: 0;
+                }
+
+                ._formCheckbox, ._formSwitch {
                     @include _dimensions($width: 100%, $height: 100%);
 
                     input {
@@ -113,7 +117,18 @@ form {
                 }
 
                 label {
-                    @include _transform($top: '', $left: 1em, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                    @include _transform($top: '', $left: 3em, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                }
+
+                &Checkbox {
+                    label {
+                        @include _transform($top: '', $left: 2em, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                    }
+                }
+
+                .badge {
+                    position: absolute;
+                    @include _transform($top: 50%, $left: '', $bottom: '', $right: 0, $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
                 }
             }
         }
@@ -124,6 +139,7 @@ form {
         margin: 0;
         border: none;
         background: none;
+        text-transform: none;
         font-size: 2vh;
         box-shadow: 0 0 0 0 adjust-hue($black, 45deg), inset 0 0 0 0 $black;
         @include _dimensions($width: '', $height: 7vh);
@@ -256,13 +272,108 @@ form {
     }
 }
 
+.card {
+    @include _transitions($property: '', $duration: .75s, $timing: ease, $delay: '');
+
+    &>.borderTop,
+    &>.borderRight,
+    &>.borderBottom,
+    &>.borderLeft {
+        position: absolute;
+        background: $black;
+        z-index: 1;
+    }
+
+    &>.borderTop,
+    &>.borderBottom {
+        @include _dimensions($width: calc(100% - 4vh), $height: 2vh);
+    }
+
+    &>.borderLeft,
+    &>.borderRight {
+        @include _dimensions($width: 2vh, $height: calc(100% - 4vh));
+    }
+
+    &>.borderTop {
+        transform-origin: left;
+        @include _transform($top: 2vh, $left: 2vh, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 0, $s_y: 1);
+    }
+
+    &>.borderRight {
+        transform-origin: top;
+        @include _transform($top: 2vh, $left: '', $bottom: '', $right: 2vh, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 0);
+    }
+
+    &>.borderBottom {
+        transform-origin: right;
+        @include _transform($top: '', $left: '', $bottom: 2vh, $right: 2vh, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 0, $s_y: 1);
+    }
+
+    &>.borderLeft {
+        transform-origin: bottom;
+        @include _transform($top: '', $left: 2vh, $bottom: 2vh, $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 0);
+    }
+
+    // when unhover
+    &>.borderTop {
+        @include _transitions($property: '', $duration: .15s, $timing: ease-in-out, $delay: .45s);
+    }
+
+    &>.borderRight {
+        @include _transitions($property: '', $duration: .15s, $timing: ease-in-out, $delay: .30s);
+    }
+
+    &>.borderBottom {
+        @include _transitions($property: '', $duration: .15s, $timing: ease-in-out, $delay: .15s);
+    }
+
+    &>.borderLeft {
+        @include _transitions($property: '', $duration: .15s, $timing: ease-in-out, $delay: 0s);
+    }
+
+    &-body {
+        box-shadow: 0 0 0 0 adjust-hue($black, 45deg);
+        @include _transitions($property: '', $duration: .5s, $timing: '', $delay: '');
+    }
+
+    &:hover {
+
+        .borderTop,
+        .borderBottom,
+        .borderLeft,
+        .borderRight {
+            @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+        }
+
+        // when hover
+        .borderTop {
+            @include _transitions($property: '', $duration: .15s, $timing: ease-in-out, $delay: 0s);
+        }
+
+        .borderRight {
+            @include _transitions($property: '', $duration: .15s, $timing: ease-in-out, $delay: .15s);
+        }
+
+        .borderBottom {
+            @include _transitions($property: '', $duration: .15s, $timing: ease-in-out, $delay: .30s);
+        }
+
+        .borderLeft {
+            @include _transitions($property: '', $duration: .15s, $timing: ease-in-out, $delay: .45s);
+        }
+
+        .card-body {
+            box-shadow: 0 0 0 2vh transparent;
+        }
+    }
+}
+
 .modal {
     .modal-dialog {
         border-radius: 0;
 
         .modal-content {
-            border-radius: inherit;
-            overflow: hidden;
+            border-radius: 0;
 
             .modal-header {
                 padding: 4vh 4vh 2vh 4vh;
@@ -283,7 +394,7 @@ form {
             }
 
             .modal-body {
-                padding: 2vh 4vh 4vh 4vh;
+                padding: 4vh;
                 border: 0;
                 border-radius: inherit;
             }
@@ -301,8 +412,12 @@ form {
                     @include _transform($top: 50%, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: -30deg, $s_x: 1, $s_y: 1);
                 }
 
-                .btn {
-                    @include _dimensions($width: 25%, $height: '');
+                form {
+                    @include _dimensions($width: 100%, $height: '');
+
+                    .btn {
+                        @include _dimensions($width: 25%, $height: '');
+                    }
                 }
             }
 
@@ -311,7 +426,434 @@ form {
                 position: absolute;
                 background: $pink;
                 @include _dimensions($width: 100%, $height: 1.5vh);
-                @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -100%, $r_deg: 0, $s_x: 1, $s_y: 1);
+            }
+        }
+    }
+
+    &._blogModal {
+        .modal-dialog {
+            max-width: 85%;
+
+            .modal-content {
+                background: hsl(0, 0%, 90%);
+
+                .modal-header {
+                    padding: 2vh 4vh;
+
+                    .modal-title {
+                        * {
+                            @extend %transition_holder;
+                        }
+
+                        & > .dropdown {
+                            margin: 0;
+
+                            & > .dropdown-toggle {
+                                cursor: pointer;
+
+                                span {
+                                    position: relative;
+                                    fill: $black;
+                                    stroke: $black;
+                                    color: $black;
+                                    padding: 1.25vh;
+                                    background: $white;
+                                    @include _dimensions($width: 7vh, $height:  7vh);
+
+                                    svg {
+                                        font-size: 2.5vh;
+                                    }
+                                }
+
+                                &::after {
+                                    display: none;
+                                }
+                            }
+
+                            .dropdown-menu {
+                                box-shadow: 1.25vh 1.25vh 4.5vh -2.5vh rgba($black, .5);
+                                margin: 0;
+                                @include _transform($top: 5vh, $left: unset, $bottom: unset, $right: 0, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                @extend %transition_holder;
+
+                                form {
+                                    @include _dimensions($width: 50vh, $height:  '');
+
+                                    & > .dropdown-item {
+                                        padding: 0;
+
+                                        .dropend {
+                                            .dropdown-toggle {
+                                                cursor: pointer;
+    
+                                                span {
+                                                    padding: 1vh 2vh;
+    
+                                                    svg {
+                                                        font-size: 2vh;
+                                                        color: rgba($black, .25);
+                                                    }
+    
+                                                    p {
+                                                        margin: 0 1.25vh 0 auto;
+                                                        font-size: small;
+                                                        color: rgba($black, .25);
+                                                    }
+                                                }
+    
+                                                &::after {
+                                                    display: none;
+                                                }
+                                            }
+    
+                                            .dropdown-menu {
+                                                @include _transform($top: 0, $left: 100%, $bottom: unset, $right: unset, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                            
+                                                .dropdown-item {
+                                                    cursor: default;
+    
+                                                    ._checkGroup {
+                                                        ._formLabel {
+                                                            ._formSwitch, ._formCheckbox {
+                                                                .form-check-input {
+                                                                    margin: 0;
+                                                                    vertical-align: middle;
+                                                                }
+                                                            }
+    
+                                                            label {
+                                                                @include _transform($top: 50%, $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                            }
+                                                        }
+                                                    }
+                                                }
+
+                                                &._autocomplete {
+                                                    padding: 0;
+                                                    @include _dimensions($width: 60vh, $height:  '');
+
+                                                    .wrapper {
+                                                        border: none;
+                                                        border-radius: 0;
+                                                        box-shadow: none;
+
+                                                        .dropdown-item {
+                                                            cursor: pointer;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        & > form {
+                            margin: 0 0 0 1.25vh;
+                            background: $white;
+                            @include _dimensions($width: 50vh, $height: 7vh);
+
+                            ._formGroup {
+                                z-index: 10000;
+
+                                .list-group {
+                                    background: $white;
+                                    margin: 0;
+                                    padding: 0;
+                                    @include _dimensions($width: 100%, $height: '');
+
+                                    &-item {
+                                        margin: 0;
+                                        padding: 1vh;
+                                        font-size: 1rem;
+                                        font-weight: 400;
+                                        line-height: 1.25;
+                                        cursor: pointer;
+                                        @include _dimensions($width: 100%, $height: 7vh);
+
+                                        &:hover {
+                                            background: lighten($color: $purple, $amount: 20);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                .modal-body {
+                    z-index: 1;
+                    padding: 2vh 4vh;
+
+                    h1 {
+                        font-family: 'Abril Fatface', cursive;
+                        font-size: 4rem;
+                        color: $black;
+                        white-space: nowrap;
+                        text-align: center;
+                        margin: 0;
+                    }
+
+                    ._page {
+                        grid-template-rows: repeat(2, 60vh);
+                        @include _dimensions($width: 90%, $height: '');
+
+                        .card {
+                            background: none;
+                            margin: 0;
+                            padding: 2vh;
+                            @extend %transition_holder;
+
+                            &-body {
+                                position: relative;
+                                border: 2vh solid lighten($color: $purple, $amount: 20);
+                                background: $white;
+                                backdrop-filter: blur(2vh);
+                                padding: 2vh;
+                                overflow: hidden;
+                                @include _dimensions($width: 100%, $height: 100%);
+
+                                figure {
+                                    position: relative;
+                                    margin: -4vh 0 0 -4vh;
+                                    border: 0;
+                                    @include _dimensions($width: calc(100% + 8vh), $height: 20vh);
+
+                                    img {
+                                        object-fit: cover;
+                                        object-position: top;
+                                        @include _dimensions($width: 100%, $height: 100%);
+                                    }
+                                }
+
+                                .author {
+                                    text-align: -webkit-left;
+                                    font-size: 1.5vh;
+                                    margin: 1.25vh 0 0 0;
+                                }
+
+                                h4 {
+                                    color: $black;
+                                    text-align: -webkit-left;
+                                    letter-spacing: 0;
+                                    position: relative;
+                                    margin: 0;
+                                    overflow-x: hidden;
+                                    white-space: nowrap;
+                                    text-overflow: ellipsis;
+                                    z-index: 10;
+                                    @extend %transition_holder;
+                                }
+
+                                .category {
+                                    font-size: 2vh;
+                                    color: $black;
+                                    border: .15vh solid $black;
+                                    padding: .5vh 1.25vh;
+                                    margin: 0;
+                                    @include _dimensions($width: fit-content, $height: fit-content);
+                                }
+
+                                .tags {
+                                    margin-bottom: 0 !important;
+                                    padding-top: .25vh;
+                                    display: flex;
+                                    flex-direction: initial;
+                                    align-items: flex-start;
+                                    flex: auto;
+                                    overflow-x: hidden;
+
+                                    li {
+                                        font-size: 1.5vh;
+                                        border: .15vh solid #ddd;
+                                        background: #eee;
+                                        display: inline-block;
+                                        padding: .75vh;
+                                        margin: 0 .75vh;
+                                        border-radius: .75vh;
+                                        height: fit-content;
+                                    }
+                                }
+
+                                [data-am-linearrow] {
+                                    position: relative;
+                                    padding: 2vh;
+                                    cursor: pointer;
+                                    box-sizing: content-box;
+                                    @include _dimensions($width: (($arrow-width * 2) - $arrow-height), $height: $arrow-height);
+
+                                    .line {
+                                        position: absolute;
+                                        margin: calc(-1 * ($arrow-height / 2)) 0 0 0;
+                                        background-color: $black;
+                                        @include _transform($top: 50%, $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                        @include _dimensions($width: $arrow-width, $height: $arrow-height);
+                                        @extend %transition_holder;
+                                    }
+
+                                    .line-1 {
+                                        @include _transform($top: '', $left: 2vh, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                    }
+
+                                    .line-2 {
+                                        @include _transform($top: '', $left: '', $bottom: '', $right: 2vh, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                    }
+
+                                    &:hover,
+                                    &:focus {
+                                        background: none;
+
+                                        .line-1 {
+                                            @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: $arrow-angle, $s_x: 1, $s_y: 1);
+                                        }
+
+                                        .line-2 {
+                                            @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: -($arrow-angle), $s_x: 1, $s_y: 1);
+                                        }
+                                    }
+
+                                    &:focus {
+                                        outline: none;
+
+                                        .line {
+                                            background-color: darken($black, 20%);
+                                        }
+                                    }
+                                }
+
+                                [data-am-linearrow~='inverted'] {
+
+                                    &:hover,
+                                    &:focus {
+                                        .line-1 {
+                                            @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: -($arrow-angle), $s_x: 1, $s_y: 1);
+                                        }
+
+                                        .line-2 {
+                                            @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: $arrow-angle, $s_x: 1, $s_y: 1);
+                                        }
+                                    }
+                                }
+
+                                [data-am-linearrow~='tooltip'] {
+                                    &::after {
+                                        position: absolute;
+                                        content: attr(display-name);
+                                        font-size: 1.6vh;
+                                        white-space: nowrap;
+                                        opacity: 0;
+                                        color: $black;
+                                        @include _transform($top: '', $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                        @extend %transition_holder;
+                                    }
+
+                                    &:hover,
+                                    &:focus {
+                                        &::after {
+                                            opacity: 1;
+                                        }
+                                    }
+
+                                    &:focus {
+                                        &::after {
+                                            color: darken($black, 20%);
+                                        }
+                                    }
+                                }
+
+                                [data-am-linearrow~='tooltip-bottom'] {
+                                    &::after {
+                                        @include _transform($top: 100%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                    }
+                                }
+
+                                ._footerInformation {
+                                    padding: 2vh;
+                                    background: hsl(0, 0%, 97%);
+                                    @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: -2vh, $t_y: 2vh, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                    @include _dimensions($width: calc(100% + 4vh), $height: 6vh);
+
+                                    p {
+                                        margin: 0;
+                                    }
+
+                                    ._views {
+                                        text-align: -webkit-left;
+                                        font-size: 1.5vh;
+                                        flex: 1;
+
+                                        svg {
+                                            padding: 0 0 0 .5vh;
+                                        }
+                                    }
+
+                                    ._upvotes,
+                                    ._downvotes,
+                                    ._comments {
+                                        text-align: -webkit-right;
+                                        font-size: 1.6vh;
+                                        margin: 0 0 0 2.5vh;
+
+                                        svg {
+                                            padding: 0 0 0 .5vh;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    ._pageNumbers {
+                        list-style: none;
+
+                        li {
+                            position: relative;
+                            display: block;
+                            opacity: .2;
+                            margin: .5vh;
+                            border-radius: 2.5vh;
+                            background: $black;
+                            cursor: pointer;
+                            @include _dimensions($width: 2.5vh, $height: 2.5vh);
+                            @extend %transition_holder;
+
+                            &.current {
+                                opacity: 1;
+                                background: $blue;
+                                box-shadow: 0 0 3.25vh rgba($blue, .3);
+                                @include _dimensions($width: 5vh, $height: '');
+                            }
+                        }
+                    }
+                }
+
+                .modal-footer {
+                    padding: 4vh;
+
+                    div {
+                        color: $black;
+                        opacity: .75;
+                        font-size: smaller;
+                    }
+                }
+
+                ._shadowIndex {
+                    position: absolute;
+                    opacity: .25;
+                    margin: 0;
+                    font-size: 20vh;
+                    line-height: 20vh;
+                    font-weight: bold;
+                    color: lighten($color: $blue, $amount: 2);
+                    @include _transform($top: 100%, $left: 50%, $bottom: '', $right: '', $t_x: -100%, $t_y: -100%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                    @include _dimensions($width: fit-content, $height: fit-content);
+
+                    p {
+                        margin: 0;
+                    }
+                }
             }
         }
     }
