@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { _useStore } from '../../store/store';
+import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import moment from 'moment';
 import Modal from 'react-bootstrap/Modal';
@@ -13,40 +14,50 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import Slider from 'react-slick';
 import Downshift from 'downshift';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleRight, faArrowDownLong, faArrowUpLong, faCommentAlt, faEllipsisV, faHashtag, faLeftLong, faRightLong, faThumbsDown, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
+import { faAngleRight, faArrowDownLong, faArrowUpLong, faCommentAlt, faEllipsisV, faHashtag, faLeftLong, faMagnifyingGlass, faRightLong, faThumbsDown, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
+import { faClock, faEye, faFolder } from '@fortawesome/free-regular-svg-icons';
 import _ from 'lodash';
 import $ from 'jquery';
-import { faClock, faEye, faFolder } from '@fortawesome/free-regular-svg-icons';
 
 const Blog = (props) => {
     const _articles = _useStore((state) => state._articles);
     const setArticles = _useStore((state) => state.setArticles);
 
-    const [_showModal, setShowModal] = useState(false);
-    const [_currentPage, setCurrentPage] = useState(1);
-    const [_showFilterDropdown, setShowFilterDropdown] = useState(false);
-    const [_filterSort, setFilterSort] = useState('Relevant');
-    const [_showFilterSortDropdown, setShowFilterSortDropdown] = useState(false);
-    const [_filterTimeframe, setFilterTimeframe] = useState('');
-    const [_showFilterTimeframeDropdown, setShowFilterTimeframeDropdown] = useState(false);
-    const [_filterCategory, setFilterCategory] = useState([]);
-    const [_showFilterCategoryDropdown, setShowFilterCategoryDropdown] = useState(false);
-    const [_filterTagsInput, setFilterTagsInput] = useState('');
-    const [_filterTags, setFilterTags] = useState([]);
-    const [_showFilteTagsDropdown, setShowFilterTagsDropdown] = useState(false);
-    const [_filterSearchInput, setFilterSearchInput] = useState('');
-    const [_filterSearch, setFilterSearch] = useState([]);
+    const {
+        register,
+        watch,
+        reset,
+        getValues,
+        setValue,
+        formState: { errors }
+    } = useForm({
+        mode: 'onTouched',
+        reValidateMode: 'onSubmit'
+    });
 
-    let _tagsItems = _.map(_.uniq(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_hide }), ('_article_tag')))), (_tag, _index) => {
+    const [_showFilterDropdown, setShowFilterDropdown] = useState(false);
+    const [_showFilterSortDropdown, setShowFilterSortDropdown] = useState(false);
+    const [_showFilterTimeframeDropdown, setShowFilterTimeframeDropdown] = useState(false);
+    const [_showFilterCategoryDropdown, setShowFilterCategoryDropdown] = useState(false);
+
+    const [_currentPage, setCurrentPage] = useState(1);
+    const [_cardsPerPage] = useState(6);
+    const [_showModal, setShowModal] = useState(false);
+
+    const [_filterSort, setFilterSort] = useState('Relevant');
+    const [_filterTimeframe, setFilterTimeframe] = useState('');
+    const [_filterCategory, setFilterCategory] = useState([]);
+
+    let _articleTags = _.map(_.uniq(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_hide }), ('_article_tag')))), (_tag, _index) => {
         return {
             value: _tag
         }
     });
-    let _Items = _.map(_.uniq(_.union(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_tag')), _.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_title'), _.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_author'), _.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_category'))), (_search, _index) => {
+    let _articleItems = _.orderBy(_.uniqBy(_.map(_.union(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_tag')), _.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_title'), _.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_author'), _.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_category')), (_search, _index) => {
         return {
-            value: _search
+            value: _.toLower(_search.replace(/\.$/, ""))
         }
-    });
+    }), 'value'), ['value'], ['asc']);
 
     const handleAddCategory = (_category) => {
         setFilterCategory((prevState) => [
@@ -100,60 +111,52 @@ const Blog = (props) => {
         return _.filter(
             _.filter(
                 _.filter(
-                    _.filter(
-                        (
-                            _.isEqual(_filterSort, 'Relevant') ?
-                                _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_hide }), ['_article_comment'], ['desc'])
-                                :
-                                _.isEqual(_filterSort, 'Trending') ?
-                                    _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_hide }), ['_article_view'], ['desc'])
-                                    :
-                                    _.isEqual(_filterSort, 'Upvotes') ?
-                                        _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_hide }), ['_article_upvotes'], ['desc'])
-                                        :
-                                        _.isEqual(_filterSort, 'Recent') ?
-                                            _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_hide }), ['createdAt'], ['desc'])
-                                            :
-                                            _.filter(_articles, (_articleSort) => { return !_articleSort._article_hide })
-                        ), (_articleTimeframe) => {
-                            return _.isEqual(_filterTimeframe, 'Today') ?
-                                moment(new Date(_articleTimeframe.createdAt)).isSame(moment(new Date()), 'd')
-                                :
-                                _.isEqual(_filterTimeframe, 'PastWeek') ?
-                                    moment(new Date(_articleTimeframe.createdAt)).isSame(moment(new Date()), 'week')
-                                    :
-                                    _.isEqual(_filterTimeframe, 'PastMonth') ?
-                                        moment(new Date(_articleTimeframe.createdAt)).isSame(moment(new Date()), 'month')
-                                        :
-                                        _.isEqual(_filterTimeframe, 'PastYear') ?
-                                            moment(new Date(_articleTimeframe.createdAt)).isSame(moment(new Date()), 'year')
-                                            :
-                                            true;
-                        }
-                    ), (_articleCategory) => {
-                        return _.isEmpty(_filterCategory)
-                            ?
-                            true
+                    (
+                        _.isEqual(_filterSort, 'Relevant') ?
+                            _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_hide }), ['_article_comment'], ['desc'])
                             :
-                            _.includes(_filterCategory, _articleCategory._article_category);
+                            _.isEqual(_filterSort, 'Trending') ?
+                                _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_hide }), ['_article_view'], ['desc'])
+                                :
+                                _.isEqual(_filterSort, 'Upvotes') ?
+                                    _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_hide }), ['_article_upvotes'], ['desc'])
+                                    :
+                                    _.isEqual(_filterSort, 'Recent') ?
+                                        _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_hide }), ['createdAt'], ['desc'])
+                                        :
+                                        _.filter(_articles, (_articleSort) => { return !_articleSort._article_hide })
+                    ), (_articleTimeframe) => {
+                        return _.isEqual(_filterTimeframe, 'Today') ?
+                            moment(new Date(_articleTimeframe.createdAt)).isSame(moment(new Date()), 'd')
+                            :
+                            _.isEqual(_filterTimeframe, 'PastWeek') ?
+                                moment(new Date(_articleTimeframe.createdAt)).isSame(moment(new Date()), 'week')
+                                :
+                                _.isEqual(_filterTimeframe, 'PastMonth') ?
+                                    moment(new Date(_articleTimeframe.createdAt)).isSame(moment(new Date()), 'month')
+                                    :
+                                    _.isEqual(_filterTimeframe, 'PastYear') ?
+                                        moment(new Date(_articleTimeframe.createdAt)).isSame(moment(new Date()), 'year')
+                                        :
+                                        true;
                     }
-                ), (_articleTags) => {
-                    let _lowerFilterTags = _.map(_filterTags, (_filterTag) => { return _.lowerCase(_filterTag) });
-                    let _lowerArticleTags = _.map(_articleTags._article_tag, (_articleTag) => { return _.lowerCase(_articleTag) });
-                    return _.isEmpty(_filterTags)
+                ), (_articleCategory) => {
+                    return _.isEmpty(_filterCategory)
                         ?
                         true
                         :
-                        _.some(_lowerFilterTags, _tag => _.includes(_lowerArticleTags, _tag));
+                        _.includes(_filterCategory, _articleCategory._article_category);
                 }
-            ), (_articleSearch) => {
+            ),
+            (_search) => {
+                let _filterSearch = _.map(_.filter(_articleItems, (item) => { return _.includes(_.lowerCase(item.value), _.lowerCase(watch(['_searchInput'])[0])) }), (item, index) => { return (item.value) });
                 let _lowerFilterSearch = _.map(_filterSearch, (_filter) => { return _.lowerCase(_filter) });
-                let _lowerArticleInformation = _.map(_.flattenDeep(_.values(_articleSearch)), (_information) => { return _.lowerCase(_information) });
-                return _.isEmpty(_filterSearch)
+                let _lowerInformation = _.map(_.flattenDeep(_.values(_search)), (_information) => { return _.lowerCase(_information) });
+                return _.isEmpty(watch(['_searchInput']))
                     ?
                     true
                     :
-                    _.some(_lowerFilterSearch, _filter => _.includes(_lowerArticleInformation, _filter));
+                    _.some(_lowerFilterSearch, _filter => _.includes(_lowerInformation, _filter));
             }
         );
     }
@@ -183,7 +186,10 @@ const Blog = (props) => {
 
             $('._blog ._s2 .before').css('right', amountMovedX);
         });
-    }, [_getArticles]);
+
+        const subscription = watch((value, { name, type }) => { });
+        return () => subscription.unsubscribe();
+    }, [_getArticles, watch]);
 
     return (
         <main className='_blog'>
@@ -207,12 +213,12 @@ const Blog = (props) => {
                 <div className='before'></div>
                 <div className='g-col-4 align-self-end'>
                     <Form className='d-flex flex-column'>
-                        <h1>Youth to Speek <br /> <strong>Louder<b className='pink_dot'>.</b></strong></h1>
+                        <h2>7lem w Khdem bach <br /> <strong>Twsel<b className='pink_dot'>.</b></strong></h2>
                         <Button
                             type='button'
                             className='border border-0 rounded-0 inverse w-50'
                             variant='outline-light'
-                            onClick={(event) => setShowModal(true)}
+                            onClick={() => setShowModal(true)}
                         >
                             <div className='buttonBorders'>
                                 <div className='borderTop'></div>
@@ -273,7 +279,9 @@ const Blog = (props) => {
                     <Modal.Title className='d-flex'>
                         <Dropdown
                             show={_showFilterDropdown}
-                            onMouseEnter={() => setShowFilterDropdown(true)}
+                            onMouseEnter={() => {
+                                setShowFilterDropdown(true);
+                            }}
                             onMouseLeave={() => setShowFilterDropdown(false)}
                         >
                             <Dropdown.Toggle as='span'>
@@ -281,7 +289,7 @@ const Blog = (props) => {
                                     <FontAwesomeIcon icon={faEllipsisV} />
                                 </span>
                             </Dropdown.Toggle>
-                            <Dropdown.Menu className='border rounded-0'>
+                            <Dropdown.Menu className='border-0 border-top rounded-0'>
                                 <Form className='d-flex flex-column'>
                                     <Dropdown.Item eventKey='1'>
                                         <Dropdown
@@ -303,24 +311,32 @@ const Blog = (props) => {
                                             </Dropdown.Toggle>
                                             <Dropdown.Menu className='border rounded-0'>
                                                 <Dropdown.Item>
-                                                    <Form.Group controlId='_filterSortInput' className='_checkGroup _formGroup'>
+                                                    <Form.Group
+                                                        controlId='_filterSortInput'
+                                                        className='_checkGroup _formGroup'
+                                                    >
                                                         <FloatingLabel
-                                                            controlId='_filterSortInput'
                                                             label='Trending.'
                                                             className='_formLabel'
                                                         >
                                                             <Form.Check
+                                                                {...register('_filterSort', {
+                                                                    onChange: () => setFilterSort('Trending')
+                                                                })}
                                                                 type='switch'
                                                                 className='_formSwitch'
-                                                                name='_filterSortInput' checked={_.isEqual(_filterSort, 'Trending') ? true : false} onChange={(event) => setFilterSort('Trending')}
+                                                                name='_filterSort'
+                                                                defaultValue={_.isEqual(_filterSort, 'Trending')}
                                                             />
                                                         </FloatingLabel>
                                                     </Form.Group>
                                                 </Dropdown.Item>
                                                 <Dropdown.Item>
-                                                    <Form.Group controlId='_filterSortInput' className='_checkGroup _formGroup'>
+                                                    <Form.Group
+                                                        controlId='_filterSortInput'
+                                                        className='_checkGroup _formGroup'
+                                                    >
                                                         <FloatingLabel
-                                                            controlId='_filterSortInput'
                                                             label='Relevant.'
                                                             className='_formLabel'
                                                         >
@@ -333,9 +349,11 @@ const Blog = (props) => {
                                                     </Form.Group>
                                                 </Dropdown.Item>
                                                 <Dropdown.Item>
-                                                    <Form.Group controlId='_filterSortInput' className='_checkGroup _formGroup'>
+                                                    <Form.Group
+                                                        controlId='_filterSortInput'
+                                                        className='_checkGroup _formGroup'
+                                                    >
                                                         <FloatingLabel
-                                                            controlId='_filterSortInput'
                                                             label='Most Liked.'
                                                             className='_formLabel'
                                                         >
@@ -348,9 +366,11 @@ const Blog = (props) => {
                                                     </Form.Group>
                                                 </Dropdown.Item>
                                                 <Dropdown.Item>
-                                                    <Form.Group controlId='_filterSortInput' className='_checkGroup _formGroup'>
+                                                    <Form.Group
+                                                        controlId='_filterSortInput'
+                                                        className='_checkGroup _formGroup'
+                                                    >
                                                         <FloatingLabel
-                                                            controlId='_filterSortInput'
                                                             label='Recent.'
                                                             className='_formLabel'
                                                         >
@@ -384,9 +404,11 @@ const Blog = (props) => {
                                             </Dropdown.Toggle>
                                             <Dropdown.Menu className='border rounded-0'>
                                                 <Dropdown.Item>
-                                                    <Form.Group controlId='_filterTimeframeInput' className='_checkGroup _formGroup'>
+                                                    <Form.Group
+                                                        controlId='_filterTimeframeInput'
+                                                        className='_checkGroup _formGroup'
+                                                    >
                                                         <FloatingLabel
-                                                            controlId='_filterTimeframeInput'
                                                             label='Today.'
                                                             className='_formLabel'
                                                         >
@@ -399,10 +421,12 @@ const Blog = (props) => {
                                                     </Form.Group>
                                                 </Dropdown.Item>
                                                 <Dropdown.Item>
-                                                    <Form.Group controlId='_filterTimeframeInput' className='_checkGroup _formGroup'>
+                                                    <Form.Group
+                                                        controlId='_filterTimeframeInput'
+                                                        className='_checkGroup _formGroup'
+                                                    >
                                                         <FloatingLabel
-                                                            controlId='_filterTimeframeInput'
-                                                            label='PastWeek.'
+                                                            label='Past Week.'
                                                             className='_formLabel'
                                                         >
                                                             <Form.Check
@@ -414,10 +438,12 @@ const Blog = (props) => {
                                                     </Form.Group>
                                                 </Dropdown.Item>
                                                 <Dropdown.Item>
-                                                    <Form.Group controlId='_filterTimeframeInput' className='_checkGroup _formGroup'>
+                                                    <Form.Group
+                                                        controlId='_filterTimeframeInput'
+                                                        className='_checkGroup _formGroup'
+                                                    >
                                                         <FloatingLabel
-                                                            controlId='_filterTimeframeInput'
-                                                            label='PastMonth.'
+                                                            label='Past Month.'
                                                             className='_formLabel'
                                                         >
                                                             <Form.Check
@@ -429,10 +455,12 @@ const Blog = (props) => {
                                                     </Form.Group>
                                                 </Dropdown.Item>
                                                 <Dropdown.Item>
-                                                    <Form.Group controlId='_filterTimeframeInput' className='_checkGroup _formGroup'>
+                                                    <Form.Group
+                                                        controlId='_filterTimeframeInput'
+                                                        className='_checkGroup _formGroup'
+                                                    >
                                                         <FloatingLabel
-                                                            controlId='_filterTimeframeInput'
-                                                            label='PastYear.'
+                                                            label='Past Year.'
                                                             className='_formLabel'
                                                         >
                                                             <Form.Check
@@ -465,9 +493,11 @@ const Blog = (props) => {
                                             </Dropdown.Toggle>
                                             <Dropdown.Menu className='border rounded-0'>
                                                 <Dropdown.Item>
-                                                    <Form.Group controlId='_filterCategoryInput' className='_checkGroup _formGroup'>
+                                                    <Form.Group
+                                                        controlId='_filterCategoryInput'
+                                                        className='_checkGroup _formGroup'
+                                                    >
                                                         <FloatingLabel
-                                                            controlId='_filterCategoryInput'
                                                             label='Education.'
                                                             className='_formLabel _formLabelCheckbox'
                                                         >
@@ -481,9 +511,11 @@ const Blog = (props) => {
                                                     </Form.Group>
                                                 </Dropdown.Item>
                                                 <Dropdown.Item>
-                                                    <Form.Group controlId='_filterCategoryInput' className='_checkGroup _formGroup'>
+                                                    <Form.Group
+                                                        controlId='_filterCategoryInput'
+                                                        className='_checkGroup _formGroup'
+                                                    >
                                                         <FloatingLabel
-                                                            controlId='_filterCategoryInput'
                                                             label='Design.'
                                                             className='_formLabel _formLabelCheckbox'
                                                         >
@@ -497,9 +529,11 @@ const Blog = (props) => {
                                                     </Form.Group>
                                                 </Dropdown.Item>
                                                 <Dropdown.Item>
-                                                    <Form.Group controlId='_filterCategoryInput' className='_checkGroup _formGroup'>
+                                                    <Form.Group
+                                                        controlId='_filterCategoryInput'
+                                                        className='_checkGroup _formGroup'
+                                                    >
                                                         <FloatingLabel
-                                                            controlId='_filterCategoryInput'
                                                             label='Community.'
                                                             className='_formLabel _formLabelCheckbox'
                                                         >
@@ -513,9 +547,11 @@ const Blog = (props) => {
                                                     </Form.Group>
                                                 </Dropdown.Item>
                                                 <Dropdown.Item>
-                                                    <Form.Group controlId='_filterCategoryInput' className='_checkGroup _formGroup'>
+                                                    <Form.Group
+                                                        controlId='_filterCategoryInput'
+                                                        className='_checkGroup _formGroup'
+                                                    >
                                                         <FloatingLabel
-                                                            controlId='_filterCategoryInput'
                                                             label='Tutorials.'
                                                             className='_formLabel _formLabelCheckbox'
                                                         >
@@ -533,97 +569,99 @@ const Blog = (props) => {
                                     </Dropdown.Item>
                                     <Dropdown.Divider />
                                     <Dropdown.Item eventKey='4'>
-                                        <Dropdown
-                                            show={_showFilteTagsDropdown}
-                                            drop={'end'}
-                                            onMouseEnter={() => setShowFilterTagsDropdown(true)}
-                                            onMouseLeave={() => setShowFilterTagsDropdown(false)}
+                                        <Downshift
+                                            onSelect={
+                                                selection => {
+                                                    if (selection) {
+                                                        setValue('_filterTags', selection.value)
+                                                    }
+                                                }
+                                            }
+                                            itemToString={
+                                                item => (item ? item.value : getValues('_filterTags'))
+                                            }
                                         >
-                                            <Dropdown.Toggle as='span'>
-                                                <span className='d-flex align-items-center justify-content-star'>
-                                                    <FontAwesomeIcon icon={faHashtag} className='me-2' />
-                                                    Tags.
-                                                    <p>
-                                                        <FontAwesomeIcon icon={faAngleRight} className='ms-2' />
-                                                    </p>
-                                                </span>
-                                            </Dropdown.Toggle>
-                                            <Dropdown.Menu className='border rounded-0 _autocomplete'>
-                                                <Downshift
-                                                    onSelect={
-                                                        selection => {
-                                                            if (selection) {
-                                                                setFilterTagsInput(selection.value);
-                                                                setFilterTags(_.map(_.filter(_Items, (item) => { return _.includes(_.lowerCase(item.value), _.lowerCase(selection.value)) }), (item, index) => { return (item.value) }));
-                                                            }
-                                                        }
-                                                    }
-                                                    itemToString={
-                                                        item => (item ? item.value : _filterTagsInput)
-                                                    }
+                                            {({
+                                                getInputProps,
+                                                getItemProps,
+                                                getMenuProps,
+                                                clearSelection,
+                                                isOpen,
+                                                inputValue,
+                                                getRootProps,
+                                                openMenu
+                                            }) => (
+                                                <Form.Group
+                                                    controlId='_filterTags'
+                                                    className='_formGroup'
                                                 >
-                                                    {({
-                                                        getInputProps,
-                                                        getItemProps,
-                                                        getMenuProps,
-                                                        clearSelection,
-                                                        isOpen,
-                                                        inputValue,
-                                                        getRootProps,
-                                                    }) => (
-                                                        <Form.Group className='_formGroup'>
-                                                            <FloatingLabel
-                                                                label='Search.'
-                                                                className='_formLabel _autocomplete'
-                                                                {...getRootProps({}, { suppressRefError: true })}
-                                                            >
-                                                                <Form.Control
-                                                                    placeholder='Search.'
-                                                                    autoComplete='new-password'
-                                                                    type='text'
-                                                                    className='_formControl border border-0 rounded-0'
-                                                                    name='_filterTags'
-                                                                    {...getInputProps({
-                                                                        onChange: (event) => {
-                                                                            setFilterTagsInput(event.target.value);
-                                                                            setFilterTags(_.map(_.filter(_tagsItems, (item) => { return _.includes(_.lowerCase(item.value), _.lowerCase(event.target.value)) }), (item, index) => { return (item.value) }));
-                                                                        },
-                                                                        onBlur: (event) => {
-                                                                            if (_.isEmpty(event.target.value)) clearSelection();
-                                                                        }
-                                                                    })}
-                                                                />
-                                                            </FloatingLabel>
-                                                            <ListGroup
-                                                                className='border border-0 rounded-0'
-                                                                {...getMenuProps()}
-                                                            >
-                                                                {
-                                                                    isOpen
-                                                                        ?
-                                                                        _.map(_.slice(_.filter(_tagsItems, (item) => { return !inputValue || _.includes(_.lowerCase(item.value), _.lowerCase(inputValue)) }), 0, 6), (item, index) => {
-                                                                            return (
-                                                                                <ListGroup.Item
-                                                                                    className='border border-0 rounded-0 d-flex align-items-center'
-                                                                                    {...getItemProps({
-                                                                                        key: item.value,
-                                                                                        index,
-                                                                                        item
-                                                                                    })}
-                                                                                >
-                                                                                    {item.value}
-                                                                                </ListGroup.Item>
-                                                                            )
-                                                                        })
-                                                                        :
-                                                                        null
+                                                    <FloatingLabel
+                                                        label='Tags.'
+                                                        className='_formLabel _autocomplete'
+                                                        {...getRootProps({}, { suppressRefError: true })}
+                                                    >
+                                                        <FontAwesomeIcon icon={faHashtag} className='me-2' />
+                                                        <Form.Control
+                                                            {...register('_filterTags', {})}
+                                                            placeholder='Tags.'
+                                                            autoComplete='new-password'
+                                                            type='text'
+                                                            className='_formControl border border-0 rounded-0'
+                                                            name='_filterTags'
+                                                            {...getInputProps({
+                                                                onFocus: () => {
+                                                                    openMenu();
+                                                                },
+                                                                onBlur: (event) => {
+                                                                    if (_.isEmpty(event.target.value)) clearSelection();
                                                                 }
-                                                            </ListGroup>
-                                                        </Form.Group>
-                                                    )}
-                                                </Downshift>
-                                            </Dropdown.Menu>
-                                        </Dropdown>
+                                                            })}
+                                                        />
+                                                        {
+                                                            watch('_filterTags', false) && (
+                                                                <div className='_searchButton _formClear'
+                                                                    onClick={() => {
+                                                                        clearSelection();
+                                                                        reset({
+                                                                            _filterTags: ''
+                                                                        });
+                                                                    }}
+                                                                ></div>
+                                                            )
+                                                        }
+                                                    </FloatingLabel>
+                                                    <ListGroup
+                                                        className='border border-0 rounded-0 d-block'
+                                                        {...getMenuProps()}
+                                                    >
+                                                        {
+                                                            isOpen
+                                                                ?
+                                                                _.map(
+                                                                    _.orderBy(_.uniqBy(_.filter(_articleTags, (item) => { return !inputValue || _.includes(_.lowerCase(item.value), _.lowerCase(inputValue)) }), 'value'), ['value'], ['asc'])
+                                                                    , (item, index) => {
+                                                                        return (
+                                                                            <ListGroup.Item
+                                                                                className='border border-0 rounded-0 d-flex align-items-center'
+                                                                                {...getItemProps({
+                                                                                    key: item.value,
+                                                                                    index,
+                                                                                    item
+                                                                                })}
+                                                                            >
+                                                                                <FontAwesomeIcon icon={faMagnifyingGlass} className='me-2' />
+                                                                                {item.value}
+                                                                            </ListGroup.Item>
+                                                                        )
+                                                                    }
+                                                                )
+                                                                :
+                                                                null
+                                                        }
+                                                    </ListGroup>
+                                                </Form.Group>
+                                            )}
+                                        </Downshift>
                                     </Dropdown.Item>
                                 </Form>
                             </Dropdown.Menu>
@@ -633,13 +671,12 @@ const Blog = (props) => {
                                 onSelect={
                                     selection => {
                                         if (selection) {
-                                            setFilterSearchInput(selection.value);
-                                            setFilterSearch(_.map(_.filter(_Items, (item) => { return _.includes(_.lowerCase(item.value), _.lowerCase(selection.value)) }), (item, index) => { return (item.value) }));
+                                            setValue('_searchInput', selection.value);
                                         }
                                     }
                                 }
                                 itemToString={
-                                    item => (item ? item.value : _filterSearchInput)
+                                    item => (item ? item.value : getValues('_searchInput'))
                                 }
                             >
                                 {({
@@ -650,51 +687,71 @@ const Blog = (props) => {
                                     isOpen,
                                     inputValue,
                                     getRootProps,
+                                    openMenu
                                 }) => (
-                                    <Form.Group className='_formGroup'>
+                                    <Form.Group
+                                        controlId='_searchInput'
+                                        className='_formGroup'
+                                    >
                                         <FloatingLabel
                                             label='Search.'
                                             className='_formLabel _autocomplete'
                                             {...getRootProps({}, { suppressRefError: true })}
                                         >
                                             <Form.Control
+                                                {...register('_searchInput', { persist: true })}
                                                 placeholder='Search.'
                                                 autoComplete='new-password'
                                                 type='text'
                                                 className='_formControl border border-0 rounded-0'
-                                                name='_filterSearch'
+                                                name='_searchInput'
                                                 {...getInputProps({
                                                     onChange: (event) => {
-                                                        setFilterSearchInput(event.target.value);
-                                                        setFilterSearch(_.map(_.filter(_Items, (item) => { return _.includes(_.lowerCase(item.value), _.lowerCase(event.target.value)) }), (item, index) => { return (item.value) }));
+                                                        setValue('_searchInput', event.target.value);
                                                     },
-                                                    onBlur: (event) => {
-                                                        if (_.isEmpty(event.target.value)) clearSelection();
+                                                    onFocus: () => {
+                                                        openMenu();
                                                     }
                                                 })}
                                             />
+                                            {
+                                                watch('_searchInput', false) && (
+                                                    <div className='_searchButton _formClear'
+                                                        onClick={() => {
+                                                            clearSelection();
+                                                            reset({
+                                                                _searchInput: ''
+                                                            });
+                                                        }}
+                                                    ></div>
+                                                )
+                                            }
                                         </FloatingLabel>
                                         <ListGroup
-                                            className='border border-0 rounded-0'
+                                            className='border border-0 rounded-0 d-block'
                                             {...getMenuProps()}
                                         >
                                             {
-                                                isOpen
+                                                isOpen && !_showFilterDropdown
                                                     ?
-                                                    _.map(_.slice(_.filter(_Items, (item) => { return !inputValue || _.includes(_.lowerCase(item.value), _.lowerCase(inputValue)) }), 0, 6), (item, index) => {
-                                                        return (
-                                                            <ListGroup.Item
-                                                                className='border border-0 rounded-0 d-flex align-items-center'
-                                                                {...getItemProps({
-                                                                    key: item.value,
-                                                                    index,
-                                                                    item
-                                                                })}
-                                                            >
-                                                                {item.value}
-                                                            </ListGroup.Item>
-                                                        )
-                                                    })
+                                                    _.map(
+                                                        _.orderBy(_.uniqBy(_.filter(_articleItems, (item) => { return !inputValue || _.includes(_.lowerCase(item.value), _.lowerCase(inputValue)) }), 'value'), ['value'], ['asc'])
+                                                        , (item, index) => {
+                                                            return (
+                                                                <ListGroup.Item
+                                                                    className='border border-0 rounded-0 d-flex align-items-center justify-content-start'
+                                                                    {...getItemProps({
+                                                                        key: item.value,
+                                                                        index,
+                                                                        item
+                                                                    })}
+                                                                >
+                                                                    <FontAwesomeIcon icon={faMagnifyingGlass} className='me-2' />
+                                                                    {item.value}
+                                                                </ListGroup.Item>
+                                                            )
+                                                        }
+                                                    )
                                                     :
                                                     null
                                             }
@@ -712,8 +769,8 @@ const Blog = (props) => {
                             _.map(
                                 _.slice(
                                     _articlesToShow(_articles),
-                                    ((_currentPage * 6) - 6),
-                                    (_currentPage * 6)
+                                    ((_currentPage * _cardsPerPage) - _cardsPerPage),
+                                    (_currentPage * _cardsPerPage)
                                 ),
                                 (_article, index) => {
                                     return (
@@ -725,7 +782,7 @@ const Blog = (props) => {
                                                 <p className='category align-self-end'>{_article._article_category}</p>
                                                 <ul className='text-muted tags'>
                                                     {
-                                                        _article._article_tag.map((_t, _i) => {
+                                                        _.map(_article._article_tag, (_t, _i) => {
                                                             return (
                                                                 <li key={_i} className='tag_item'>{_t}</li>
                                                             )
@@ -762,7 +819,7 @@ const Blog = (props) => {
                                     [
                                         ...Array(
                                             _.ceil(
-                                                _.size(_articlesToShow(_articles)) / 6
+                                                _.size(_articlesToShow(_articles)) / _cardsPerPage
                                             )
                                         )
                                     ]
@@ -788,18 +845,18 @@ const Blog = (props) => {
                             Showing &nbsp;
                             <strong>
                                 {
-                                    ((_currentPage * 6) - 6) + 1
+                                    ((_currentPage * _cardsPerPage) - _cardsPerPage) + 1
                                 }
                             </strong>
                             &nbsp; to &nbsp;
                             <strong>
                                 {
-                                    ((_currentPage * 6) - 6) + _.toNumber(
+                                    ((_currentPage * _cardsPerPage) - _cardsPerPage) + _.toNumber(
                                         _.size(
                                             _.slice(
                                                 _articlesToShow(_articles),
-                                                ((_currentPage * 6) - 6),
-                                                (_currentPage * 6)
+                                                ((_currentPage * _cardsPerPage) - _cardsPerPage),
+                                                (_currentPage * _cardsPerPage)
                                             )
                                         )
                                     )

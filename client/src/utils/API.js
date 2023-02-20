@@ -5,13 +5,10 @@ const headers = {
 const burl = '';
 
 const api = {
-    login: async (_userEmailValue, _userPasswordValue) => {
+    login: async (send) => {
         return axios.post(
             `${burl}/user/login`,
-            {
-                _userEmailValue,
-                _userPasswordValue
-            },
+            send,
             {
                 headers: headers
             }

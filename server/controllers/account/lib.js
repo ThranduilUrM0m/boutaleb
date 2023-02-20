@@ -8,9 +8,9 @@ import crypto from 'crypto';
 dotenv.config();
 
 const login = async (req, res) => {
-    const { _userEmailValue, _userPasswordValue } = req.body;
+    const { _userEmailInput, _userPasswordInput } = req.body;
     try {
-        if (!_userEmailValue || !_userPasswordValue) {
+        if (!_userEmailInput || !_userPasswordInput) {
             // Le cas où l'email ou bien le password ne serait pas soumit ou nul
             return res.status(400).json({
                 text: 'Please fill out both email and password.'
@@ -19,7 +19,7 @@ const login = async (req, res) => {
 
         // On check si l'utilisateur existe en base
         const findUser = await User.findOne({
-            _userEmailValue
+            _userEmailInput
         });
 
         if (!findUser)
@@ -30,13 +30,13 @@ const login = async (req, res) => {
             return res.status(401).json({
                 text: 'Your account has not been verified. Please check your inbox for a verification email that was sent to you.'
             });
-        if (!findUser.authenticate(_userPasswordValue, findUser))
+        if (!findUser.authenticate(_userPasswordInput, findUser))
             return res.status(401).json({
                 text: 'Incorrect Password Inserted.'
             });
 
         const findUserUpdated = await User.findOneAndUpdate(
-            { _user_email: _userEmailValue },
+            { _user_email: _userEmailInput },
             {
                 $set: {
                     _user_toDelete: false,
@@ -58,16 +58,16 @@ const login = async (req, res) => {
     }
 }
 const signup = async (req, res) => {
-    const { _userEmailValue, _userUsernameValue, _userPasswordValue, _fingerprint } = req.body;
+    const { _userEmailInput, _userUsernameValue, _userPasswordValue, _fingerprint } = req.body;
     try {
-        if (!_userEmailValue || !_userUsernameValue || !_userPasswordValue || !_fingerprint) {
+        if (!_userEmailInput || !_userUsernameValue || !_userPasswordValue || !_fingerprint) {
             return res.status(400).json({
                 text: 'It looks like some information about u, wasn\'t correctly submitted, please retry.'
             });
         }
 
         const findUserByEmail = await User.findOne({
-            _user_email: _userEmailValue
+            _user_email: _userEmailInput
         });
         const findUserByUsername = await User.findOne({
             _user_username: _userUsernameValue
@@ -84,7 +84,7 @@ const signup = async (req, res) => {
         }
 
         const _newUser = {
-            _user_email: _userEmailValue,
+            _user_email: _userEmailInput,
             _user_username: _userUsernameValue,
             _user_password: passwordHash.generate(_userPasswordValue),
             _user_fingerprint: _fingerprint,
@@ -147,14 +147,14 @@ const confirmation = async (req, res, next) => {
     });
 }
 const sendMessage = async (req, res) => {
-    const { _userNameValue, _userPhoneValue, _userEmailValue, _userNewsletterValue, _userMessageValue } = req.body;
+    const { _userNameInput, _userPhoneInput, _userEmailInput, _userNewsletterInput, _userMessageInput } = req.body;
 
     //send a verification mail to the user's email
     SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey = process.env.API_KEY;
     new SibApiV3Sdk.TransactionalEmailsApi().sendTransacEmail({
-        'sender': { 'email': _userEmailValue, 'name': _userNameValue, 'phone': _userPhoneValue, 'newsletter': _userNewsletterValue },
+        'sender': { 'email': _userEmailInput, 'name': _userNameInput, 'phone': _userPhoneInput, 'newsletter': _userNewsletterInput },
         'subject': 'Feedback',
-        'htmlContent': '<!DOCTYPE html><html><body><p>' + _userMessageValue + '</p></body></html>',
+        'htmlContent': '<!DOCTYPE html><html><body><p>' + _userMessageInput + '</p></body></html>',
         'messageVersions': [
             {
                 'to': [

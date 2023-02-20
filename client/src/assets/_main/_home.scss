@@ -301,11 +301,11 @@ section {
                         z-index: 10001;
 
                         &.slick-prev {
-                            @include _transform($top: 5vh, $left: unset, $bottom: '', $right: 0, $t_x: 0, $t_y: 0, $r_deg: 90deg, $s_x: 1, $s_y: 1);
+                            @include _transform($top: 5vh, $left: unset, $bottom: '', $right: 1.25vh, $t_x: 0, $t_y: 0, $r_deg: 90deg, $s_x: 1, $s_y: 1);
                         }
 
                         &.slick-next {
-                            @include _transform($top: unset, $left: unset, $bottom: 5vh, $right: 0, $t_x: 0, $t_y: 0, $r_deg: 90deg, $s_x: 1, $s_y: 1);
+                            @include _transform($top: unset, $left: unset, $bottom: 5vh, $right: 1.25vh, $t_x: 0, $t_y: 0, $r_deg: 90deg, $s_x: 1, $s_y: 1);
                         }
                     }
 

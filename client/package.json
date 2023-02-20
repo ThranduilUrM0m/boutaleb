@@ -43,15 +43,15 @@
         "react": "*",
         "react-bootstrap": "*",
         "react-dom": "*",
+        "react-hook-form": "*",
         "react-router": "*",
         "react-router-dom": "*",
         "react-scripts": "*",
         "react-slick": "*",
-        "sass": "*",
+        "sass": "^1.56.0",
         "slick-carousel": "*",
         "socket.io-client": "*",
         "web-vitals": "*",
         "zustand": "*"
-    },
-    "devDependencies": {}
+    }
 }

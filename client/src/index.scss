@@ -13,20 +13,20 @@ $enable-cssgrid: true;
 @import './assets/fonts';
 @import './assets/placeholders';
 @import './assets/mixins';
-@import './assets/globals';
 @import './assets/keyframes';
 
 body {
     margin: 0;
     font-family: $mainFont;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    font-size: .875rem;
+    letter-spacing: normal;
 
     color: $black;
     background-color: $white;
-    font-size: 2.5vh !important;
     scroll-behavior: smooth;
 
+    @import './assets/globals';
     @import './assets/offcanvas';
 
     .container-fluid {

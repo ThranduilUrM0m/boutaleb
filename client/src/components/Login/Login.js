@@ -4,6 +4,7 @@ import {
 	useNavigate,
 	useLocation
 } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
@@ -14,7 +15,7 @@ import API from '../../utils/API';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRectangleXmark } from '@fortawesome/free-regular-svg-icons';
 import _ from 'lodash';
-import { io } from "socket.io-client";
+import { io } from 'socket.io-client';
 
 const _socketURL = _.isEqual(process.env.NODE_ENV, 'production')
 	? window.location.hostname
@@ -28,9 +29,18 @@ const Login = (props) => {
 	const _user = _useStore((state) => state._user);
 	const setUser = _useStore((state) => state.setUser);
 
-	const [_userEmailValue, setUserEmailValue] = useState('');
+	const {
+		register,
+		handleSubmit,
+		watch,
+		formState: { errors }
+	} = useForm({
+		mode: 'onTouched',
+		reValidateMode: 'onSubmit',
+		reValidateMode: 'onChange'
+	});
+
 	const [_userEmailFocused, setUserEmailFocused] = useState(false);
-	const [_userPasswordValue, setUserPasswordValue] = useState('');
 	const [_userPasswordFocused, setUserPasswordFocused] = useState(false);
 
 	const [_showModal, setShowModal] = useState(false);
@@ -42,24 +52,40 @@ const Login = (props) => {
 		if (!_.isEmpty(_user)) {
 			navigate('/dashboard', { replace: true, state: { from: location } });
 		}
-	}, [location, navigate, _user]);
 
-	const _login = async (event) => {
-		event.preventDefault();
+		const subscription = watch((value, { name, type }) => {});
 
-		await API.login(_userEmailValue, _userPasswordValue)
-			.then((res) => {
-				setUser(res.data._user);
-				_socket.emit('action', { type: '_userConnected', data: res.data._user });
-				navigate('/dashboard', { replace: true, state: { from: location } });
-			})
-			.catch((error) => {
-				setModalHeader('We\'re sorry !');
-				setModalBody(error.response.data.text);
-				setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
-				setShowModal(true);
-			});
+        return () => subscription.unsubscribe();
+	}, [location, navigate, _user, watch]);
+
+	const onSubmit = async (values) => {
+		try {
+			await API.login(values)
+				.then((res) => {
+					setUser(res.data._user);
+					_socket.emit('action', { type: '_userConnected', data: res.data._user });
+					navigate('/dashboard', { replace: true, state: { from: location } });
+				})
+				.catch((error) => {
+					setModalHeader('We\'re sorry !');
+					setModalBody(error.response.data.text);
+					setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
+					setShowModal(true);
+				});
+		} catch (error) {
+			setModalHeader('We\'re sorry !');
+			setModalBody(JSON.stringify(error));
+			setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
+			setShowModal(true);
+		}
 	}
+
+	const onError = (error) => {
+		setModalHeader('We\'re sorry !');
+		setModalBody(error);
+		setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
+		setShowModal(true);
+	};
 
 	const _toSignup = async (event) => {
 		event.preventDefault();
@@ -75,35 +101,72 @@ const Login = (props) => {
 							<h3>Login<b className='pink_dot'>.</b></h3>
 						</Card.Header>
 						<Card.Body>
-							<Form className='grid'>
+							<Form onSubmit={handleSubmit(onSubmit, onError)} className='grid'>
 								<Row className='g-col-12'>
 									<Form.Group controlId='_userEmailInput' className={`_formGroup ${_userEmailFocused ? 'focused' : ''}`}>
 										<FloatingLabel
-											controlId='_userEmailInput'
 											label='Email.'
 											className='_formLabel'
 										>
-											<Form.Control placeholder="Name." autoComplete='new-password' type='email' className='_formControl border rounded-0' name='_userEmailInput' value={_userEmailValue} onChange={(event) => setUserEmailValue(event.target.value)} onFocus={() => setUserEmailFocused(true)} onBlur={() => setUserEmailFocused(false)}></Form.Control>
+											<Form.Control
+												{...register('_userEmailInput', {
+													required: 'Email missing.',
+													pattern: {
+														value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
+														message: 'Email invalid.'
+													},
+													onBlur: () => { setUserEmailFocused(false) }
+												})}
+												placeholder='Name.'
+												autoComplete='new-password'
+												type='text'
+												className='_formControl border rounded-0'
+												name='_userEmailInput'
+												onFocus={() => setUserEmailFocused(true)}
+											/>
+											{errors._userEmailInput && (
+												<Form.Text className='bg-danger text-white bg-opacity-75 rounded-1'>
+													{errors._userEmailInput.message}
+												</Form.Text>
+											)}
 										</FloatingLabel>
 									</Form.Group>
 								</Row>
 								<Row className='g-col-12'>
 									<Form.Group controlId='_userPasswordInput' className={`_formGroup ${_userPasswordFocused ? 'focused' : ''}`}>
 										<FloatingLabel
-											controlId='_userPasswordInput'
 											label='Password.'
 											className='_formLabel'
 										>
-											<Form.Control placeholder="Name." autoComplete='new-password' type='password' className='_formControl border rounded-0' name='_userPasswordInput' value={_userPasswordValue} onChange={(event) => setUserPasswordValue(event.target.value)} onFocus={() => setUserPasswordFocused(true)} onBlur={() => setUserPasswordFocused(false)}></Form.Control>
+											<Form.Control
+												{...register('_userPasswordInput', {
+													required: 'Password missing.',
+													pattern: {
+														value: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/i,
+														message: 'At least 1 letter and 1 number.'
+													},
+													onBlur: () => { setUserPasswordFocused(false) }
+												})}
+												placeholder='Name.'
+												autoComplete='new-password'
+												type='password'
+												className='_formControl border rounded-0'
+												name='_userPasswordInput'
+												onFocus={() => setUserPasswordFocused(true)}
+											/>
+											{errors._userPasswordInput && (
+												<Form.Text className='bg-danger text-white bg-opacity-75 rounded-1'>
+													{errors._userPasswordInput.message}
+												</Form.Text>
+											)}
 										</FloatingLabel>
 									</Form.Group>
 								</Row>
 								<Row className='g-col-12'>
 									<Button
-										type='button'
+										type='submit'
 										className='border border-0 rounded-0'
 										variant='outline-light'
-										onClick={(event) => _login(event)}
 									>
 										<div className='buttonBorders'>
 											<div className='borderTop'></div>

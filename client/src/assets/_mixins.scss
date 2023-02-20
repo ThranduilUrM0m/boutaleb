@@ -1,9 +1,9 @@
 @mixin _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1) {
-    top: #{$top};
-    left: #{$left};
-    bottom: #{$bottom};
-    right: #{$right};
-    transform: translate(#{$t_x}, #{$t_y}) rotate(#{$r_deg}) scaleX($s_x) scaleY($s_y);
+    top: #{$top} !important;
+    left: #{$left} !important;
+    bottom: #{$bottom} !important;
+    right: #{$right} !important;
+    transform: translate(#{$t_x}, #{$t_y}) rotate(#{$r_deg}) scaleX($s_x) scaleY($s_y) !important;
 }
 
 @mixin _dimensions($width: '', $height: '') {

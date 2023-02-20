@@ -70,6 +70,7 @@ section {
             position: absolute;
             background: url('../_images/b_white_orange..svg') no-repeat center;
             background-size: contain;
+            z-index: -1;
             @include _dimensions($width: 100%, $height: 70%);
             @include _transform($top: '', $left: 25%, $bottom: 0, $right: '', $t_x: -50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
         }
@@ -89,7 +90,7 @@ section {
             margin: 0 0 4.5vh 0;
             @include _dimensions($width: 75%, $height: '');
 
-            h1 {
+            h2 {
                 font-weight: 300;
             }
         }

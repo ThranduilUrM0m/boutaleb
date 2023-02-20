@@ -64,6 +64,56 @@ form {
                 @include _dimensions($width: '', $height: 100%);
             }
 
+            .form-text {
+                position: absolute;
+                margin: 0 .75vh;
+                padding: .75vh;
+                @include _transform($top: '', $left: '', $bottom: 3.5vh, $right: 2.75vh, $t_x: 0, $t_y: 50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                @extend %transition_holder;
+
+                &.toClear,
+                &.messageClear {
+                    @include _transform($top: '', $left: '', $bottom: 3.5vh, $right: 0, $t_x: 0, $t_y: 50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                }
+            }
+
+            ._formClear {
+                position: absolute;
+                cursor: pointer;
+                border-radius: 100%;
+                @include _transform($top: '', $left: '', $bottom: 3.5vh, $right: 1vh, $t_x: 0, $t_y: 50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                @include _dimensions($width: 2vh, $height: 2vh);
+                @extend %transition_holder;
+
+                &._messageInput {
+                    @include _transform($top: 1vh, $left: '', $bottom: '', $right: 1vh, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                }
+
+                &::after {
+                    content: '';
+                    box-sizing: border-box;
+                    position: absolute;
+                    display: block;
+                    transform-origin: center;
+                    background: $black;
+                    @include _dimensions($width: 100%, $height: .5vh);
+                    @include _transform($top: 50%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 45deg, $s_x: 1, $s_y: 1);
+                    @extend %transition_holder;
+                }
+
+                &::before {
+                    content: '';
+                    box-sizing: border-box;
+                    position: absolute;
+                    display: block;
+                    transform-origin: center;
+                    background: $black;
+                    @include _dimensions($width: 100%, $height: .5vh);
+                    @include _transform($top: 50%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: -45deg, $s_x: 1, $s_y: 1);
+                    @extend %transition_holder;
+                }
+            }
+
             label {
                 padding: 0 1vh;
                 opacity: .9;
@@ -108,10 +158,12 @@ form {
                     padding: 0;
                 }
 
-                ._formCheckbox, ._formSwitch {
+                ._formCheckbox,
+                ._formSwitch {
                     @include _dimensions($width: 100%, $height: 100%);
 
                     input {
+                        cursor: pointer;
                         margin: calc(3.5vh - .5em) 0;
                     }
                 }
@@ -138,12 +190,22 @@ form {
         position: relative;
         margin: 0;
         border: none;
-        background: none;
+        background: transparent !important;
         text-transform: none;
         font-size: 2vh;
-        box-shadow: 0 0 0 0 adjust-hue($black, 45deg), inset 0 0 0 0 $black;
+        box-shadow: 0 0 0 0 adjust-hue($black, 45deg);
         @include _dimensions($width: '', $height: 7vh);
         @include _transitions($property: '', $duration: .25s, $timing: '', $delay: '');
+
+        &::before {
+            content: '';
+            position: absolute;
+            color: $white;
+            background: $black;
+            @include _transitions($property: '', $duration: .25s, $timing: '', $delay: '');
+            @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+            @include _dimensions($width: 0, $height: 100%);
+        }
 
         .buttonBorders {
             position: absolute;
@@ -209,12 +271,23 @@ form {
             }
         }
 
+        span {
+            position: absolute;
+            z-index: 1;
+            @include _transitions($property: '', $duration: .1s, $timing: '', $delay: '');
+            @include _transform($top: 50%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+            @include _dimensions($width: max-content, $height: max-content);
+        }
+
         &:hover {
             border: none;
-            background: none;
+            background: transparent !important;
             color: $white !important;
-            /*50vh needs to be changed for every button*/
-            box-shadow: 0 0 0 2vh transparent, inset 50vh 0 0 0 $black;
+            box-shadow: 0 0 0 2vh transparent;
+
+            &::before {
+                @include _dimensions($width: 100%, $height: 100%);
+            }
 
             .buttonBorders {
                 border: .1vh solid $black !important;
@@ -432,6 +505,8 @@ form {
     }
 
     &._blogModal {
+        z-index: 1061;
+
         .modal-dialog {
             max-width: 85%;
 
@@ -446,10 +521,10 @@ form {
                             @extend %transition_holder;
                         }
 
-                        & > .dropdown {
+                        &>.dropdown {
                             margin: 0;
 
-                            & > .dropdown-toggle {
+                            &>.dropdown-toggle {
                                 cursor: pointer;
 
                                 span {
@@ -459,7 +534,7 @@ form {
                                     color: $black;
                                     padding: 1.25vh;
                                     background: $white;
-                                    @include _dimensions($width: 7vh, $height:  7vh);
+                                    @include _dimensions($width: 7vh, $height: 7vh);
 
                                     svg {
                                         font-size: 2.5vh;
@@ -474,74 +549,123 @@ form {
                             .dropdown-menu {
                                 box-shadow: 1.25vh 1.25vh 4.5vh -2.5vh rgba($black, .5);
                                 margin: 0;
-                                @include _transform($top: 5vh, $left: unset, $bottom: unset, $right: 0, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                @include _transform($top: 7vh, $left: 0, $bottom: unset, $right: unset, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
                                 @extend %transition_holder;
 
                                 form {
-                                    @include _dimensions($width: 50vh, $height:  '');
+                                    @include _dimensions($width: 54vh, $height: '');
 
-                                    & > .dropdown-item {
+                                    &>.dropdown-item {
                                         padding: 0;
 
                                         .dropend {
                                             .dropdown-toggle {
                                                 cursor: pointer;
-    
+
                                                 span {
                                                     padding: 1vh 2vh;
-    
+
                                                     svg {
                                                         font-size: 2vh;
                                                         color: rgba($black, .25);
                                                     }
-    
+
                                                     p {
                                                         margin: 0 1.25vh 0 auto;
                                                         font-size: small;
                                                         color: rgba($black, .25);
                                                     }
                                                 }
-    
+
                                                 &::after {
                                                     display: none;
                                                 }
                                             }
-    
+
                                             .dropdown-menu {
                                                 @include _transform($top: 0, $left: 100%, $bottom: unset, $right: unset, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
-                                            
+
                                                 .dropdown-item {
                                                     cursor: default;
-    
+
                                                     ._checkGroup {
                                                         ._formLabel {
-                                                            ._formSwitch, ._formCheckbox {
+
+                                                            ._formSwitch,
+                                                            ._formCheckbox {
                                                                 .form-check-input {
                                                                     margin: 0;
                                                                     vertical-align: middle;
                                                                 }
                                                             }
-    
+
                                                             label {
                                                                 @include _transform($top: 50%, $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
                                                             }
                                                         }
                                                     }
                                                 }
+                                            }
+                                        }
 
-                                                &._autocomplete {
+                                        &:last-of-type {
+                                            background: transparent !important;
+
+                                            &>._formGroup {
+                                                margin: 0 auto;
+                                                @include _dimensions($width: 50vh, $height: '');
+
+                                                ._formLabel {
+                                                    position: relative;
+
+                                                    svg {
+                                                        position: absolute;
+                                                        font-size: 2vh;
+                                                        color: rgba($black, .25);
+                                                        @include _transform($top: 50%, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                    }
+
+                                                    input {
+                                                        margin: 0;
+                                                    }
+
+                                                    label {
+                                                        @include _transform($top: '', $left: 1vh, $bottom: '', $right: '', $t_x: '', $t_y: '', $r_deg: '', $s_x: '', $s_y: '');
+                                                        color: rgba($black, .25);
+                                                    }
+                                                }
+
+                                                .list-group {
+                                                    overflow-y: auto;
+                                                    max-height: 46vh;
+                                                    background: $white;
+                                                    margin: 0 -2vh;
                                                     padding: 0;
-                                                    @include _dimensions($width: 60vh, $height:  '');
+                                                    @include _dimensions($width: calc(100% + 4vh), $height: '');
 
-                                                    .wrapper {
-                                                        border: none;
-                                                        border-radius: 0;
-                                                        box-shadow: none;
+                                                    &-item {
+                                                        position: relative;
+                                                        margin: 0;
+                                                        padding: 1vh 2vh;
+                                                        font-size: .9rem;
+                                                        font-weight: 400;
+                                                        line-height: 1.25;
+                                                        cursor: pointer;
+                                                        @include _dimensions($width: 100%, $height: 5.75vh);
 
-                                                        .dropdown-item {
-                                                            cursor: pointer;
+                                                        svg {
+                                                            font-size: 2vh;
+                                                            color: rgba($black, .25);
+                                                        }
+
+                                                        &:hover {
+                                                            background: $hoverGray;
                                                         }
                                                     }
+                                                }
+
+                                                &::before {
+                                                    @include _transform($top: 7vh, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
                                                 }
                                             }
                                         }
@@ -550,7 +674,7 @@ form {
                             }
                         }
 
-                        & > form {
+                        &>form {
                             margin: 0 0 0 1.25vh;
                             background: $white;
                             @include _dimensions($width: 50vh, $height: 7vh);
@@ -559,22 +683,31 @@ form {
                                 z-index: 10000;
 
                                 .list-group {
+                                    overflow-y: auto;
+                                    max-height: 46vh;
                                     background: $white;
                                     margin: 0;
                                     padding: 0;
+                                    box-shadow: 1.25vh 1.25vh 4.5vh -2.5vh rgba($black, .5);
                                     @include _dimensions($width: 100%, $height: '');
 
                                     &-item {
+                                        position: relative;
                                         margin: 0;
-                                        padding: 1vh;
-                                        font-size: 1rem;
+                                        padding: 1vh 2vh;
+                                        font-size: .9rem;
                                         font-weight: 400;
                                         line-height: 1.25;
                                         cursor: pointer;
-                                        @include _dimensions($width: 100%, $height: 7vh);
+                                        @include _dimensions($width: 100%, $height: 5.75vh);
+
+                                        svg {
+                                            font-size: 2vh;
+                                            color: rgba($black, .25);
+                                        }
 
                                         &:hover {
-                                            background: lighten($color: $purple, $amount: 20);
+                                            background: $hoverGray;
                                         }
                                     }
                                 }
@@ -667,8 +800,8 @@ form {
 
                                     li {
                                         font-size: 1.5vh;
-                                        border: .15vh solid #ddd;
-                                        background: #eee;
+                                        border: .15vh solid $d;
+                                        background: $e;
                                         display: inline-block;
                                         padding: .75vh;
                                         margin: 0 .75vh;
@@ -682,7 +815,7 @@ form {
                                     padding: 2vh;
                                     cursor: pointer;
                                     box-sizing: content-box;
-                                    @include _dimensions($width: (($arrow-width * 2) - $arrow-height), $height: $arrow-height);
+                                    @include _dimensions($width: (($arrow-width * 2) - $arrow-height, ), $height: $arrow-height);
 
                                     .line {
                                         position: absolute;
@@ -853,6 +986,304 @@ form {
                     p {
                         margin: 0;
                     }
+                }
+            }
+        }
+    }
+
+    &._searchModal {
+        .modal-dialog {
+            .modal-content {
+                position: relative;
+                background: lighten($color: $blue, $amount: 10);
+                opacity: 0.95;
+
+                .modal-header {
+                    padding: 0 4vh;
+                    @include _dimensions($width: '', $height: 10vh);
+                }
+
+                .modal-body {
+                    padding: 0.75vh 4vh;
+
+                    ._page {
+                        grid-template-rows: repeat(1, 55vh);
+                        @include _dimensions($width: 90%, $height: '');
+
+                        .card {
+                            background: none;
+                            margin: 0;
+                            padding: 0 2vh;
+                            @extend %transition_holder;
+
+                            &-body {
+                                position: relative;
+                                border: 2vh solid lighten($color: $purple, $amount: 20);
+                                background: $white;
+                                backdrop-filter: blur(2vh);
+                                padding: 2vh;
+                                overflow: hidden;
+                                @include _dimensions($width: 100%, $height: 100%);
+
+                                figure {
+                                    position: relative;
+                                    margin: -4vh 0 0 -4vh;
+                                    border: 0;
+                                    @include _dimensions($width: calc(100% + 8vh), $height: 20vh);
+
+                                    img {
+                                        object-fit: cover;
+                                        object-position: top;
+                                        @include _dimensions($width: 100%, $height: 100%);
+                                    }
+                                }
+
+                                .author {
+                                    text-align: -webkit-left;
+                                    font-size: 1.5vh;
+                                    margin: 1.25vh 0 0 0;
+                                }
+
+                                h4 {
+                                    color: $black;
+                                    text-align: -webkit-left;
+                                    letter-spacing: 0;
+                                    position: relative;
+                                    margin: 0;
+                                    overflow-x: hidden;
+                                    white-space: nowrap;
+                                    text-overflow: ellipsis;
+                                    z-index: 10;
+                                    @extend %transition_holder;
+                                }
+
+                                .category {
+                                    font-size: 2vh;
+                                    color: $black;
+                                    border: 0.15vh solid $black;
+                                    padding: 0.5vh 1.25vh;
+                                    margin: 0;
+                                    @include _dimensions($width: fit-content, $height: fit-content);
+                                }
+
+                                .tags {
+                                    margin-bottom: 0 !important;
+                                    padding-top: 0.25vh;
+                                    display: flex;
+                                    flex-direction: initial;
+                                    align-items: flex-start;
+                                    flex: auto;
+                                    overflow-x: hidden;
+
+                                    li {
+                                        font-size: 1.5vh;
+                                        border: 0.15vh solid $d;
+                                        background: $e;
+                                        display: inline-block;
+                                        padding: 0.75vh;
+                                        margin: 0 0.75vh;
+                                        border-radius: 0.75vh;
+                                        height: fit-content;
+                                    }
+                                }
+
+                                [data-am-linearrow] {
+                                    position: relative;
+                                    padding: 2vh;
+                                    cursor: pointer;
+                                    box-sizing: content-box;
+                                    @include _dimensions($width: (($arrow-width * 2) - $arrow-height, ), $height: $arrow-height);
+
+                                    .line {
+                                        position: absolute;
+                                        margin: calc(-1 * ($arrow-height / 2)) 0 0 0;
+                                        background-color: $black;
+                                        @include _transform($top: 50%, $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                        @include _dimensions($width: $arrow-width, $height: $arrow-height);
+                                        @extend %transition_holder;
+                                    }
+
+                                    .line-1 {
+                                        @include _transform($top: '', $left: 2vh, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                    }
+
+                                    .line-2 {
+                                        @include _transform($top: '', $left: '', $bottom: '', $right: 2vh, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                    }
+
+                                    &:hover,
+                                    &:focus {
+                                        background: none;
+
+                                        .line-1 {
+                                            @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: $arrow-angle, $s_x: 1, $s_y: 1);
+                                        }
+
+                                        .line-2 {
+                                            @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: - ($arrow-angle, ), $s_x: 1, $s_y: 1);
+                                        }
+                                    }
+
+                                    &:focus {
+                                        outline: none;
+
+                                        .line {
+                                            background-color: darken($black, 20%);
+                                        }
+                                    }
+                                }
+
+                                [data-am-linearrow~='inverted'] {
+
+                                    &:hover,
+                                    &:focus {
+                                        .line-1 {
+                                            @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: - ($arrow-angle, ), $s_x: 1, $s_y: 1);
+                                        }
+
+                                        .line-2 {
+                                            @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: $arrow-angle, $s_x: 1, $s_y: 1);
+                                        }
+                                    }
+                                }
+
+                                [data-am-linearrow~='tooltip'] {
+                                    &::after {
+                                        position: absolute;
+                                        content: attr(display-name);
+                                        font-size: 1.6vh;
+                                        white-space: nowrap;
+                                        opacity: 0;
+                                        color: $black;
+                                        @include _transform($top: '', $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                        @extend %transition_holder;
+                                    }
+
+                                    &:hover,
+                                    &:focus {
+                                        &::after {
+                                            opacity: 1;
+                                        }
+                                    }
+
+                                    &:focus {
+                                        &::after {
+                                            color: darken($black, 20%);
+                                        }
+                                    }
+                                }
+
+                                [data-am-linearrow~='tooltip-bottom'] {
+                                    &::after {
+                                        @include _transform($top: 100%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                    }
+                                }
+
+                                ._footerInformation {
+                                    padding: 2vh;
+                                    background: hsl(0, 0%, 97%);
+                                    @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: -2vh, $t_y: 2vh, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                    @include _dimensions($width: calc(100% + 4vh), $height: 6vh);
+
+                                    p {
+                                        margin: 0;
+                                    }
+
+                                    ._views {
+                                        text-align: -webkit-left;
+                                        font-size: 1.5vh;
+                                        flex: 1;
+
+                                        svg {
+                                            padding: 0 0 0 0.5vh;
+                                        }
+                                    }
+
+                                    ._upvotes,
+                                    ._downvotes,
+                                    ._comments {
+                                        text-align: -webkit-right;
+                                        font-size: 1.6vh;
+                                        margin: 0 0 0 2.5vh;
+
+                                        svg {
+                                            padding: 0 0 0 0.5vh;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    ._pageNumbers {
+                        list-style: none;
+                        padding: 0.75vh 0;
+
+                        li {
+                            position: relative;
+                            display: block;
+                            opacity: 0.8;
+                            margin: 0.5vh;
+                            border-radius: 2.5vh;
+                            background: $black;
+                            cursor: pointer;
+                            @include _dimensions($width: 2.5vh, $height: 2.5vh);
+                            @extend %transition_holder;
+
+                            &.current {
+                                opacity: 1;
+                                background: $pink;
+                                box-shadow: 0 0 3.25vh rgba($blue, 0.3);
+                                @include _dimensions($width: 5vh, $height: '');
+                            }
+                        }
+                    }
+
+                    ._suggestions {
+                        padding: 0 2vh;
+                        color: $white;
+                        @include _dimensions($width: 90%, $height: 18vh);
+
+                        .togglebtn {
+                            text-decoration: underline;
+                        }
+
+                        .tags {
+                            margin-bottom: 0 !important;
+                            display: flex;
+                            flex-wrap: wrap;
+                            flex-direction: initial;
+                            align-items: flex-start;
+                            margin-top: 1.25vh;
+                            flex: auto;
+
+                            li {
+                                cursor: pointer;
+                                font-size: 1.5vh;
+                                border: 0.15vh solid $d;
+                                background: $e;
+                                display: inline-block;
+                                padding: 0.5vh;
+                                margin: 0.5vh;
+                                border-radius: 0.5vh;
+                                height: fit-content;
+                            }
+                        }
+                    }
+                }
+
+                .modal-footer {
+                    padding: 0 4vh 2vh 4vh;
+
+                    div {
+                        color: $black;
+                        opacity: 0.75;
+                        font-size: smaller;
+                    }
+                }
+
+                &::before {
+                    display: none;
                 }
             }
         }
