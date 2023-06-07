@@ -43,6 +43,7 @@ section {
             form {
                 &>div {
                     font-family: 'Abril Fatface', cursive;
+                    font-weight: 500;
                     margin: 0 0 2.5vh 0;
 
                     &.name {
@@ -85,11 +86,11 @@ section {
                                 background-color: $blue;
                                 opacity: .6;
                                 clip-path: inset(0 30% 0 0);
-                                @extend %transition_holder;
-                                z-index: 0;
+                                z-index: -1;
 
                                 @include _transform($top: '', $left: 20%, $bottom: 0, $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
                                 @include _dimensions($width: 100%, $height: 40%);
+                                @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
                             }
 
                             &:hover {
@@ -111,25 +112,13 @@ section {
                     p {
                         font-size: 3.25vh;
                         font-family: 'Abril Fatface', cursive;
+                        font-weight: 500;
                     }
                 }
 
                 .slick-slider {
                     position: relative;
                     cursor: grab;
-
-                    .slick-arrow {
-                        color: $black;
-                        z-index: 10001;
-
-                        &.slick-prev {
-                            @include _transform($top: 5vh, $left: unset, $bottom: '', $right: 0, $t_x: 0, $t_y: 0, $r_deg: 90deg, $s_x: 1, $s_y: 1);
-                        }
-
-                        &.slick-next {
-                            @include _transform($top: unset, $left: unset, $bottom: 5vh, $right: 0, $t_x: 0, $t_y: -50%, $r_deg: 90deg, $s_x: 1, $s_y: 1);
-                        }
-                    }
 
                     .slick-list {
                         .slick-track {
@@ -177,27 +166,55 @@ section {
                     }
 
                     .slick-dots {
+                        @include _transform($top: 50%, $left: '', $bottom: '', $right: 0, $t_x: 100%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                        @include _dimensions($width: 4vh, $height: 20vh);
+
                         li {
+                            display: none;
                             margin: .5vh;
-                            @include _dimensions($width: 2.5vh, $height: 2.5vh);
-                            @extend %transition_holder;
+                            @include _dimensions($width: 3vh, $height: 3vh);
+                            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
 
-                            button {
-                                padding: 0;
-                                @include _dimensions($width: 100%, $height: 100%);
+                            &.slick-active {
+                                @include _dimensions($width: '', $height: 11vh);
 
-                                &::before {
-                                    content: '';
-                                    border-radius: 2.5vh;
-                                    background: $black;
+                                button {
+                                    padding: 0;
                                     @include _dimensions($width: 100%, $height: 100%);
+
+                                    &::before {
+                                        content: '';
+                                        border-radius: 2.5vh;
+                                        background: $black;
+                                        @include _transform($top: '', $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                        @include _dimensions($width: .3vh, $height: 100%);
+                                    }
+                                }
+
+                                &:first-of-type {
+                                    margin: 4vh 0 0 0;
                                 }
                             }
-                        }
 
-                        .slick-active {
-                            box-shadow: 0 0 3.25vh rgba($blue, .3);
-                            @include _dimensions($width: 5vh, $height: '');
+                            &:not(.slick-active) {
+                                button {
+                                    padding: 0;
+                                    font-size: 2vh;
+                                    line-height: 3vh;
+                                    color: $black;
+                                    @include _dimensions($width: 100%, $height: 100%);
+
+                                    &::before {
+                                        display: none;
+                                    }
+                                }
+                            }
+
+                            &:has(+ .slick-active),
+                            &.slick-active,
+                            &.slick-active+li {
+                                display: inline-block;
+                            }
                         }
                     }
                 }
@@ -208,18 +225,12 @@ section {
                     margin: 0;
                     font-size: 30vw;
                     line-height: 30vw;
+                    font-family: 'Abril Fatface', cursive;
                     font-weight: bold;
                     color: lighten($color: $blue, $amount: 2);
                     z-index: -1;
                     @include _transform($top: 50%, $left: 50%, $bottom: '', $right: '', $t_x: -25%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
                     @include _dimensions($width: fit-content, $height: fit-content);
-
-                    &._smaller {
-                        opacity: .75;
-                        font-size: 5vw;
-                        line-height: 5vw;
-                        @include _transform($top: 100%, $left: 50%, $bottom: '', $right: '', $t_x: 50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
-                    }
 
                     p {
                         margin: 0;
@@ -243,51 +254,24 @@ section {
         .g-col-5 {
             position: relative;
 
-            ._pulsingDots {
-                &>div {
-                    position: absolute;
-                    background: $blue;
-                    opacity: 0;
-                    @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 0, $s_y: 0);
-                    @include _dimensions($width: 4vh, $height: 4vh);
-
-                    &.p1 {
-                        animation: _pulsingDots 3s infinite ease-in-out;
-                        @include _transform($top: percentage(calc(random(100) / 100)), $left: percentage(calc(random(100) / 100)), $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 0, $s_y: 0);
-                    }
-
-                    &.p2 {
-                        animation: _pulsingDots 3s 1s infinite ease-in-out;
-                        @include _transform($top: percentage(calc(random(100) / 100)), $left: percentage(calc(random(100) / 100)), $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 0, $s_y: 0);
-                    }
-
-                    &.p3 {
-                        animation: _pulsingDots 3s 2s infinite ease-in-out;
-                        @include _transform($top: percentage(calc(random(100) / 100)), $left: percentage(calc(random(100) / 100)), $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 0, $s_y: 0);
-                    }
-                }
-            }
-
-            &::before {
-                content: '';
+            figure {
                 position: absolute;
-                background: url('../_images/b_white_orange..svg') no-repeat;
-                background-size: contain;
+                z-index: 1;
                 @include _transform($top: 50%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
-                @include _dimensions($width: 50%, $height: 50%);
+                @include _dimensions($width: 75%, $height: 90%);
+                @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+
+                img {
+                    @include _dimensions($width: 100%, $height: 100%);
+                    object-fit: cover;
+                    border: 2vh solid rgba($black, .10);
+                    @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+                }
             }
         }
 
         .g-col-7 {
             position: relative;
-
-            ._moon {
-                position: absolute;
-                background: url('../_images/LUNA.png') no-repeat center;
-                background-size: contain;
-                @include _dimensions($width: 25.5vh, $height: 25.5vh);
-                @include _transform($top: percentage(calc(random(100) / 100)), $left: percentage(calc(random(100) / 100)), $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
-            }
 
             ._sliderArticles {
                 position: relative;
@@ -295,19 +279,6 @@ section {
                 .slick-slider {
                     position: relative;
                     cursor: grab;
-
-                    .slick-arrow {
-                        color: $black;
-                        z-index: 10001;
-
-                        &.slick-prev {
-                            @include _transform($top: 5vh, $left: unset, $bottom: '', $right: 1.25vh, $t_x: 0, $t_y: 0, $r_deg: 90deg, $s_x: 1, $s_y: 1);
-                        }
-
-                        &.slick-next {
-                            @include _transform($top: unset, $left: unset, $bottom: 5vh, $right: 1.25vh, $t_x: 0, $t_y: 0, $r_deg: 90deg, $s_x: 1, $s_y: 1);
-                        }
-                    }
 
                     .slick-list {
                         .slick-track {
@@ -318,25 +289,101 @@ section {
                                     .card {
                                         background: $white;
                                         margin: 0;
-                                        padding: 5vh;
+                                        padding: 2vh;
+                                        @include _dimensions($width: '', $height: 65vh);
+
+                                        &>.borderTop,
+                                        &>.borderRight,
+                                        &>.borderBottom,
+                                        &>.borderLeft {
+                                            background: $hoverGray;
+                                        }
+
+                                        &>.borderTop,
+                                        &>.borderBottom {
+                                            @include _dimensions($width: 100%, $height: 2vh);
+                                        }
+
+                                        &>.borderLeft,
+                                        &>.borderRight {
+                                            @include _dimensions($width: 2vh, $height: 100%);
+                                        }
+
+                                        &>.borderTop {
+                                            @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 0, $s_y: 1);
+                                        }
+
+                                        &>.borderRight {
+                                            @include _transform($top: 0, $left: '', $bottom: '', $right: 0, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 0);
+                                        }
+
+                                        &>.borderBottom {
+                                            @include _transform($top: '', $left: '', $bottom: 0, $right: 0, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 0, $s_y: 1);
+                                        }
+
+                                        &>.borderLeft {
+                                            @include _transform($top: '', $left: 0, $bottom: 0, $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 0);
+                                        }
 
                                         &-body {
                                             position: relative;
+                                            overflow: hidden;
+                                            @include _dimensions($width: '', $height: 100%);
 
-                                            h2 {
-                                                position: relative;
-                                                color: $black;
-                                                letter-spacing: 0;
-                                                @extend %transition_holder;
-                                            }
+                                            form {
+                                                @include _dimensions($width: '', $height: 100%);
 
-                                            .information {
-                                                position: absolute;
-                                                font-size: 1.5vh;
-                                                margin: 0;
-                                                @include _transform($top: 100%, $left: '', $bottom: '', $right: 0, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
-                                                @include _dimensions($width: fit-content, $height: fit-content);
-                                                @extend %transition_holder;
+                                                .category_author {
+                                                    position: relative;
+                                                    font-size: 1.75vh;
+                                                    @include _dimensions($width: fit-content, $height: fit-content);
+                                                    @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+                                                
+                                                    &::before {
+                                                        position: absolute;
+                                                        content: '';
+                                                        background: rgba($pink, .5);
+                                                        @include _dimensions($width: 100%, $height: .25vh);
+                                                        @include _transform($top: 50%, $left: 100%, $bottom: '', $right: '', $t_x: 50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                        @include _transitions($property: 'all', $duration: .5s, $timing: 'ease', $delay: '');
+                                                    }
+                                                }
+
+                                                .firstPhrase {
+                                                    font-size: 4vh;
+                                                    line-height: 1.2;
+                                                    @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+                                                }
+
+                                                h2 {
+                                                    position: relative;
+                                                    font-family: 'Abril Fatface', cursive;
+                                                    font-weight: 500;
+                                                    font-size: 6vh;
+                                                    color: $black;
+                                                    letter-spacing: 0;
+                                                    margin: 0;
+                                                    @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+
+                                                    span {
+                                                        color: $pink;
+                                                    }
+
+                                                    &::before {
+                                                        position: absolute;
+                                                        content: '';
+                                                        background: rgba($black, .5);
+                                                        @include _dimensions($width: 0, $height: .25vh);
+                                                        @include _transform($top: '', $left: 0, $bottom: 0, $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                        @include _transitions($property: 'all', $duration: .5s, $timing: 'ease', $delay: '');
+                                                    }
+                                                }
+
+                                                .information {
+                                                    font-size: 1.5vh;
+                                                    margin: 1.25vh 0;
+                                                    @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+                                                }
                                             }
 
                                             &::before {
@@ -352,23 +399,48 @@ section {
                                                 /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
                                                 content: '';
                                                 opacity: 0;
-                                                @include _transform($top: -5vh, $left: -5vh, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
-                                                @include _dimensions($width: calc(100% + 10vh), $height: calc(100% + 10vh));
-                                                @extend %transition_holder;
+                                                @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                @include _dimensions($width: 100%, $height: 100%);
+                                                @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
                                             }
 
                                             &:hover {
-                                                h2 {
-                                                    @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: -1.5vh, $r_deg: 0, $s_x: 1, $s_y: 1);
-                                                }
+                                                form {
+                                                    .category_author {
+                                                        @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: -1.25vh, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                    }
 
-                                                .information {
-                                                    @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 1.5vh, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                    .firstPhrase {
+                                                        @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 1.25vh, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                    }
+
+                                                    h2 {
+                                                        position: relative;
+                                                        @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 2.5vh, $r_deg: 0, $s_x: 1, $s_y: 1);
+
+                                                        &::before {
+                                                            @include _dimensions($width: 100%, $height: .25vh);
+                                                        }
+                                                    }
+
+                                                    .information {
+                                                        @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 1.25vh, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                                    }
                                                 }
 
                                                 &::before {
                                                     opacity: .4;
                                                 }
+                                            }
+                                        }
+
+                                        &:hover {
+
+                                            .borderTop,
+                                            .borderBottom,
+                                            .borderLeft,
+                                            .borderRight {
+                                                @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
                                             }
                                         }
                                     }
@@ -378,27 +450,55 @@ section {
                     }
 
                     .slick-dots {
+                        @include _transform($top: 50%, $left: '', $bottom: '', $right: 0, $t_x: 100%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                        @include _dimensions($width: 4vh, $height: 20vh);
+
                         li {
+                            display: none;
                             margin: .5vh;
-                            @include _dimensions($width: 2.5vh, $height: 2.5vh);
-                            @extend %transition_holder;
+                            @include _dimensions($width: 3vh, $height: 3vh);
+                            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
 
-                            button {
-                                padding: 0;
-                                @include _dimensions($width: 100%, $height: 100%);
+                            &.slick-active {
+                                @include _dimensions($width: '', $height: 11vh);
 
-                                &::before {
-                                    content: '';
-                                    border-radius: 2.5vh;
-                                    background: $black;
+                                button {
+                                    padding: 0;
                                     @include _dimensions($width: 100%, $height: 100%);
+
+                                    &::before {
+                                        content: '';
+                                        border-radius: 2.5vh;
+                                        background: $black;
+                                        @include _transform($top: '', $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                        @include _dimensions($width: .3vh, $height: 100%);
+                                    }
+                                }
+
+                                &:first-of-type {
+                                    margin: 4vh 0 0 0;
                                 }
                             }
-                        }
 
-                        .slick-active {
-                            box-shadow: 0 0 3.25vh rgba($blue, .3);
-                            @include _dimensions($width: 5vh, $height: '');
+                            &:not(.slick-active) {
+                                button {
+                                    padding: 0;
+                                    font-size: 2vh;
+                                    line-height: 3vh;
+                                    color: $black;
+                                    @include _dimensions($width: 100%, $height: 100%);
+
+                                    &::before {
+                                        display: none;
+                                    }
+                                }
+                            }
+
+                            &:has(+ .slick-active),
+                            &.slick-active,
+                            &.slick-active+li {
+                                display: inline-block;
+                            }
                         }
                     }
                 }
@@ -416,16 +516,20 @@ section {
                     @include _transform($top: 100%, $left: 50%, $bottom: '', $right: '', $t_x: -65%, $t_y: -80%, $r_deg: 0, $s_x: 1, $s_y: 1);
                     @include _dimensions($width: fit-content, $height: fit-content);
 
-                    &._smaller {
-                        opacity: .75;
-                        font-family: $mainFont;
-                        font-size: 5vw;
-                        line-height: 5vw;
-                        @include _transform($top: 100%, $left: 0, $bottom: '', $right: '', $t_x: 50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
-                    }
-
                     p {
                         margin: 0;
+                    }
+
+                    &._number {
+                        @include _transform($top: 0, $left: unset, $bottom: unset, $right: 0, $t_x: 0, $t_y: 100%, $r_deg: 90deg, $s_x: 1, $s_y: 1);
+                        transform-origin: top right;
+
+                        &._outlined {
+                            content: var(--before-content);
+                            color: transparent;
+                            -webkit-text-stroke: .1vh $black;
+                            @include _transform($top: 0, $left: unset, $bottom: unset, $right: 0, $t_x: 5%, $t_y: 105%, $r_deg: 90deg, $s_x: 1, $s_y: 1);
+                        }
                     }
                 }
             }
@@ -433,7 +537,6 @@ section {
     }
 
     &._s3 {
-
         .card {
             position: absolute;
             @include _transform($top: 12vh, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
@@ -474,47 +577,39 @@ section {
                         }
 
                         .tags {
-                            width: 100%;
-                            margin-bottom: 0 !important;
-                            margin-top: 1.25vh;
-                            display: flex;
-                            flex-wrap: wrap;
+                            margin: 1.25vh 0 0 0 !important;
+                            @include _dimensions($width: 100%, $height: '');
 
                             li {
                                 position: relative;
                                 box-sizing: border-box;
                                 color: $black;
                                 background: lighten($color: $blue, $amount: 20);
-                                height: 4.5vh;
                                 border-radius: .5vh 0 0 .5vh;
                                 font-size: 2vh;
                                 line-height: 4.5vh;
                                 padding: 0 3.75vh 0 3.75vh;
                                 margin: 0 calc(2.5vh / 2) calc(2.5vh / 2) 0;
-                                transition: color .2s ease-out;
+                                @include _dimensions($width: '', $height: 4.5vh);
+                                @include _transitions($property: 'color', $duration: .25s, $timing: 'ease', $delay: '');
 
                                 &::before {
                                     position: absolute;
                                     content: '';
                                     background: $white;
-                                    width: 1.25vh;
-                                    height: 1.25vh;
                                     border-radius: 1.25vh;
-                                    left: 1.25vh;
-                                    top: 50%;
-                                    transform: translateY(-50%);
                                     box-shadow: inset .25vh .25vh rgba($black, .25);
+                                    @include _transform($top: 50%, $left: 1.25vh, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                    @include _dimensions($width: 1.25vh, $height: 1.25vh);
                                 }
 
                                 &::after {
                                     background: $white;
-                                    border-bottom: calc(4.5vh / 2) solid transparent;
-                                    border-left: 1.25vh solid lighten($color: $blue, $amount: 20);
-                                    border-top: calc(4.5vh / 2) solid transparent;
                                     content: '';
                                     position: absolute;
-                                    right: 0;
-                                    top: 0;
+                                    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 100% 50%);
+                                    @include _dimensions($width: 1.25vh, $height: 100%);
+                                    @include _transform($top: 0, $left: '', $bottom: '', $right: 0, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1.25, $s_y: 1.25);
                                 }
 
                                 &:hover {
@@ -538,7 +633,7 @@ section {
             }
         }
 
-        &>h1 {
+        ._shadowIndex {
             position: absolute;
             font-weight: bold;
             font-family: 'Abril Fatface', cursive;
@@ -557,6 +652,7 @@ section {
     }
 
     &._s4 {
+        position: relative;
         grid-template-rows: 45% calc(55% - 1vh);
         background: radial-gradient(circle at top left, $blue 0, $blue 50%);
 
@@ -604,7 +700,7 @@ section {
             .before {
                 background: url('../_images/b_white..svg') no-repeat center;
                 position: absolute;
-                @include _transform($top: 0, $left: '', $bottom: '', $right: 0, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
                 @include _dimensions($width: 50%, $height: 50%);
             }
 
@@ -623,11 +719,12 @@ section {
                     margin: 0 0 1.5vh 0;
 
                     &:first-of-type {
+                        font-weight: 600;
                         margin: 0 0 4vh 0;
                     }
 
                     &:not(:first-of-type) {
-                        width: 80%;
+                        @include _dimensions($width: 80%, $height: '');
                     }
 
                     svg {

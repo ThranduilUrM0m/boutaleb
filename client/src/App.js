@@ -12,6 +12,8 @@ import Signup from './components/Signup/Signup.js';
 import Confirmation from './components/Confirmation/Confirmation';
 import Blog from './components/Blog/Blog';
 import Dashboard from './components/Dashboard/Dashboard';
+import Process from './components/Process/Process';
+import AboutUs from './components/AboutUs/AboutUs';
 import NotFound from './components/NotFound/NotFound';
 import RequireAuth from './components/RequireAuth';
 import _ from 'lodash';
@@ -66,6 +68,8 @@ let App = (props) => {
 							</RequireAuth>
 						}
 					/>
+					<Route path='/process' element={<Process />} />
+					<Route path='/aboutus' element={<AboutUs />} />
 					{/* Using path='*'' means 'match anything', so this route
 					acts like a catch-all for URLs that we don't have explicit
 					routes for. */}

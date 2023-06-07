@@ -1,0 +1,274 @@
+section {
+    position: relative;
+    overflow: hidden;
+
+    ._step {
+        position: relative;
+        padding: 2.5vh;
+        overflow: hidden;
+        @include _dimensions($width: 50vh, $height: 60vh);
+
+        .number {
+            font-size: 8vh;
+            font-weight: bold;
+            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+        }
+
+        .title {
+            font-size: 4vh;
+            font-weight: bold;
+            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+        }
+
+        .description {
+            position: relative;
+            font-size: 2vh;
+            color: $white;
+            @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: calc(100% + 10vh), $r_deg: 0, $s_x: 1, $s_y: 1);
+            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+
+            &::before {
+                position: absolute;
+                content: '';
+                opacity: 0;
+                @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                @include _dimensions($width: 100%, $height: 30vh);
+                @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+            }
+        }
+
+        .foot {
+            position: relative;
+            font-size: 2.5vh;
+            color: $black;
+            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+        }
+
+        &::before {
+            content: '';
+            position: absolute;
+            clip-path: circle(0 at 0 100%);
+            @include _transitions($property: 'all', $duration: .5s, $timing: 'ease', $delay: '');
+            @include _dimensions($width: 100%, $height: 100%);
+            @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+        }
+
+        &::after {
+            position: absolute;
+            content: '';
+            background: $black;
+            @include _transform($top: 100%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -100%, $r_deg: 0, $s_x: 1, $s_y: 1);
+            @include _dimensions($width: 100%, $height: .5vh);
+            @include _transitions($property: 'all', $duration: .5s, $timing: 'ease', $delay: '');
+        }
+
+        &:hover {
+            .number {
+                font-size: 6vh;
+                @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: -2.5vh, $r_deg: 0, $s_x: 1, $s_y: 1);
+            }
+
+            .title {
+                font-size: 5vh;
+                @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: -3vh, $r_deg: 0, $s_x: 1, $s_y: 1);
+            }
+
+            .description {
+                @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                color: $black;
+
+                &::before {
+                    opacity: 1;
+                    @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -100%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                }
+            }
+
+            .foot {
+                display: none;
+            }
+
+            &::before {
+                clip-path: circle(100%);
+            }
+
+            &::after {
+                @include _transform($top: 0, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                @include _dimensions($width: 100%, $height: 1vh);
+            }
+        }
+    }
+
+    &._s1 {
+        h1 {
+            font-size: 24vh;
+            line-height: 1.05;
+            font-weight: 600;
+            margin: 0 10vh;
+
+            span {
+                color: $pink;
+            }
+        }
+    }
+
+    &._s2 {
+        background: rgba($color: $black, $alpha: .25);
+
+        h1 {
+            text-align: center;
+            font-size: 10vh;
+            line-height: 1.05;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        p {
+            font-size: 2.5vh;
+            line-height: 1.05;
+            font-weight: 600;
+            margin: 2.5vh 0;
+            color: rgba($color: $black, $alpha: .8);
+        }
+    }
+
+    &._s3 {
+        background: rgba($color: $black, $alpha: .25);
+
+        .g-col-4 {
+            ._step {
+                &[data-step='1'] {
+                    .description::before {
+                        background: url('../_images/Discuss\ product\ requirements.svg');
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        background-size: contain;
+                    }
+    
+                    &::before {
+                        background: rgba($blue, .5);
+                    }
+                }
+
+                &[data-step='2'] {
+                    .description::before {
+                        background: url('../_images/Detailed\ product\ specs.svg');
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        background-size: contain;
+                    }
+    
+                    &::before {
+                        background: rgba(#E03B8B, .4);
+                    }
+                }
+
+                &[data-step='3'] {
+                    .description::before {
+                        background: url('../_images/Work\ risk-free.svg');
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        background-size: contain;
+                    }
+    
+                    &::before {
+                        background: rgba(#758283, .4);
+                    }
+                }
+            }
+        }
+    }
+
+    &._s4 {
+        background: rgba($color: $black, $alpha: .25);
+
+        .g-col-4 {
+            ._step {
+                &[data-step='4'] {
+                    .description::before {
+                        background: url('../_images/Bug\ tracking.svg');
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        background-size: contain;
+                    }
+    
+                    &::before {
+                        background: rgba(#E07C24, .4);
+                    }
+                }
+
+                &[data-step='5'] {
+                    .description::before {
+                        background: url('../_images/Bug\ tracking.svg');
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        background-size: contain;
+                    }
+    
+                    &::before {
+                        background: rgba(#E07C24, .4);
+                    }
+                }
+
+                &[data-step='6'] {
+                    .description::before {
+                        background: url('../_images/Bug\ tracking.svg');
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        background-size: contain;
+                    }
+    
+                    &::before {
+                        background: rgba(#E07C24, .4);
+                    }
+                }
+            }
+        }
+    }
+
+    &._s5 {
+        background: rgba($color: $black, $alpha: .25);
+
+        .g-col-4 {
+            ._step {
+                &[data-step='7'] {
+                    .description::before {
+                        background: url('../_images/Bug\ tracking.svg');
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        background-size: contain;
+                    }
+    
+                    &::before {
+                        background: rgba(#E07C24, .4);
+                    }
+                }
+
+                &[data-step='8'] {
+                    .description::before {
+                        background: url('../_images/Bug\ tracking.svg');
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        background-size: contain;
+                    }
+    
+                    &::before {
+                        background: rgba(#E07C24, .4);
+                    }
+                }
+
+                &[data-step='9'] {
+                    .description::before {
+                        background: url('../_images/Bug\ tracking.svg');
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        background-size: contain;
+                    }
+    
+                    &::before {
+                        background: rgba(#E07C24, .4);
+                    }
+                }
+            }
+        }
+    }
+}

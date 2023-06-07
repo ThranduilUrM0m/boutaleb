@@ -320,6 +320,26 @@ const Header = (props) => {
                                         Blog<b className='pink_dot'>.</b>
                                     </Nav.Link>
                                 </Nav.Item>
+                                <Nav.Item className='text-center'>
+                                    <Nav.Link
+                                        as={NavLink}
+                                        to='/process'
+                                        eventKey='2'
+                                        className='nav-link d-flex align-items-center'
+                                    >
+                                        Process<b className='pink_dot'>.</b>
+                                    </Nav.Link>
+                                </Nav.Item>
+                                <Nav.Item className='text-center'>
+                                    <Nav.Link
+                                        as={NavLink}
+                                        to='/aboutus'
+                                        eventKey='3'
+                                        className='nav-link d-flex align-items-center'
+                                    >
+                                        About Us<b className='pink_dot'>.</b>
+                                    </Nav.Link>
+                                </Nav.Item>
                             </Nav>
                         </Offcanvas.Body>
                     </Navbar.Offcanvas>

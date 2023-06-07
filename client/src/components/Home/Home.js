@@ -16,7 +16,7 @@ import { useForm } from 'react-hook-form';
 import Slider from 'react-slick';
 import API from '../../utils/API';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLocationDot, faPhone, faLeftLong, faRightLong, faCircleDot, faIcons } from '@fortawesome/free-solid-svg-icons';
+import { faLocationDot, faPhone, faCircleDot, faIcons } from '@fortawesome/free-solid-svg-icons';
 import { faEnvelope, faObjectGroup, faRectangleXmark, faSquareCheck } from '@fortawesome/free-regular-svg-icons';
 import { faJs } from '@fortawesome/free-brands-svg-icons'
 import _ from 'lodash';
@@ -52,38 +52,40 @@ const Home = (props) => {
 
     const _sliderProjectsSettings = {
         dots: true,
-        infinite: true,
+        infinite: false,
         speed: 500,
         slidesToShow: 1,
         slidesToScroll: 1,
         vertical: true,
         verticalSwiping: true,
         swipeToSlide: true,
-        nextArrow: <FontAwesomeIcon icon={faRightLong} />,
-        prevArrow: <FontAwesomeIcon icon={faLeftLong} />,
-        onInit: () => $('._sliderProjects ._shadowIndex p').html('01'),
-        beforeChange: (current, next) =>
+        arrows: false,
+        onInit: () => {
+            $('._sliderProjects ._shadowIndex p').html('01');
+        },
+        beforeChange: (current, next) => {
             next < 9
                 ? $('._sliderProjects ._shadowIndex p').html('0' + (next + 1))
-                : $('._sliderProjects ._shadowIndex p').html('' + (next + 1))
+                : $('._sliderProjects ._shadowIndex p').html('' + (next + 1));
+        }
     };
 
     const _sliderArticlesSettings = {
         dots: true,
-        infinite: true,
+        infinite: false,
         speed: 500,
         slidesToShow: 1,
         slidesToScroll: 1,
         vertical: true,
         verticalSwiping: true,
         swipeToSlide: true,
-        nextArrow: <FontAwesomeIcon icon={faRightLong} />,
-        prevArrow: <FontAwesomeIcon icon={faLeftLong} />,
-        onInit: () => $('._sliderArticles ._shadowIndex._smaller p').html('01'),
-        beforeChange: (current, next) =>
-            next < 10
-                ? $('._sliderArticles ._shadowIndex._smaller p').html('0' + (next + 1))
-                : $('._sliderArticles ._shadowIndex._smaller p').html('' + (next + 1))
+        arrows: false,
+        onInit: () => {
+            _handleArticleJSONTOHTML(0);
+        },
+        beforeChange: (current, next) => {
+            _handleArticleJSONTOHTML(next);
+        }
     };
 
     const _getArticles = useCallback(
@@ -252,6 +254,14 @@ const Home = (props) => {
         $('._sliderProjects .card_' + index + ' ._projectImage').html(html);
     }
 
+    const _handleArticleJSONTOHTML = (index) => {
+        let _i = index + 1;
+        const html = $.parseHTML(_.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['_article_view'], ['desc']).slice(0, 10)[index]._article_body);
+        $('._home ._s2 ._figure').html($(html).find('img').first());
+        $('._number p').html(_i < 10 ? '0'+_i : ''+_i);
+        $('._number p').attr('data-text', _i < 10 ? '0'+_i : ''+_i);
+    }
+
     const onSubmit = async (values) => {
         try {
             await API._sendMessage(values)
@@ -295,31 +305,21 @@ const Home = (props) => {
         _handleAlphabet();
         _handleWords();
 
-        $('._home ._s2').on('mousemove', (event) => {
-            let width = $('._home ._s2').width() / 2;
-            let height = $('._home ._s2').height() / 2;
-            let amountMovedX = ((width - event.pageX) * -1 / 12);
-            let amountMovedY = ((height - event.pageY) * -1 / 12);
-
-            $('._home ._s2 ._moon').css('marginLeft', amountMovedX);
-            $('._home ._s2 ._moon').css('marginTop', amountMovedY);
-        });
-
         $('._home ._s3').on('mousemove', (event) => {
             let width = $('._home ._s3').width() / 2;
             let height = $('._home ._s3').height() / 2;
             let amountMovedX = ((width - event.pageX) * -1 / 12);
             let amountMovedY = ((height - event.pageY) * -1 / 12);
 
-            $('._home ._s3>h1').css('marginLeft', amountMovedX);
-            $('._home ._s3>h1').css('marginTop', amountMovedY);
+            $('._home ._s3 ._shadowIndex').css('marginLeft', amountMovedX);
+            $('._home ._s3 ._shadowIndex').css('marginTop', amountMovedY);
         });
 
         $('._home ._s4').on('mousemove', (event) => {
             let width = $('._home ._s4').width() / 2;
             let amountMovedX = ((width - event.pageX) * 1 / 64);
 
-            $('._home ._s4 .before').css('right', amountMovedX);
+            $('._home ._s4 .before').css('marginLeft', amountMovedX);
         });
 
         const subscription = watch((value, { name, type }) => { });
@@ -352,7 +352,7 @@ const Home = (props) => {
                             <p>ZAKARIAE</p><p>BOUTALEB</p>
                         </div>
                         <div>
-                            <p>Full-Stack Developer & a Graphic Designer<b className='pink_dot'>.</b></p>
+                            <p>A Full-Stack Developer & a Graphic Designer<b className='pink_dot'>.</b></p>
                             <p>Based in <b className='web'>Morocco<b className='pink_dot'>.</b></b></p>
                         </div>
                         <Button
@@ -380,7 +380,7 @@ const Home = (props) => {
                         </div>
                         <Slider {..._sliderProjectsSettings}>
                             {
-                                (_.orderBy(_.filter(_projects, (_p) => { return !_p._hide }), ['_project_view'], ['desc']).slice(0, 10)).map((_project, index) => {
+                                _.map((_.orderBy(_.filter(_projects, (_p) => { return !_p._hide }), ['_project_view'], ['desc']).slice(0, 10)), (_project, index) => {
                                     return (
                                         <Card className={`border border-0 rounded-0 card_${index}`} key={index}>
                                             <Card.Body>
@@ -401,31 +401,32 @@ const Home = (props) => {
                             }
                         </Slider>
                         <div className='_shadowIndex d-flex'><p></p><b className='pink_dot'>.</b></div>
-                        <div className='_shadowIndex _smaller d-flex'><p></p><b className='pink_dot'>.</b></div>
                         <div className='_dotsPattern'></div>
                     </div>
                 </div>
             </section>
             <section className='_s2 grid'>
                 <div className='g-col-5'>
-                    <div className='_pulsingDots'>
-                        <div className='p1 rounded-circle'></div>
-                        <div className='p2 rounded-circle'></div>
-                        <div className='p3 rounded-circle'></div>
-                    </div>
+                    <figure className='_figure'></figure>
                 </div>
-                <div className='g-col-7 align-self-center'>
-                    <div className='_moon'></div>
+                <div className='g-col-7 align-self-end'>
                     <div className='_sliderArticles'>
                         <Slider {..._sliderArticlesSettings}>
                             {
-                                (_.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['_article_view'], ['desc']).slice(0, 10)).map((_article, index) => {
+                                _.map(_.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['_article_view'], ['desc']).slice(0, 10), (_article, index) => {
                                     return (
                                         <Card className={`border border-0 rounded-0 card_${index}`} key={index}>
-                                            <Card.Body>
+                                            <div className='borderTop'></div>
+                                            <div className='borderRight'></div>
+                                            <div className='borderBottom'></div>
+                                            <div className='borderLeft'></div>
+                                            <Card.Body className='no-shadow'>
                                                 <Form className='d-flex flex-column'>
-                                                    <div className='_shadowIndex'><p>{_.head(_article._article_title.split(/[\s.]+/)).length <= 2 ? _.head(_article._article_title.split(/[\s.]+/)) + ' ' + _.nth(_article._article_title.split(/[\s.]+/), 1) : _.head(_article._article_title.split(/[\s.]+/))}<b className='pink_dot'>.</b></p></div>
-                                                    <h2>{_article._article_title}</h2>
+                                                    <span className='text-muted category_author mb-auto'>{_article._article_category}</span>
+                                                    {/* Modify the bodies in mongodb, those articles aren't kinda fit to have an intriguing first phrase */}
+                                                    {/* And figure out either; get the first paragraphe, and modify the articles to fit into that, or get the first phrases just enough to fill 3 lines */}
+                                                    <span className='firstPhrase'>{_.slice(_.split(_.trim($(_article._article_body).find('span').text()), /\./g), 0, 1)}</span>
+                                                    <h2 className='align-self-start'>{_article._article_title}<br/>by <span>{_article._article_author}</span></h2>
                                                     <Button
                                                         type='button'
                                                         className='border border-0 rounded-0 inverse w-25 align-self-end'
@@ -442,7 +443,8 @@ const Home = (props) => {
                                                             Read More About it<b className='pink_dot'>.</b>
                                                         </span>
                                                     </Button>
-                                                    <p className='text-muted information'><b>{_.size(_article._article_view)}</b> Views <FontAwesomeIcon icon={faCircleDot} /> by <b>{_article._article_author}</b>, {moment(new Date(_article.createdAt)).fromNow()}</p>
+                                                    <span className='text-muted information align-self-end'><b>{_.size(_article._article_view)}</b> Views <FontAwesomeIcon icon={faCircleDot} />, {moment(new Date(_article.createdAt)).fromNow()}</span>
+                                                    <div className='_shadowIndex'><p>{_.head(_article._article_title.split(/[\s.]+/)).length <= 2 ? _.head(_article._article_title.split(/[\s.]+/)) + ' ' + _.nth(_article._article_title.split(/[\s.]+/), 1) : _.head(_article._article_title.split(/[\s.]+/))}<b className='pink_dot'>.</b></p></div>
                                                 </Form>
                                             </Card.Body>
                                         </Card>
@@ -450,7 +452,8 @@ const Home = (props) => {
                                 })
                             }
                         </Slider>
-                        <div className='_shadowIndex _smaller d-flex'><p></p><b className='pink_dot'>.</b></div>
+                        <div className='_shadowIndex _number d-flex' data-text=''><p></p><b className='pink_dot'>.</b></div>
+                        <div className='_shadowIndex _number d-flex _outlined' data-text=''><p></p><b className='pink_dot'>.</b></div>
                     </div>
                 </div>
             </section>
@@ -463,8 +466,8 @@ const Home = (props) => {
                                 <h5>Full-Stack Developer<b className='pink_dot'>.</b></h5>
                             </div>
                             <div className='_content d-flex flex-column align-items-center'>
-                                <h6>Languages i'm fluent at</h6>
-                                <ul className='text-muted tags'>
+                                <h6>Languages I am Fluent At</h6>
+                                <ul className='text-muted tags d-flex flex-wrap'>
                                     <li className='tag_item'>Socket.io</li>
                                     <li className='tag_item'>JQuery</li>
                                     <li className='tag_item'>Sass</li>
@@ -480,8 +483,8 @@ const Home = (props) => {
                                     <li className='tag_item'>NodeJS</li>
                                     <li className='tag_item'>React Native</li>
                                 </ul>
-                                <h6>Tools i use</h6>
-                                <ul className='text-muted tags'>
+                                <h6>Tools I Use</h6>
+                                <ul className='text-muted tags d-flex flex-wrap'>
                                     <li className='tag_item'>Bootstrap</li>
                                     <li className='tag_item'>Css Grid</li>
                                     <li className='tag_item'>Illustrator</li>
@@ -507,7 +510,7 @@ const Home = (props) => {
                             </div>
                             <div className='_content d-flex flex-column align-items-center'>
                                 <h6>What I Make</h6>
-                                <ul className='text-muted tags'>
+                                <ul className='text-muted tags d-flex flex-wrap'>
                                     <li className='tag_item'>Art direction</li>
                                     <li className='tag_item'>Branding</li>
                                     <li className='tag_item'>Branding Identity</li>
@@ -520,7 +523,7 @@ const Home = (props) => {
                                     <li className='tag_item'>UX</li>
                                 </ul>
                                 <h6>Tools I Use</h6>
-                                <ul className='text-muted tags'>
+                                <ul className='text-muted tags d-flex flex-wrap'>
                                     <li className='tag_item'>Adobe Photoshop</li>
                                     <li className='tag_item'>Adobe Illustrator</li>
                                     <li className='tag_item'>Sketch</li>
@@ -529,11 +532,11 @@ const Home = (props) => {
                         </div>
                     </Card.Body>
                 </Card>
-                <h1>skills.</h1>
+                <div className='_shadowIndex'><p>skills<b className='pink_dot'>.</b></p></div>
             </section>
             <section className='_s4 grid'>
                 <div className='letter-grid d-flex justify-content-center flex-wrap text-center'></div>
-                <div className='g-col-12 grid'>
+                <div className='g-col-12'>
                     <div className='before'></div>
                 </div>
                 <div className='g-col-12 grid'>

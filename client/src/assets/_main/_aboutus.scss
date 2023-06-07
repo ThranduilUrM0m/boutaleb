@@ -1,0 +1,57 @@
+section {
+    position: relative;
+    overflow: hidden;
+
+    &._s1 {
+        div {
+            @include _dimensions($width: 100%, $height: calc(48vh + 2 * 1.05em));
+
+            h1 {
+                font-size: 24vh;
+                line-height: 1.05;
+                font-weight: 600;
+                margin: 0 10vh;
+
+                &:first-child {
+                    margin: 0 0 0 10vh;
+                    color: $purple;
+                }
+
+                .cursor {
+                    animation: blink-caret .5s infinite;
+                }
+            }
+        }
+    }
+
+    &._s2 {
+        position: relative;
+        background: rgba($color: $black, $alpha: .25);
+
+        div {
+            position: relative;
+            margin: 0 10vh;
+            @include _dimensions($width: calc(60vw - 20vh), $height: '');
+
+            ul {
+                li {
+                    p {
+                        opacity: 0.9;
+                        font-size: 2vh;
+                    }
+                }
+            }
+
+            &::after {
+                position: absolute;
+                content: '';
+                background: url('../_images/Plant-cropping.svg');
+                background-position: bottom;
+                background-repeat: no-repeat;
+                background-size: 75%;
+                @include _dimensions($width: 40vw, $height: 100%);
+                @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: calc(60vw - 10vh), $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+            }
+        }
+    }
+}

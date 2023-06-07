@@ -17,6 +17,14 @@ main {
         @import './_main/blog';
     }
 
+    &._process {
+        @import './_main/process';
+    }
+
+    &._aboutus {
+        @import './_main/aboutus';
+    }
+
     &._login {
         background-color: #FF3CAC;
         background-image: linear-gradient(225deg, #FF3CAC 0, #784BA0 50%, #2B86C5 100%);

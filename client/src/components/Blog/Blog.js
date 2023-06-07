@@ -14,7 +14,7 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import Slider from 'react-slick';
 import Downshift from 'downshift';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleRight, faArrowDownLong, faArrowUpLong, faCommentAlt, faEllipsisV, faHashtag, faLeftLong, faMagnifyingGlass, faRightLong, faThumbsDown, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
+import { faCircleDot, faMinus, faAngleRight, faArrowDownLong, faArrowUpLong, faCommentAlt, faEllipsisV, faHashtag, faArrowLeftLong, faMagnifyingGlass, faArrowRightLong, faThumbsDown, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 import { faClock, faEye, faFolder } from '@fortawesome/free-regular-svg-icons';
 import _ from 'lodash';
 import $ from 'jquery';
@@ -55,7 +55,7 @@ const Blog = (props) => {
     });
     let _articleItems = _.orderBy(_.uniqBy(_.map(_.union(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_tag')), _.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_title'), _.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_author'), _.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_category')), (_search, _index) => {
         return {
-            value: _.toLower(_search.replace(/\.$/, ""))
+            value: _.toLower(_search.replace(/\.$/, ''))
         }
     }), 'value'), ['value'], ['asc']);
 
@@ -71,18 +71,22 @@ const Blog = (props) => {
     }
 
     const _sliderArticlesSettings = {
-        dots: false,
+        dots: true,
+        dotsClass: 'slick-dots d-flex',
         infinite: false,
         speed: 500,
-        slidesToShow: 3.25,
+        slidesToShow: 2.5,
         slidesToScroll: 1,
-        nextArrow: <FontAwesomeIcon icon={faRightLong} />,
-        prevArrow: <FontAwesomeIcon icon={faLeftLong} />,
-        onInit: () => $('._sliderArticles ._shadowIndex._smaller p').html('01'),
-        beforeChange: (current, next) =>
-            next < 9
-                ? $('._sliderArticles ._shadowIndex._smaller p').html('0' + (next + 1))
-                : $('._sliderArticles ._shadowIndex._smaller p').html('' + (next + 1))
+        nextArrow: <FontAwesomeIcon icon={faArrowRightLong} />,
+        prevArrow: <FontAwesomeIcon icon={faArrowLeftLong} />,
+        beforeChange: (currentSlide, nextSlide) => {
+            const dots = $('.slick-dots li');
+            if (nextSlide === dots.length - 1.5) {
+                dots[dots.length - 1].classList.add('slick-active');
+            } else {
+                dots[dots.length - 1].classList.remove('slick-active');
+            }
+        }
     };
 
     const _getArticles = useCallback(
@@ -168,8 +172,85 @@ const Blog = (props) => {
         setCurrentPage(_.toNumber(_number));
     }
 
+    const _getTrendingArticles = () => {
+        // Sorting By Created
+        const _articlesByCreated = _.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['createdAt'], ['desc']);
+
+        // Sorting By Updated
+        const _articlesByUpdated = _.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['updatedAt'], ['desc']);
+
+        // Sorting By Category
+        // Calculate the number of upvotes per category
+        const _categoryUpvotes = _.reduce(_.filter(_articles, (_a) => { return !_a._hide }), (_result, _article) => {
+            const { _article_category, _article_upvotes } = _article;
+            _result[_article_category] = (_result[_article_category] || 0) + _article_upvotes.length;
+            return _result;
+        }, {});
+        // Sort the categories based on the number of upvotes in descending order
+        const _sortedCategories = _.orderBy(Object.keys(_categoryUpvotes), _category => _categoryUpvotes[_category], 'desc');
+        // Sort the articles based on the order of the sorted categories
+        const _articlesByCategories = _.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), _article => _sortedCategories.indexOf(_article._article_category), 'desc');
+
+        // Sorting By Tags
+        // Calculate the number of upvotes per tag
+        const _tagUpvotes = _.reduce(_.filter(_articles, (_a) => { return !_a._hide }), (_result, _article) => {
+            const { _article_tag, _article_upvotes } = _article;
+            _.forEach(_article_tag, tag => {
+                _result[tag] = (_result[tag] || 0) + _article_upvotes.length;
+            });
+            return _result;
+        }, {});
+        // Sort the tags based on the number of upvotes in descending order
+        const _sortedTags = _.orderBy(Object.keys(_tagUpvotes), tag => _tagUpvotes[tag], 'desc');
+        // Sort the articles based on the order of the sorted tags
+        const _articlesByTags = _.sortBy(_articles, article => {
+            const matchingTags = _.intersection(article._article_tag, _sortedTags);
+            return _sortedTags.indexOf(_.head(matchingTags));
+        });
+
+        // Sorting By Comments
+        const _articlesByComments = _.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['_article_comment'], ['desc']);
+
+        // Sorting By Upvotes
+        const _articlesByUpvotes = _.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['_article_upvotes'], ['desc']);
+
+        // Sorting By Views
+        const _articlesByViews = _.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['_article_view'], ['desc']);
+
+        return _.chain(_.filter(_articles, (_a) => { return !_a._hide }))
+            .sortBy([
+                // Sort by view count in descending order
+                (_article) => -_article._article_view.length,
+                // Sort by upvotes count in descending order
+                (_article) => -_article._article_upvotes.length,
+                // Sort by comments count in descending order
+                (_article) => -_article._article_comment.length,
+                // Sort by categories with the most upvoted articles
+                (_article) => {
+                    const categoryArticles = _.filter(_.filter(_articles, (_a) => { return !_a._hide }), { _article_category: _article._article_category });
+                    return -_.sumBy(categoryArticles, (a) => a._article_upvotes.length);
+                },
+                // Sort by tags with the most upvoted articles
+                (_article) => {
+                    const tagArticles = _.filter(_.filter(_articles, (_a) => { return !_a._hide }), (a) => _.includes(a._article_tag, _article._article_tag));
+                    return -_.sumBy(tagArticles, (a) => a._article_upvotes.length);
+                },
+                // Sort by creation date in descending order
+                '_createdAt',
+                // Sort by update date in descending order
+                '_updatedAt'
+            ])
+            .value();
+    }
+
+    const _handleArticleJSONTOHTML = () => {
+        const html = $.parseHTML(_.get(_.head(_getTrendingArticles()), '_article_body'));
+        $('._blog ._s1 ._figure').html($(html).find('img').first());
+    }
+
     useEffect(() => {
         _getArticles();
+        _handleArticleJSONTOHTML();
 
         $('._blog ._s1').on('mousemove', (event) => {
             let width = $('._blog ._s1').width() / 2;
@@ -194,29 +275,47 @@ const Blog = (props) => {
     return (
         <main className='_blog'>
             <section className='_s1 grid'>
-                <span className='l_name'>BoutalebBoutalebBoutalebBoutalebBoutalebBoutaleb</span>
-                <span className='f_name'>ZakariaeZakariaeZakariaeZakariaeZakariaeZakariae</span>
-                <div className='g-col-6'>
-                    <div className='_caption d-flex flex-column justify-content-center'>
-                        <p><b>The teacher</b><b className='pink_dot'>.</b></p>
-                        <p>My father was an educator, My grandfather was an educator, i was born to educate, and my sons will also educate<b className='pink_dot'>.</b></p>
-                    </div>
+                <div className='g-col-7 align-self-end'>
+                    <Card className={`border border-0 rounded-0`}>
+                        <Card.Body className='no-shadow'>
+                            <Form className='d-flex flex-column'>
+                                <span className='text-muted category_author'>{_.get(_.head(_getTrendingArticles()), '_article_category')}</span>
+                                <h2 className='align-self-start mb-auto'>{_.get(_.head(_getTrendingArticles()), '_article_title')}<br/>by <span>{_.get(_.head(_getTrendingArticles()), '_article_author')}</span></h2>
+                                <span className='firstPhrase'>{_.slice(_.split(_.trim($(_.get(_.head(_getTrendingArticles()), '_article_body')).find('span').text()), /\./g), 0, 1)}</span>
+                                <Button
+                                    type='button'
+                                    className='border border-0 rounded-0 inverse w-25 align-self-start'
+                                    variant='outline-light'
+                                    href={`/blog/${_.get(_.head(_getTrendingArticles()), '_id')}`}
+                                >
+                                    <div className='buttonBorders'>
+                                        <div className='borderTop'></div>
+                                        <div className='borderRight'></div>
+                                        <div className='borderBottom'></div>
+                                        <div className='borderLeft'></div>
+                                    </div>
+                                    <span>
+                                        Read More About it<b className='pink_dot'>.</b>
+                                    </span>
+                                </Button>
+                                {/* <div className='_shadowIndex'><p>{_.head(_.split(_.get(_.head(_getTrendingArticles()), '_article_title'), /[\s.]+/)).length <= 2 ? _.head(_.split(_.get(_.head(_getTrendingArticles()), '_article_title'), /[\s.]+/)) + ' ' + _.nth(_.split(_.get(_.head(_getTrendingArticles()), '_article_title'), /[\s.]+/), 1) : _.head(_.split(_.get(_.head(_getTrendingArticles()), '_article_title'), /[\s.]+/))}<b className='pink_dot'>.</b></p></div> */}
+                            </Form>
+                        </Card.Body>
+                    </Card>
+                    <div className='_shadowIndex _trending'><p>Trending<b className='pink_dot'>.</b></p></div>
+                    <div className='_shadowIndex _trending _outlined'><p>Trending<b className='pink_dot'>.</b></p></div>
                 </div>
-                <div className='g-col-6'>
-                    <div className='_caption d-flex flex-column justify-content-center'>
-                        <p><b>The Coder</b><b className='pink_dot'>.</b></p>
-                        <p>Grew up next to a computer, learned to create at a young age, i was born to create to look from all sides and discover hidden meanings<b className='pink_dot'>.</b></p>
-                    </div>
+                <div className='g-col-5'>
+                    <figure className='_figure'></figure>
                 </div>
             </section>
             <section className='_s2 grid'>
-                <div className='before'></div>
-                <div className='g-col-4 align-self-end'>
-                    <Form className='d-flex flex-column'>
-                        <h2>7lem w Khdem bach <br /> <strong>Twsel<b className='pink_dot'>.</b></strong></h2>
+                <div className='g-col-6 _s1_1'>
+                    <Form>
+                        <h2>blog <strong><b className='pink_dot'>.</b></strong></h2>
                         <Button
                             type='button'
-                            className='border border-0 rounded-0 inverse w-50'
+                            className='border border-0 rounded-0 inverse w-25'
                             variant='outline-light'
                             onClick={() => setShowModal(true)}
                         >
@@ -232,7 +331,7 @@ const Blog = (props) => {
                         </Button>
                     </Form>
                 </div>
-                <div className='g-col-8 align-self-end'>
+                <div className='g-col-6 _s1_2'>
                     <div className='_sliderArticles'>
                         <Slider {..._sliderArticlesSettings}>
                             {

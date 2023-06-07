@@ -202,7 +202,6 @@ const Signup = (props) => {
 					</Card>
 				</div>
 			</section>
-
 			<Modal show={_showModal} onHide={() => _handleClose()} centered>
 				<Form>
 					<Modal.Header closeButton>

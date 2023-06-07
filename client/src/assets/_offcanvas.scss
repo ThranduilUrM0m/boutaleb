@@ -13,13 +13,14 @@
                 color: $black;
                 text-decoration: none;
                 @include _dimensions($width: 50%, $height: '');
+                @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
 
                 .nav-link {
                     margin: 0;
                     padding: 0;
                     color: $black;
                     font-size: 3.75vh;
-                    @extend %transition_holder;
+                    @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
 
                     &.active {
                         color: $black;
@@ -41,7 +42,7 @@
                         background: rgba($blue, .05);
                         clip-path: circle(10% at 150% 50%);
                         @include _dimensions($width: 100%, $height: 100%);
-                        @extend %transition_holder;
+                        @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
                     }
 
                     &::after {
@@ -54,24 +55,34 @@
                         filter: alpha(opacity=0);
                         @include _dimensions($width: 10vh, $height: 2vh);
                         @include _transform($top: '', $left: '', $bottom: .5vh, $right: '', $t_x: 15vh, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
-                        @extend %transition_holder;
+                        @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
                     }
 
                     &:hover {
                         &:not(.active) {
                             color: $black;
                             box-shadow: 0 0 .33vh rgba($white, .1);
-    
+
                             &::before {
                                 clip-path: circle(100%);
                             }
-    
+
                             &::after {
                                 opacity: .8;
                                 filter: none;
                                 @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
                             }
                         }
+                    }
+                }
+            }
+
+            &:hover {
+                &>.nav-item {
+                    opacity: 0.3;
+
+                    &:hover {
+                        opacity: 1;
                     }
                 }
             }

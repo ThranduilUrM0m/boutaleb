@@ -90,3 +90,15 @@
         opacity: 0;
     }
 }
+
+@keyframes blink-caret {
+
+    from,
+    to {
+        color: transparent;
+    }
+
+    50% {
+        color: $black;
+    }
+}

@@ -9,7 +9,7 @@ a {
             background: rgba($pink, .8);
             @include _transform($top: '', $left: 0, $bottom: 0, $right: '', $t_x: 0, $t_y: 1vh, $r_deg: 0, $s_x: 1, $s_y: 1);
             @include _dimensions($width: 0, $height: .35vh);
-            @extend %transition_holder;
+            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
         }
 
         &:hover {
@@ -48,7 +48,7 @@ form {
         ._formLabel {
             position: relative;
             @include _dimensions($width: '', $height: 100%);
-            @extend %transition_holder;
+            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
 
             ._formControl {
                 outline: none;
@@ -56,7 +56,7 @@ form {
                 margin: 0;
                 padding: 1vh;
                 @include _dimensions($width: '', $height: 7vh);
-                @extend %transition_holder;
+                @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
             }
 
             textarea._formControl {
@@ -69,7 +69,7 @@ form {
                 margin: 0 .75vh;
                 padding: .75vh;
                 @include _transform($top: '', $left: '', $bottom: 3.5vh, $right: 2.75vh, $t_x: 0, $t_y: 50%, $r_deg: 0, $s_x: 1, $s_y: 1);
-                @extend %transition_holder;
+                @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
 
                 &.toClear,
                 &.messageClear {
@@ -83,7 +83,7 @@ form {
                 border-radius: 100%;
                 @include _transform($top: '', $left: '', $bottom: 3.5vh, $right: 1vh, $t_x: 0, $t_y: 50%, $r_deg: 0, $s_x: 1, $s_y: 1);
                 @include _dimensions($width: 2vh, $height: 2vh);
-                @extend %transition_holder;
+                @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
 
                 &._messageInput {
                     @include _transform($top: 1vh, $left: '', $bottom: '', $right: 1vh, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
@@ -98,7 +98,7 @@ form {
                     background: $black;
                     @include _dimensions($width: 100%, $height: .5vh);
                     @include _transform($top: 50%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 45deg, $s_x: 1, $s_y: 1);
-                    @extend %transition_holder;
+                    @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
                 }
 
                 &::before {
@@ -110,7 +110,7 @@ form {
                     background: $black;
                     @include _dimensions($width: 100%, $height: .5vh);
                     @include _transform($top: 50%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: -45deg, $s_x: 1, $s_y: 1);
-                    @extend %transition_holder;
+                    @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
                 }
             }
 
@@ -120,7 +120,7 @@ form {
                 font-size: 2vh;
                 @include _transform($top: 3.5vh, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
                 @include _dimensions($width: unset, $height: unset);
-                @extend %transition_holder;
+                @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
             }
 
             &>._formControl:focus~label,
@@ -139,7 +139,7 @@ form {
             z-index: 1;
             @include _transform($top: 100%, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -100%, $r_deg: 0, $s_x: 1, $s_y: 1);
             @include _dimensions($width: 10vh, $height: .25vh);
-            @extend %transition_holder;
+            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
         }
 
         &.focused {
@@ -193,7 +193,9 @@ form {
         background: transparent !important;
         text-transform: none;
         font-size: 2vh;
+        font-weight: 600;
         box-shadow: 0 0 0 0 adjust-hue($black, 45deg);
+        z-index: 1;
         @include _dimensions($width: '', $height: 7vh);
         @include _transitions($property: '', $duration: .25s, $timing: '', $delay: '');
 
@@ -435,7 +437,7 @@ form {
             @include _transitions($property: '', $duration: .15s, $timing: ease-in-out, $delay: .45s);
         }
 
-        .card-body {
+        .card-body:not(.no-shadow) {
             box-shadow: 0 0 0 2vh transparent;
         }
     }
@@ -518,7 +520,7 @@ form {
 
                     .modal-title {
                         * {
-                            @extend %transition_holder;
+                            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
                         }
 
                         &>.dropdown {
@@ -550,7 +552,7 @@ form {
                                 box-shadow: 1.25vh 1.25vh 4.5vh -2.5vh rgba($black, .5);
                                 margin: 0;
                                 @include _transform($top: 7vh, $left: 0, $bottom: unset, $right: unset, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
-                                @extend %transition_holder;
+                                @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
 
                                 form {
                                     @include _dimensions($width: 54vh, $height: '');
@@ -723,6 +725,7 @@ form {
                     h1 {
                         font-family: 'Abril Fatface', cursive;
                         font-size: 4rem;
+                        font-weight: 500;
                         color: $black;
                         white-space: nowrap;
                         text-align: center;
@@ -737,7 +740,7 @@ form {
                             background: none;
                             margin: 0;
                             padding: 2vh;
-                            @extend %transition_holder;
+                            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
 
                             &-body {
                                 position: relative;
@@ -777,7 +780,7 @@ form {
                                     white-space: nowrap;
                                     text-overflow: ellipsis;
                                     z-index: 10;
-                                    @extend %transition_holder;
+                                    @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
                                 }
 
                                 .category {
@@ -815,7 +818,7 @@ form {
                                     padding: 2vh;
                                     cursor: pointer;
                                     box-sizing: content-box;
-                                    @include _dimensions($width: (($arrow-width * 2) - $arrow-height, ), $height: $arrow-height);
+                                    @include _dimensions($width: calc((($arrow-width * 2) - $arrow-height)), $height: $arrow-height);
 
                                     .line {
                                         position: absolute;
@@ -823,7 +826,7 @@ form {
                                         background-color: $black;
                                         @include _transform($top: 50%, $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
                                         @include _dimensions($width: $arrow-width, $height: $arrow-height);
-                                        @extend %transition_holder;
+                                        @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
                                     }
 
                                     .line-1 {
@@ -879,7 +882,7 @@ form {
                                         opacity: 0;
                                         color: $black;
                                         @include _transform($top: '', $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
-                                        @extend %transition_holder;
+                                        @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
                                     }
 
                                     &:hover,
@@ -950,7 +953,7 @@ form {
                             background: $black;
                             cursor: pointer;
                             @include _dimensions($width: 2.5vh, $height: 2.5vh);
-                            @extend %transition_holder;
+                            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
 
                             &.current {
                                 opacity: 1;
@@ -978,6 +981,7 @@ form {
                     margin: 0;
                     font-size: 20vh;
                     line-height: 20vh;
+                    font-family: 'Abril Fatface', cursive;
                     font-weight: bold;
                     color: lighten($color: $blue, $amount: 2);
                     @include _transform($top: 100%, $left: 50%, $bottom: '', $right: '', $t_x: -100%, $t_y: -100%, $r_deg: 0, $s_x: 1, $s_y: 1);
@@ -1014,7 +1018,7 @@ form {
                             background: none;
                             margin: 0;
                             padding: 0 2vh;
-                            @extend %transition_holder;
+                            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
 
                             &-body {
                                 position: relative;
@@ -1054,7 +1058,7 @@ form {
                                     white-space: nowrap;
                                     text-overflow: ellipsis;
                                     z-index: 10;
-                                    @extend %transition_holder;
+                                    @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
                                 }
 
                                 .category {
@@ -1092,7 +1096,7 @@ form {
                                     padding: 2vh;
                                     cursor: pointer;
                                     box-sizing: content-box;
-                                    @include _dimensions($width: (($arrow-width * 2) - $arrow-height, ), $height: $arrow-height);
+                                    @include _dimensions($width: calc((($arrow-width * 2) - $arrow-height)), $height: $arrow-height);
 
                                     .line {
                                         position: absolute;
@@ -1100,7 +1104,7 @@ form {
                                         background-color: $black;
                                         @include _transform($top: 50%, $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
                                         @include _dimensions($width: $arrow-width, $height: $arrow-height);
-                                        @extend %transition_holder;
+                                        @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
                                     }
 
                                     .line-1 {
@@ -1156,7 +1160,7 @@ form {
                                         opacity: 0;
                                         color: $black;
                                         @include _transform($top: '', $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
-                                        @extend %transition_holder;
+                                        @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
                                     }
 
                                     &:hover,
@@ -1228,7 +1232,7 @@ form {
                             background: $black;
                             cursor: pointer;
                             @include _dimensions($width: 2.5vh, $height: 2.5vh);
-                            @extend %transition_holder;
+                            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
 
                             &.current {
                                 opacity: 1;
