@@ -31,10 +31,10 @@ router.post('/', (req, res, next) => {
         });
     }
 
-    if (!body._article_genre) {
+    if (!body._article_category) {
         return res.status(422).json({
             errors: {
-                _article_genre: 'is required',
+                _article_category: 'is required',
             },
         });
     }
@@ -55,14 +55,15 @@ router.get('/', (req, res, next) => {
 });
 
 router.param('id', (req, res, next, id) => {
-    return Article.findById(id, (err, _article) => {
-        if (err) {
-            return res.sendStatus(404);
-        } else if (_article) {
+    return Article.findById(id)
+        .then(_article => {
+            if (!_article) {
+                return res.sendStatus(404);
+            }
             req._article = _article;
-            return next();
-        }
-    }).catch(next);
+            next();
+        })
+        .catch(next);
 });
 
 router.get('/:id', (req, res, next) => {
@@ -86,21 +87,25 @@ router.patch('/:id', (req, res, next) => {
         req._article._article_body = body._article_body;
     }
 
-    if (typeof body._article_genre !== 'undefined') {
-        req._article._article_genre = body._article_genre;
+    if (typeof body._article_category !== 'undefined') {
+        req._article._article_category = body._article_category;
     }
 
-    if (typeof body._article__hide !== 'undefined') {
-        req._article._article__hide = body._article__hide;
+    if (typeof body._article_isPrivate !== 'undefined') {
+        req._article._article_isPrivate = body._article_isPrivate;
     }
 
-    if (typeof body._article_tag !== 'undefined') {
-        req._article._article_tag = body._article_tag;
+    if (typeof body._article_tags !== 'undefined') {
+        req._article._article_tags = body._article_tags;
     }
 
-    if (typeof body._article_comment !== 'undefined') {
-        req._article._article_comment = body._article_comment;
-    }
+    return req._article.save()
+        .then(() => res.json({ _article: req._article.toJSON() }))
+        .catch(next);
+});
+
+router.patch('/:id/_vote', (req, res, next) => {
+    const { body } = req;
 
     if (typeof body._article_upvotes !== 'undefined') {
         req._article._article_upvotes = body._article_upvotes;
@@ -110,11 +115,31 @@ router.patch('/:id', (req, res, next) => {
         req._article._article_downvotes = body._article_downvotes;
     }
 
-    if (typeof body._article_view !== 'undefined') {
-        req._article._article_view = body._article_view;
+    return req._article.save({ timestamps: false })
+        .then(() => res.json({ _article: req._article.toJSON() }))
+        .catch(next);
+});
+
+router.patch('/:id/_view', (req, res, next) => {
+    const { body } = req;
+
+    if (typeof body._article_views !== 'undefined') {
+        req._article._article_views = body._article_views;
     }
 
-    return req._article.save()
+    return req._article.save({ timestamps: false })
+        .then(() => res.json({ _article: req._article.toJSON() }))
+        .catch(next);
+});
+
+router.patch('/:id/_comment', (req, res, next) => {
+    const { body } = req;
+
+    if (typeof body._article_comments !== 'undefined') {
+        req._article._article_comments = body._article_comments;
+    }
+
+    return req._article.save({ timestamps: false })
         .then(() => res.json({ _article: req._article.toJSON() }))
         .catch(next);
 });

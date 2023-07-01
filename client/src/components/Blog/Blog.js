@@ -3,6 +3,7 @@ import { _useStore } from '../../store/store';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import moment from 'moment';
+import Moment from 'react-moment';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -18,6 +19,9 @@ import { faCircleDot, faMinus, faAngleRight, faArrowDownLong, faArrowUpLong, faC
 import { faClock, faEye, faFolder } from '@fortawesome/free-regular-svg-icons';
 import _ from 'lodash';
 import $ from 'jquery';
+import SimpleBar from 'simplebar-react';
+
+import 'simplebar-react/dist/simplebar.min.css';
 
 const Blog = (props) => {
     const _articles = _useStore((state) => state._articles);
@@ -48,12 +52,12 @@ const Blog = (props) => {
     const [_filterTimeframe, setFilterTimeframe] = useState('');
     const [_filterCategory, setFilterCategory] = useState([]);
 
-    let _articleTags = _.map(_.uniq(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_hide }), ('_article_tag')))), (_tag, _index) => {
+    let _articleTags = _.map(_.uniq(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), ('_article_tags')))), (_tag, _index) => {
         return {
             value: _tag
         }
     });
-    let _articleItems = _.orderBy(_.uniqBy(_.map(_.union(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_tag')), _.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_title'), _.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_author'), _.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_category')), (_search, _index) => {
+    let _articleItems = _.orderBy(_.uniqBy(_.map(_.union(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_tags')), _.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_title'), _.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_author'), _.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_category')), (_search, _index) => {
         return {
             value: _.toLower(_search.replace(/\.$/, ''))
         }
@@ -106,43 +110,50 @@ const Blog = (props) => {
         [setArticles]
     );
 
-    const _handleJSONTOHTML = (_target, _input, index) => {
-        const html = $.parseHTML(_input);
-        $('.' + _target + ' .card_' + index + ' figure').html($(html).find('img').first());
-    }
-
     const _articlesToShow = (_articles) => {
         return _.filter(
             _.filter(
                 _.filter(
                     (
                         _.isEqual(_filterSort, 'Relevant') ?
-                            _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_hide }), ['_article_comment'], ['desc'])
+                            _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_isPrivate }), ['_article_comments'], ['desc'])
                             :
                             _.isEqual(_filterSort, 'Trending') ?
-                                _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_hide }), ['_article_view'], ['desc'])
+                                _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_isPrivate }), ['_article_views'], ['desc'])
                                 :
                                 _.isEqual(_filterSort, 'Upvotes') ?
-                                    _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_hide }), ['_article_upvotes'], ['desc'])
+                                    _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_isPrivate }), ['_article_upvotes'], ['desc'])
                                     :
                                     _.isEqual(_filterSort, 'Recent') ?
-                                        _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_hide }), ['createdAt'], ['desc'])
+                                        _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_isPrivate }), ['updatedAt'], ['desc'])
                                         :
-                                        _.filter(_articles, (_articleSort) => { return !_articleSort._article_hide })
+                                        _.filter(_articles, (_articleSort) => { return !_articleSort._article_isPrivate })
                     ), (_articleTimeframe) => {
-                        return _.isEqual(_filterTimeframe, 'Today') ?
-                            moment(new Date(_articleTimeframe.createdAt)).isSame(moment(new Date()), 'd')
-                            :
-                            _.isEqual(_filterTimeframe, 'PastWeek') ?
-                                moment(new Date(_articleTimeframe.createdAt)).isSame(moment(new Date()), 'week')
-                                :
-                                _.isEqual(_filterTimeframe, 'PastMonth') ?
-                                    moment(new Date(_articleTimeframe.createdAt)).isSame(moment(new Date()), 'month')
-                                    :
-                                    _.isEqual(_filterTimeframe, 'PastYear') ?
-                                        moment(new Date(_articleTimeframe.createdAt)).isSame(moment(new Date()), 'year')
-                                        :
-                                        true;
+                        return _.isEqual(_filterTimeframe, 'Today')
+                            ? (
+                                <Moment date={_articleTimeframe.updatedAt} isSame={moment(new Date(), 'day')}>
+                                    {same => same}
+                                </Moment>
+                            )
+                            : _.isEqual(_filterTimeframe, 'PastWeek')
+                                ? (
+                                    <Moment date={_articleTimeframe.updatedAt} isSame={moment(new Date(), 'week')}>
+                                        {same => same}
+                                    </Moment>
+                                )
+                                : _.isEqual(_filterTimeframe, 'PastMonth')
+                                    ? (
+                                        <Moment date={_articleTimeframe.updatedAt} isSame={moment(new Date(), 'month')}>
+                                            {same => same}
+                                        </Moment>
+                                    )
+                                    : _.isEqual(_filterTimeframe, 'PastYear')
+                                        ? (
+                                            <Moment date={_articleTimeframe.updatedAt} isSame={moment(new Date(), 'year')}>
+                                                {same => same}
+                                            </Moment>
+                                        )
+                                        : true;
                     }
                 ), (_articleCategory) => {
                     return _.isEmpty(_filterCategory)
@@ -165,16 +176,9 @@ const Blog = (props) => {
         );
     }
 
-    const _handleClickPage = (_number) => {
-        $([document.documentElement, document.body]).animate({
-            scrollTop: $('._blog').offset().top
-        }, 500);
-        setCurrentPage(_.toNumber(_number));
-    }
-
     const _getTrendingArticles = () => {
         // Sorting By Created
-        const _articlesByCreated = _.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['createdAt'], ['desc']);
+        const _articlesByCreated = _.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['updatedAt'], ['desc']);
 
         // Sorting By Updated
         const _articlesByUpdated = _.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['updatedAt'], ['desc']);
@@ -194,8 +198,8 @@ const Blog = (props) => {
         // Sorting By Tags
         // Calculate the number of upvotes per tag
         const _tagUpvotes = _.reduce(_.filter(_articles, (_a) => { return !_a._hide }), (_result, _article) => {
-            const { _article_tag, _article_upvotes } = _article;
-            _.forEach(_article_tag, tag => {
+            const { _article_tags, _article_upvotes } = _article;
+            _.forEach(_article_tags, tag => {
                 _result[tag] = (_result[tag] || 0) + _article_upvotes.length;
             });
             return _result;
@@ -204,27 +208,27 @@ const Blog = (props) => {
         const _sortedTags = _.orderBy(Object.keys(_tagUpvotes), tag => _tagUpvotes[tag], 'desc');
         // Sort the articles based on the order of the sorted tags
         const _articlesByTags = _.sortBy(_articles, article => {
-            const matchingTags = _.intersection(article._article_tag, _sortedTags);
+            const matchingTags = _.intersection(article._article_tags, _sortedTags);
             return _sortedTags.indexOf(_.head(matchingTags));
         });
 
         // Sorting By Comments
-        const _articlesByComments = _.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['_article_comment'], ['desc']);
+        const _articlesByComments = _.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['_article_comments'], ['desc']);
 
         // Sorting By Upvotes
         const _articlesByUpvotes = _.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['_article_upvotes'], ['desc']);
 
         // Sorting By Views
-        const _articlesByViews = _.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['_article_view'], ['desc']);
+        const _articlesByViews = _.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['_article_views'], ['desc']);
 
         return _.chain(_.filter(_articles, (_a) => { return !_a._hide }))
             .sortBy([
                 // Sort by view count in descending order
-                (_article) => -_article._article_view.length,
+                (_article) => -_article._article_views.length,
                 // Sort by upvotes count in descending order
                 (_article) => -_article._article_upvotes.length,
                 // Sort by comments count in descending order
-                (_article) => -_article._article_comment.length,
+                (_article) => -_article._article_comments.length,
                 // Sort by categories with the most upvoted articles
                 (_article) => {
                     const categoryArticles = _.filter(_.filter(_articles, (_a) => { return !_a._hide }), { _article_category: _article._article_category });
@@ -232,11 +236,11 @@ const Blog = (props) => {
                 },
                 // Sort by tags with the most upvoted articles
                 (_article) => {
-                    const tagArticles = _.filter(_.filter(_articles, (_a) => { return !_a._hide }), (a) => _.includes(a._article_tag, _article._article_tag));
+                    const tagArticles = _.filter(_.filter(_articles, (_a) => { return !_a._hide }), (a) => _.includes(a._article_tags, _article._article_tags));
                     return -_.sumBy(tagArticles, (a) => a._article_upvotes.length);
                 },
                 // Sort by creation date in descending order
-                '_createdAt',
+                '_updatedAt',
                 // Sort by update date in descending order
                 '_updatedAt'
             ])
@@ -246,6 +250,18 @@ const Blog = (props) => {
     const _handleArticleJSONTOHTML = () => {
         const html = $.parseHTML(_.get(_.head(_getTrendingArticles()), '_article_body'));
         $('._blog ._s1 ._figure').html($(html).find('img').first());
+    }
+
+    const _handleJSONTOHTML = (_target, _input, index) => {
+        const html = $.parseHTML(_input);
+        $('.' + _target + ' .card_' + index + ' figure').html($(html).find('img').first());
+    }
+
+    const _handleClickPage = (_number) => {
+        $([document.documentElement, document.body]).animate({
+            scrollTop: $('._blog').offset().top
+        }, 500);
+        setCurrentPage(_.toNumber(_number));
     }
 
     useEffect(() => {
@@ -280,7 +296,7 @@ const Blog = (props) => {
                         <Card.Body className='no-shadow'>
                             <Form className='d-flex flex-column'>
                                 <span className='text-muted category_author'>{_.get(_.head(_getTrendingArticles()), '_article_category')}</span>
-                                <h2 className='align-self-start mb-auto'>{_.get(_.head(_getTrendingArticles()), '_article_title')}<br/>by <span>{_.get(_.head(_getTrendingArticles()), '_article_author')}</span></h2>
+                                <h2 className='align-self-start mb-auto'>{_.get(_.head(_getTrendingArticles()), '_article_title')}<br />by <span>{_.get(_.head(_getTrendingArticles()), '_article_author')}</span></h2>
                                 <span className='firstPhrase'>{_.slice(_.split(_.trim($(_.get(_.head(_getTrendingArticles()), '_article_body')).find('span').text()), /\./g), 0, 1)}</span>
                                 <Button
                                     type='button'
@@ -335,7 +351,7 @@ const Blog = (props) => {
                     <div className='_sliderArticles'>
                         <Slider {..._sliderArticlesSettings}>
                             {
-                                _.map(_.slice(_.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['_article_view'], ['desc']), 0, 10), (_article, index) => {
+                                _.map(_.slice(_.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['_article_views'], ['desc']), 0, 10), (_article, index) => {
                                     return (
                                         <Card className={`border border-0 rounded-0 card_${index}`} key={index}>
                                             <div className='borderTop'></div>
@@ -344,7 +360,7 @@ const Blog = (props) => {
                                             <div className='borderLeft'></div>
                                             <Card.Body className='d-flex flex-column'>
                                                 <figure>{_handleJSONTOHTML('_sliderArticles', _article._article_body, index)}</figure>
-                                                <p className='text-muted author'>by <b>{_article._article_author}</b>, {moment(new Date(_article.createdAt)).fromNow()}</p>
+                                                <p className='text-muted author'>by <b>{_article._article_author}</b>, {<Moment fromNow>{_article.updatedAt}</Moment>}</p>
                                                 <h4>{_article._article_title}</h4>
                                                 <p className='category align-self-end'>{_article._article_category}</p>
                                                 <Button
@@ -359,8 +375,8 @@ const Blog = (props) => {
                                                     <div className='line line-2'></div>
                                                 </Button>
                                                 <div className='_footerInformation d-flex'>
-                                                    <p className='d-flex align-items-center text-muted _views'><b>{_.size(_article._article_view)}</b><FontAwesomeIcon icon={faEye} /></p>
-                                                    <p className='d-flex align-items-center text-muted _comments'><b>{_.size(_article._article_comment)}</b><FontAwesomeIcon icon={faCommentAlt} /></p>
+                                                    <p className='d-flex align-items-center text-muted _views'><b>{_.size(_article._article_views)}</b><FontAwesomeIcon icon={faEye} /></p>
+                                                    <p className='d-flex align-items-center text-muted _comments'><b>{_.size(_article._article_comments)}</b><FontAwesomeIcon icon={faCommentAlt} /></p>
                                                     <p className='d-flex align-items-center text-muted _upvotes'><b>{_.size(_article._article_upvotes)}</b><FontAwesomeIcon icon={faThumbsUp} /></p>
                                                     <p className='d-flex align-items-center text-muted _downvotes'><b>{_.size(_article._article_downvotes)}</b><FontAwesomeIcon icon={faThumbsDown} /></p>
                                                 </div>
@@ -729,35 +745,37 @@ const Blog = (props) => {
                                                             )
                                                         }
                                                     </FloatingLabel>
-                                                    <ListGroup
-                                                        className='border border-0 rounded-0 d-block'
-                                                        {...getMenuProps()}
-                                                    >
-                                                        {
-                                                            isOpen
-                                                                ?
-                                                                _.map(
-                                                                    _.orderBy(_.uniqBy(_.filter(_articleTags, (item) => { return !inputValue || _.includes(_.lowerCase(item.value), _.lowerCase(inputValue)) }), 'value'), ['value'], ['asc'])
-                                                                    , (item, index) => {
-                                                                        return (
-                                                                            <ListGroup.Item
-                                                                                className='border border-0 rounded-0 d-flex align-items-center'
-                                                                                {...getItemProps({
-                                                                                    key: item.value,
-                                                                                    index,
-                                                                                    item
-                                                                                })}
-                                                                            >
-                                                                                <FontAwesomeIcon icon={faMagnifyingGlass} className='me-2' />
-                                                                                {item.value}
-                                                                            </ListGroup.Item>
-                                                                        )
-                                                                    }
-                                                                )
-                                                                :
-                                                                null
-                                                        }
-                                                    </ListGroup>
+                                                    <SimpleBar style={{ maxHeight: '40vh' }} forceVisible='y' autoHide={false}>
+                                                        <ListGroup
+                                                            className='border border-0 rounded-0 d-block'
+                                                            {...getMenuProps()}
+                                                        >
+                                                            {
+                                                                isOpen
+                                                                    ?
+                                                                    _.map(
+                                                                        _.orderBy(_.uniqBy(_.filter(_articleTags, (item) => { return !inputValue || _.includes(_.lowerCase(item.value), _.lowerCase(inputValue)) }), 'value'), ['value'], ['asc'])
+                                                                        , (item, index) => {
+                                                                            return (
+                                                                                <ListGroup.Item
+                                                                                    className='border border-0 rounded-0 d-flex align-items-center'
+                                                                                    {...getItemProps({
+                                                                                        key: item.value,
+                                                                                        index,
+                                                                                        item
+                                                                                    })}
+                                                                                >
+                                                                                    <FontAwesomeIcon icon={faMagnifyingGlass} className='me-2' />
+                                                                                    {item.value}
+                                                                                </ListGroup.Item>
+                                                                            )
+                                                                        }
+                                                                    )
+                                                                    :
+                                                                    null
+                                                            }
+                                                        </ListGroup>
+                                                    </SimpleBar>
                                                 </Form.Group>
                                             )}
                                         </Downshift>
@@ -826,35 +844,37 @@ const Blog = (props) => {
                                                 )
                                             }
                                         </FloatingLabel>
-                                        <ListGroup
-                                            className='border border-0 rounded-0 d-block'
-                                            {...getMenuProps()}
-                                        >
-                                            {
-                                                isOpen && !_showFilterDropdown
-                                                    ?
-                                                    _.map(
-                                                        _.orderBy(_.uniqBy(_.filter(_articleItems, (item) => { return !inputValue || _.includes(_.lowerCase(item.value), _.lowerCase(inputValue)) }), 'value'), ['value'], ['asc'])
-                                                        , (item, index) => {
-                                                            return (
-                                                                <ListGroup.Item
-                                                                    className='border border-0 rounded-0 d-flex align-items-center justify-content-start'
-                                                                    {...getItemProps({
-                                                                        key: item.value,
-                                                                        index,
-                                                                        item
-                                                                    })}
-                                                                >
-                                                                    <FontAwesomeIcon icon={faMagnifyingGlass} className='me-2' />
-                                                                    {item.value}
-                                                                </ListGroup.Item>
-                                                            )
-                                                        }
-                                                    )
-                                                    :
-                                                    null
-                                            }
-                                        </ListGroup>
+                                        <SimpleBar style={{ maxHeight: '40vh' }} forceVisible='y' autoHide={false}>
+                                            <ListGroup
+                                                className='border border-0 rounded-0 d-block'
+                                                {...getMenuProps()}
+                                            >
+                                                {
+                                                    isOpen && !_showFilterDropdown
+                                                        ?
+                                                        _.map(
+                                                            _.orderBy(_.uniqBy(_.filter(_articleItems, (item) => { return !inputValue || _.includes(_.lowerCase(item.value), _.lowerCase(inputValue)) }), 'value'), ['value'], ['asc'])
+                                                            , (item, index) => {
+                                                                return (
+                                                                    <ListGroup.Item
+                                                                        className='border border-0 rounded-0 d-flex align-items-center justify-content-start'
+                                                                        {...getItemProps({
+                                                                            key: item.value,
+                                                                            index,
+                                                                            item
+                                                                        })}
+                                                                    >
+                                                                        <FontAwesomeIcon icon={faMagnifyingGlass} className='me-2' />
+                                                                        {item.value}
+                                                                    </ListGroup.Item>
+                                                                )
+                                                            }
+                                                        )
+                                                        :
+                                                        null
+                                                }
+                                            </ListGroup>
+                                        </SimpleBar>
                                     </Form.Group>
                                 )}
                             </Downshift>
@@ -876,12 +896,12 @@ const Blog = (props) => {
                                         <Card className={`g-col-4 border border-0 rounded-0 card_${index}`} key={index}>
                                             <Card.Body className='d-flex flex-column'>
                                                 <figure>{_handleJSONTOHTML('_blogModal', _article._article_body, index)}</figure>
-                                                <p className='text-muted author'>by <b>{_article._article_author}</b>, {moment(new Date(_article.createdAt)).fromNow()}</p>
+                                                <p className='text-muted author'>by <b>{_article._article_author}</b>, {<Moment fromNow>{_article.updatedAt}</Moment>}</p>
                                                 <h4>{_article._article_title}</h4>
                                                 <p className='category align-self-end'>{_article._article_category}</p>
                                                 <ul className='text-muted tags'>
                                                     {
-                                                        _.map(_article._article_tag, (_t, _i) => {
+                                                        _.map(_article._article_tags, (_t, _i) => {
                                                             return (
                                                                 <li key={_i} className='tag_item'>{_t}</li>
                                                             )
@@ -900,8 +920,8 @@ const Blog = (props) => {
                                                     <div className='line line-2'></div>
                                                 </Button>
                                                 <div className='_footerInformation d-flex'>
-                                                    <p className='d-flex align-items-center text-muted _views'><b>{_.size(_article._article_view)}</b><FontAwesomeIcon icon={faEye} /></p>
-                                                    <p className='d-flex align-items-center text-muted _comments'><b>{_.size(_article._article_comment)}</b><FontAwesomeIcon icon={faCommentAlt} /></p>
+                                                    <p className='d-flex align-items-center text-muted _views'><b>{_.size(_article._article_views)}</b><FontAwesomeIcon icon={faEye} /></p>
+                                                    <p className='d-flex align-items-center text-muted _comments'><b>{_.size(_article._article_comments)}</b><FontAwesomeIcon icon={faCommentAlt} /></p>
                                                     <p className='d-flex align-items-center text-muted _upvotes'><b>{_.size(_article._article_upvotes)}</b><FontAwesomeIcon icon={faThumbsUp} /></p>
                                                     <p className='d-flex align-items-center text-muted _downvotes'><b>{_.size(_article._article_downvotes)}</b><FontAwesomeIcon icon={faThumbsDown} /></p>
                                                 </div>

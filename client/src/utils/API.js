@@ -17,8 +17,8 @@ const api = {
     signup: async (send) => {
         return axios.post(
             `${burl}/user/signup`, 
-            send, 
-            { 
+            send,
+            {
                 headers: headers
             }
         );

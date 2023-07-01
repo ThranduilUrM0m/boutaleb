@@ -31,14 +31,15 @@ router.get('/', (req, res, next) => {
 });
 
 router.param('id', (req, res, next, id) => {
-    return Permission.findById(id, (err, _permission) => {
-        if (err) {
-            return res.sendStatus(404);
-        } else if (_permission) {
+    return Permission.findById(id)
+        .then(_permission => {
+            if (!_permission) {
+                return res.sendStatus(404);
+            }
             req._permission = _permission;
-            return next();
-        }
-    }).catch(next);
+            next();
+        })
+        .catch(next);
 });
 
 router.get('/:id', (req, res, next) => {

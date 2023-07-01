@@ -21,7 +21,7 @@ const _socket = io(_socketURL, { 'transports': ['websocket', 'polling'] });
 const Confirmation = (props) => {
     let location = useLocation();
     let navigate = useNavigate();
-    let { token_id } = useParams();
+    let { _tokenID } = useParams();
 
     const [_showModal, setShowModal] = useState(true);
     const [_modalHeader, setModalHeader] = useState('');
@@ -29,8 +29,8 @@ const Confirmation = (props) => {
     const [_modalIcon, setModalIcon] = useState('');
 
     useEffect(() => {
-        _confirmation(token_id);
-    }, [token_id]);
+        _confirmation(_tokenID);
+    }, [_tokenID]);
 
     const _confirmation = async (token) => {
         await API.confirmation({ token })

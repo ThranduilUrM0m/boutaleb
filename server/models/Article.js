@@ -1,60 +1,81 @@
 import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
+const Comment = new Schema({
+    _parentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null
+    },
+    _author: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    _email: {
+        type: String,
+        lowercase: true,
+        trim: true,
+        unique: true,
+        required: true
+    },
+    _body: {
+        type: String,
+        required: [true, 'Please provide content']
+    },
+    _isPrivate: {
+        type: Boolean,
+        default: false
+    },
+    _fingerprint: {
+        type: String,
+        required: [true, 'Please provide a fingerprint']
+    },
+    _upvotes: [{
+        _upvoter: {
+            type: String
+        }
+    }],
+    _downvotes: [{
+        _downvoter: {
+            type: String
+        }
+    }]
+}, { timestamps: true });
+
+const View = new Schema({
+    _viewer: {
+        type: String
+    },
+}, { timestamps: true });
+
 const Article = new Schema({
     _article_title: {
         type: String,
-        required: [true, 'Please provide a title']
+        unique: true,
+        required: true
     },
     _article_body: {
         type: String,
-        required: [true, 'Please provide a content']
+        required: true
     },
     _article_author: {
         type: String,
-        required: [true, 'Please provide an author']
+        required: true,
+        trim: true
     },
     _article_category: {
         type: String,
-        required: [true, 'Please choose a category']
+        required: true
     },
-    _article_hide: {
-        type: Boolean
+    _article_isPrivate: {
+        type: Boolean,
+        default: false
     },
-    _article_tag: {
+    _article_tags: {
         type: [String]
     },
-    _article_comment: [{
-        _parent_id: {
-            type: mongoose.Types.ObjectId,
-            required: [true, 'Please provide a parent id']
-        },
-        _author: {
-            type: String,
-            required: [true, 'Please provide a title']
-        },
-        _body: {
-            type: String,
-            required: [true, 'Please provide a content']
-        },
-        _fingerprint: {
-            type: String,
-            required: [true, 'Please provide a fingerprint']
-        },
-        _createdAt: {
-            type: Date
-        },
-        _upvotes: [{
-            _upvoter: {
-                type: String
-            }
-        }],
-        _downvotes: [{
-            _downvoter: {
-                type: String
-            }
-        }]
-    }],
+    _article_comments: [Comment],
+    _article_views: [View],
     _article_upvotes: [{
         _upvoter: {
             type: String
@@ -63,14 +84,6 @@ const Article = new Schema({
     _article_downvotes: [{
         _downvoter: {
             type: String
-        }
-    }],
-    _article_view: [{
-        _viewer: {
-            type: String
-        },
-        _createdAt: {
-            type: Date
         }
     }],
 }, { timestamps: true });

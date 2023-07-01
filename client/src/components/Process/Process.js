@@ -1,7 +1,10 @@
+import React from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import $ from 'jquery';
 
+//The illustrations in the cards needs to be changed
+//The cards themselves needs to show more cause it's too empty
 const Process = (props) => {
     return (
         <main className='_process'>

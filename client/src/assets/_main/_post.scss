@@ -1,0 +1,459 @@
+section {
+    position: relative;
+    padding: 10vh;
+
+    &._s1 {
+        nav {
+            display: flex;
+            align-items: flex-end;
+            @include _dimensions($width: 100%, $height: 10vh);
+
+            .breadcrumb {
+                display: flex;
+                padding: 0 10vh;
+                margin: 0;
+
+                &-item {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 0;
+                    padding: 0 0 0 1.25vh;
+
+                    a {
+                        display: flex;
+                        align-items: center;
+                        color: rgba($black, .5);
+                        @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+
+                        svg {
+                            margin: 0 2.5vh;
+                            @include _dimensions($width: 2.5vh, $height: 3vh);
+                        }
+
+                        span {
+                            p {
+                                margin: 0;
+                                font-size: 2.25vh;
+                                line-height: 3vh;
+                            }
+                        }
+
+                        &:hover {
+                            color: $black;
+                        }
+                    }
+                }
+
+                &>li+li:before {
+                    padding: 0 calc(var(--bs-breadcrumb-item-padding-x) + 2.5vh) 0 2.5vh;
+                    color: rgba($color: $pink, $alpha: .5);
+                    content: "→";
+                }
+            }
+        }
+
+        ._postBox {
+            border: 2vh solid rgba($black, .10);
+            margin: 10vh auto;
+            padding: 5vh;
+            @include _dimensions($width: calc(100% - 20vh), $height: '');
+
+            ._title {
+                font-family: 'Abril Fatface', cursive;
+                font-size: 10vh;
+                margin: 0;
+            }
+
+            ._author {
+                font-family: 'Abril Fatface', cursive;
+                font-size: xx-small;
+
+                b {
+                    color: $black;
+                    font-size: 2vh;
+                }
+            }
+
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6 {
+                text-align: -webkit-left;
+                margin-bottom: 0;
+                font-weight: 400;
+            }
+
+            ._body {
+                @include _dimensions($width: 100%, $height: '');
+
+                p {
+                    span {
+                        img {
+                            @include _dimensions($width: 100%, $height: '');
+                        }
+                    }
+                }
+
+                br {
+                    display: none;
+                }
+            }
+
+            ._vcuds {
+                font-size: 2vh;
+                @include _dimensions($width: '', $height: 'fit-content');
+
+                .views,
+                .comments,
+                .upvotes,
+                .downvotes,
+                .share {
+                    margin: 0 0 0 3.25vh;
+
+                    p {
+                        margin: 0;
+                    }
+
+                    button {
+                        background: none;
+                        padding: 0 !important;
+                        @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+                    }
+
+                    svg {
+                        padding: 0 0 0 .5vh;
+                        margin: 0 0 0 .25vh;
+                        fill: rgba($black, .5);
+                        stroke: rgba($black, .5);
+                        color: rgba($black, .5);
+                        @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+                    }
+
+                    &:hover {
+                        svg {
+                            fill: $black;
+                            stroke: $black;
+                            color: $black;
+                        }
+                    }
+                }
+
+                .upvotes {
+                    &.active {
+                        p {
+                            color: rgba($color: $blue, $alpha: .75);
+                        }
+
+                        svg {
+                            fill: rgba($color: $blue, $alpha: .75);
+                            stroke: rgba($color: $blue, $alpha: .75);
+                            color: rgba($color: $blue, $alpha: .75);
+                        }
+
+                        &:hover {
+                            p {
+                                color: $blue
+                            }
+
+                            svg {
+                                fill: $blue;
+                                stroke: $blue;
+                                color: $blue;
+                            }
+                        }
+                    }
+                }
+
+                .downvotes {
+                    &.active {
+                        p {
+                            color: rgba($color: $pink, $alpha: .75);
+                        }
+
+                        svg {
+                            fill: rgba($color: $pink, $alpha: .75);
+                            stroke: rgba($color: $pink, $alpha: .75);
+                            color: rgba($color: $pink, $alpha: .75);
+                        }
+
+                        &:hover {
+                            p {
+                                color: $pink
+                            }
+
+                            svg {
+                                fill: $pink;
+                                stroke: $pink;
+                                color: $pink;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        ._PrevNext {
+            margin: 0 auto;
+            @include _dimensions($width: calc(100% - 20vh), $height: 5vh);
+
+            a {
+                position: relative;
+                z-index: 9999;
+                @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+
+                &:hover {
+                    text-shadow: 0 0 .15vh rgba($black, 1);
+                }
+
+                &._prevArticle {
+                    font-size: 2vh;
+                    color: rgba($black, .5);
+                    cursor: pointer;
+
+                    &::before {
+                        position: absolute;
+                        content: "";
+                        background: rgba($black, .5);
+                        @include _dimensions($width: 5vh, $height: .25vh);
+                        @include _transform($top: 50%, $left: '', $bottom: '', $right: '', $t_x: -200%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                    }
+                }
+
+                &._nextArticle {
+                    font-size: 2vh;
+                    color: rgba($black, .5);
+                    cursor: pointer;
+
+                    &::after {
+                        position: absolute;
+                        content: "";
+                        background: rgba($black, .5);
+                        @include _dimensions($width: 5vh, $height: .25vh);
+                        @include _transform($top: 50%, $left: '', $bottom: '', $right: '', $t_x: 100%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                    }
+                }
+            }
+        }
+    }
+
+    &._s2 {
+        &>.g-col-6 {
+            position: relative;
+            padding: 2%;
+            margin: 0 2vh;
+
+            &:first-of-type {
+                box-shadow: inset 0 0 1rem rgba($color: $liteGray, $alpha: .75);
+
+                .card {
+                    position: relative;
+                    background: $white;
+                    z-index: 1;
+                    box-shadow: 0 0 1rem rgba($color: $liteGray, $alpha: .75);
+                    @include _dimensions($width: 100%, $height: 100%);
+
+                    &-header {
+                        background: $white;
+
+                        h3 {
+                            font-size: 2.75vh;
+                            margin: 2.5vh 0 0 0;
+                            font-weight: 600;
+                        }
+
+                        p {
+                            font-size: smaller;
+                            margin: 0 0 .5vh 0;
+                            font-weight: 600;
+                        }
+                    }
+
+                    &-body {
+                        form {
+                            grid-template-rows: auto auto 1fr auto auto;
+                            margin: 0 2.5vh;
+                            @include _dimensions($width: calc(100% - 5vh), $height: 100%);
+                        }
+                    }
+                }
+            }
+
+            &:last-of-type {
+                .simplebar-scrollable-y {
+                    @include _dimensions($width: '', $height: 100%);
+
+                    .card {
+                        background: none;
+                        margin: 0;
+                        padding: 2vh 0;
+
+                        &-body {
+                            // the flexbox; _topRow is bigger than its content, because of the p's margin, but why does the other div has to fill in the height
+                            position: relative;
+                            padding: 2vh;
+                            border: 2vh solid rgba($black, 0.1);
+                            box-shadow: 0 0 1rem rgba($color: $liteGray, $alpha: .75);
+
+                            ._topRow {
+                                .author {
+                                    font-size: 1.5vh;
+
+                                    b {
+                                        color: $black;
+                                        font-size: 2vh;
+                                    }
+                                }
+
+                                .interactions {
+                                    font-size: 2vh;
+                                    @include _dimensions($width: '', $height: 'fit-content');
+
+                                    .replies,
+                                    .upvotes,
+                                    .downvotes {
+                                        margin: 0 0 0 2.5vh;
+
+                                        p {
+                                            margin: 0;
+                                        }
+
+                                        button {
+                                            background: none;
+                                            padding: 0 !important;
+                                            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+
+                                            svg {
+                                                padding: 0 0 0 .5vh;
+                                                margin: 0 0 0 .25vh;
+                                                fill: rgba($black, .5);
+                                                stroke: rgba($black, .5);
+                                                color: rgba($black, .5);
+                                                @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+                                            }
+                                        }
+
+                                        &:hover {
+                                            svg {
+                                                fill: $black;
+                                                stroke: $black;
+                                                color: $black;
+                                            }
+                                        }
+                                    }
+
+                                    .upvotes {
+                                        &.active {
+                                            p {
+                                                color: rgba($color: $blue, $alpha: .75);
+                                            }
+
+                                            svg {
+                                                fill: rgba($color: $blue, $alpha: .75);
+                                                stroke: rgba($color: $blue, $alpha: .75);
+                                                color: rgba($color: $blue, $alpha: .75);
+                                            }
+
+                                            &:hover {
+                                                p {
+                                                    color: $blue
+                                                }
+
+                                                svg {
+                                                    fill: $blue;
+                                                    stroke: $blue;
+                                                    color: $blue;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    .downvotes {
+                                        &.active {
+                                            p {
+                                                color: rgba($color: $pink, $alpha: .75);
+                                            }
+
+                                            svg {
+                                                fill: rgba($color: $pink, $alpha: .75);
+                                                stroke: rgba($color: $pink, $alpha: .75);
+                                                color: rgba($color: $pink, $alpha: .75);
+                                            }
+
+                                            &:hover {
+                                                p {
+                                                    color: $pink
+                                                }
+
+                                                svg {
+                                                    fill: $pink;
+                                                    stroke: $pink;
+                                                    color: $pink;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            ._middleRow {
+                                h4 {
+                                    font-size: 2.75vh;
+                                    margin: 2.5vh 0 0 0;
+                                    font-weight: 600;
+                                    color: $black;
+                                    letter-spacing: 0;
+                                }
+                            }
+
+                            ._bottomRow {
+                                @include _dimensions($width: '', $height: 5vh);
+
+                                .dropdown {
+                                    .dropdown-toggle {
+                                        span {
+                                            position: relative;
+                                            fill: rgba($black, .5);
+                                            stroke: rgba($black, .5);
+                                            color: rgba($black, .5);
+                                            cursor: pointer;
+                                            @include _dimensions($width: 5vh, $height: 5vh);
+                                            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+
+                                            svg {
+                                                cursor: pointer;
+                                                font-size: 2.5vh;
+                                                @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+                                            }
+
+                                            &:hover {
+                                                svg {
+                                                    fill: $black;
+                                                    stroke: $black;
+                                                    color: $black;
+                                                }
+                                            }
+                                        }
+
+                                        &::after {
+                                            display: none;
+                                        }
+                                    }
+
+                                    .dropdown-menu {
+                                        position: absolute;
+                                        box-shadow: 1.25vh 1.25vh 4.5vh -2.5vh rgba($black, .5);
+                                        margin: 0;
+                                        @include _transform($top: 5vh, $left: unset, $bottom: unset, $right: 0, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                        @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

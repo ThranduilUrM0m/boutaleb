@@ -8,9 +8,9 @@ import crypto from 'crypto';
 dotenv.config();
 
 const login = async (req, res) => {
-    const { _userEmailInput, _userPasswordInput } = req.body;
+    const { _user_email, _user_password } = req.body;
     try {
-        if (!_userEmailInput || !_userPasswordInput) {
+        if (!_user_email || !_user_password) {
             // Le cas où l'email ou bien le password ne serait pas soumit ou nul
             return res.status(400).json({
                 text: 'Please fill out both email and password.'
@@ -19,7 +19,7 @@ const login = async (req, res) => {
 
         // On check si l'utilisateur existe en base
         const findUser = await User.findOne({
-            _userEmailInput
+            _user_email
         });
 
         if (!findUser)
@@ -30,13 +30,13 @@ const login = async (req, res) => {
             return res.status(401).json({
                 text: 'Your account has not been verified. Please check your inbox for a verification email that was sent to you.'
             });
-        if (!findUser.authenticate(_userPasswordInput, findUser))
+        if (!findUser.authenticate(_user_password, findUser))
             return res.status(401).json({
                 text: 'Incorrect Password Inserted.'
             });
 
         const findUserUpdated = await User.findOneAndUpdate(
-            { _user_email: _userEmailInput },
+            { _user_email: _user_email },
             {
                 $set: {
                     _user_toDelete: false,
@@ -58,19 +58,19 @@ const login = async (req, res) => {
     }
 }
 const signup = async (req, res) => {
-    const { _userEmailInput, _userUsernameValue, _userPasswordValue, _fingerprint } = req.body;
+    const { _user_email, _userUsernameInput, _user_password, _user_fingerprint } = req.body;
     try {
-        if (!_userEmailInput || !_userUsernameValue || !_userPasswordValue || !_fingerprint) {
+        if (!_user_email || !_userUsernameInput || !_user_password || !_user_fingerprint) {
             return res.status(400).json({
                 text: 'It looks like some information about u, wasn\'t correctly submitted, please retry.'
             });
         }
 
         const findUserByEmail = await User.findOne({
-            _user_email: _userEmailInput
+            _user_email: _user_email
         });
         const findUserByUsername = await User.findOne({
-            _user_username: _userUsernameValue
+            _user_username: _userUsernameInput
         });
         if (findUserByEmail) {
             return res.status(400).json({
@@ -84,10 +84,10 @@ const signup = async (req, res) => {
         }
 
         const _newUser = {
-            _user_email: _userEmailInput,
-            _user_username: _userUsernameValue,
-            _user_password: passwordHash.generate(_userPasswordValue),
-            _user_fingerprint: _fingerprint,
+            _user_email: _user_email,
+            _user_username: _userUsernameInput,
+            _user_password: passwordHash.generate(_user_password),
+            _user_user_fingerprint: _user_fingerprint,
             _user_isVerified: false,
             _user_toDelete: false
         };
@@ -147,12 +147,12 @@ const confirmation = async (req, res, next) => {
     });
 }
 const sendMessage = async (req, res) => {
-    const { _userNameInput, _userPhoneInput, _userEmailInput, _userNewsletterInput, _userMessageInput } = req.body;
+    const { _user_username, _userPhoneInput, _user_email, _userNewsletterInput, _userMessageInput } = req.body;
 
     //send a verification mail to the user's email
     SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey = process.env.API_KEY;
     new SibApiV3Sdk.TransactionalEmailsApi().sendTransacEmail({
-        'sender': { 'email': _userEmailInput, 'name': _userNameInput, 'phone': _userPhoneInput, 'newsletter': _userNewsletterInput },
+        'sender': { 'email': _user_email, 'name': _user_username, 'phone': _userPhoneInput, 'newsletter': _userNewsletterInput },
         'subject': 'Feedback',
         'htmlContent': '<!DOCTYPE html><html><body><p>' + _userMessageInput + '</p></body></html>',
         'messageVersions': [
@@ -196,7 +196,7 @@ const update = async (req, res) => {
                 _user_password: _user ? (_user_password_new ? passwordHash.generate(_user_password_new) : _user._user_password) : (_user_password_new ? passwordHash.generate(_user_password_new) : _new_user._user_password),
                 _user_passwordResetToken: _user ? _user._user_passwordResetToken : _new_user._user_passwordResetToken,
                 _user_passwordResetExpires: _user ? _user._user_passwordResetExpires : _new_user._user_passwordResetExpires,
-                _user_fingerprint: _user ? _user._user_fingerprint : _new_user._user_fingerprint,
+                _user_user_fingerprint: _user ? _user._user_user_fingerprint : _new_user._user_user_fingerprint,
                 _user_isVerified: _user ? _user._user_isVerified : _new_user._user_isVerified,
                 _user_toDelete: _user ? _user._user_toDelete : _new_user._user_toDelete,
                 _user_logindate: _user ? _user._user_logindate : _new_user._user_logindate,

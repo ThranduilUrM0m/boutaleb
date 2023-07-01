@@ -4,7 +4,7 @@ import {
 } from 'react-router-dom';
 import { _useStore } from '../../store/store';
 import axios from 'axios';
-import moment from 'moment';
+import Moment from 'react-moment';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Container from 'react-bootstrap/Container';
@@ -54,7 +54,7 @@ const Header = (props) => {
     const [_cardsPerPage] = useState(4);
     const [_showModal, setShowModal] = useState(false);
 
-    let _articleTags = _.map(_.uniq(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_hide }), ('_article_tag')))), (_tag, _index) => {
+    let _articleTags = _.map(_.uniq(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), ('_article_tags')))), (_tag, _index) => {
         return {
             value: _tag
         }
@@ -64,7 +64,7 @@ const Header = (props) => {
             value: _tag
         }
     });
-    let _articleItems = _.orderBy(_.uniqBy(_.map(_.union(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_tag')), _.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_title'), _.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_author'), _.map(_.filter(_articles, (_article) => { return !_article._article_hide }), '_article_category')), (_search, _index) => {
+    let _articleItems = _.orderBy(_.uniqBy(_.map(_.union(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_tags')), _.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_title'), _.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_author'), _.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_category')), (_search, _index) => {
         return {
             value: _.toLower(_search.replace(/\.$/, ""))
         }
@@ -121,8 +121,8 @@ const Header = (props) => {
     const _articlesToShow = (_articles, _projects) => {
         return _.filter(
             _.union(
-                _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_hide }), ['createdAt'], ['desc']),
-                _.orderBy(_.filter(_projects, (_projectSort) => { return !_projectSort._project_hide }), ['createdAt'], ['desc'])
+                _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_isPrivate }), ['updatedAt'], ['desc']),
+                _.orderBy(_.filter(_projects, (_projectSort) => { return !_projectSort._project_hide }), ['updatedAt'], ['desc'])
             ),
             (_search) => {
                 let _filterSearch = _.map(_.filter(_.union(_articleItems, _projectItems), (item) => { return _.includes(_.lowerCase(item.value), _.lowerCase(watch(['_searchInput'])[0])) }), (item, index) => { return (item.value) });
@@ -299,6 +299,7 @@ const Header = (props) => {
                         <Offcanvas.Header />
                         <Offcanvas.Body className='d-flex flex-column justify-content-center'>
                             <Nav className='align-items-center'>
+                                {/* The active thingy is only working through navigation somehow, but if i hit previous or i go into a post */}
                                 <Nav.Item className='text-center'>
                                     <Nav.Link
                                         as={NavLink}
@@ -333,8 +334,18 @@ const Header = (props) => {
                                 <Nav.Item className='text-center'>
                                     <Nav.Link
                                         as={NavLink}
-                                        to='/aboutus'
+                                        to='/feedback'
                                         eventKey='3'
+                                        className='nav-link d-flex align-items-center'
+                                    >
+                                        Feedback<b className='pink_dot'>.</b>
+                                    </Nav.Link>
+                                </Nav.Item>
+                                <Nav.Item className='text-center'>
+                                    <Nav.Link
+                                        as={NavLink}
+                                        to='/aboutus'
+                                        eventKey='4'
                                         className='nav-link d-flex align-items-center'
                                     >
                                         About Us<b className='pink_dot'>.</b>
@@ -361,13 +372,13 @@ const Header = (props) => {
                                         <Card className={`g-col-3 border border-0 rounded-0 card_${index}`} key={index}>
                                             <Card.Body className='d-flex flex-column'>
                                                 <figure>{_handleJSONTOHTML('_searchModal', _object._article_body ? _object._article_body : _object._project_image, index)}</figure>
-                                                <p className='text-muted author'>by <b>{_object._article_author ? _object._article_author : _object._project_author}</b>, {moment(new Date(_object.createdAt)).fromNow()}</p>
+                                                <p className='text-muted author'>by <b>{_object._article_author ? _object._article_author : _object._project_author}</b>, {<Moment fromNow>{_object.updatedAt}</Moment>}</p>
                                                 <h4>{_object._article_title ? _object._article_title : _object._project_title}</h4>
                                                 <p className='category align-self-end'>{_object._article_category ? _object._article_category : 'Project'}</p>
                                                 <ul className='text-muted tags'>
                                                     {
-                                                        _object._article_tag ?
-                                                            _.map(_object._article_tag, (_t, _i) => {
+                                                        _object._article_tags ?
+                                                            _.map(_object._article_tags, (_t, _i) => {
                                                                 return (
                                                                     <li key={_i} className='tag_item'>{_t}</li>
                                                                 )
@@ -392,8 +403,8 @@ const Header = (props) => {
                                                     <div className='line line-2'></div>
                                                 </Button>
                                                 <div className='_footerInformation d-flex'>
-                                                    <p className='d-flex align-items-center text-muted _views'><b>{_.size(_object._article_view ? _object._article_view : _object._project_view)}</b><FontAwesomeIcon icon={faEye} /></p>
-                                                    <p className='d-flex align-items-center text-muted _comments'><b>{_.size(_object._article_comment ? _object._article_comment : _object._project_comment)}</b><FontAwesomeIcon icon={faCommentAlt} /></p>
+                                                    <p className='d-flex align-items-center text-muted _views'><b>{_.size(_object._article_views ? _object._article_views : _object._project_view)}</b><FontAwesomeIcon icon={faEye} /></p>
+                                                    <p className='d-flex align-items-center text-muted _comments'><b>{_.size(_object._article_comments ? _object._article_comments : _object._project_comment)}</b><FontAwesomeIcon icon={faCommentAlt} /></p>
                                                     <p className='d-flex align-items-center text-muted _upvotes'><b>{_.size(_object._article_upvotes ? _object._article_upvotes : _object._project_upvotes)}</b><FontAwesomeIcon icon={faThumbsUp} /></p>
                                                     <p className='d-flex align-items-center text-muted _downvotes'><b>{_.size(_object._article_downvotes ? _object._article_downvotes : _object._project_downvotes)}</b><FontAwesomeIcon icon={faThumbsDown} /></p>
                                                 </div>

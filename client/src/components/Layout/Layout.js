@@ -6,6 +6,8 @@ import Footer from '../Footer/Footer';
 const Layout = (props) => {
     return (
         <>
+            {/* Header needs a scroll effect so that when i scroll down, it stays visible */}
+
             {/* A 'layout route' is a good place to put markup you want to
                 share across all the pages on your site, like navigation. */}
             <Header />

@@ -1,5 +1,5 @@
 import React from 'react';
-import moment from 'moment';
+import Moment from 'react-moment';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -25,7 +25,7 @@ const Footer = (props) => {
                             </li>
                             <li className='list-inline-item'>
                                 <FontAwesomeIcon icon={faCopyright} />
-                                <span>{moment().format('YYYY')}</span> - With <FontAwesomeIcon icon={faHeart} /> from Zakariae boutaleb.
+                                <span>{<Moment format='YYYY' date={new Date()} />}</span> - With <FontAwesomeIcon icon={faHeart} /> from Zakariae boutaleb.
                             </li>
                         </ul>
                     </Col>

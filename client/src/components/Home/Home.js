@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import {
     Link
 } from 'react-router-dom';
 import { _useStore } from '../../store/store';
 import axios from 'axios';
-import moment from 'moment';
+import Moment from 'react-moment';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
@@ -12,7 +13,6 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import Modal from 'react-bootstrap/Modal';
-import { useForm } from 'react-hook-form';
 import Slider from 'react-slick';
 import API from '../../utils/API';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -33,6 +33,7 @@ const Home = (props) => {
         handleSubmit,
         watch,
         reset,
+        setFocus,
         formState: { errors }
     } = useForm({
         mode: 'onTouched',
@@ -256,7 +257,7 @@ const Home = (props) => {
 
     const _handleArticleJSONTOHTML = (index) => {
         let _i = index + 1;
-        const html = $.parseHTML(_.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['_article_view'], ['desc']).slice(0, 10)[index]._article_body);
+        const html = $.parseHTML(_.orderBy(_.filter(_articles, (_a) => { return !_a._article_isPrivate }), ['_article_views'], ['desc']).slice(0, 10)[index]._article_body);
         $('._home ._s2 ._figure').html($(html).find('img').first());
         $('._number p').html(_i < 10 ? '0'+_i : ''+_i);
         $('._number p').attr('data-text', _i < 10 ? '0'+_i : ''+_i);
@@ -359,7 +360,7 @@ const Home = (props) => {
                             type='button'
                             className='border border-0 rounded-0 inverse w-25'
                             variant='outline-light'
-                            onClick={() => { $([document.documentElement, document.body]).animate({ scrollTop: $('._s4').offset().top }, 0); $('input[name=\'_userNameInput\']').trigger('focus'); }}
+                            onClick={() => { $([document.documentElement, document.body]).animate({ scrollTop: $('._s4').offset().top }, 0); setFocus('_userNameInput'); }}
                         >
                             <div className='buttonBorders'>
                                 <div className='borderTop'></div>
@@ -380,7 +381,7 @@ const Home = (props) => {
                         </div>
                         <Slider {..._sliderProjectsSettings}>
                             {
-                                _.map((_.orderBy(_.filter(_projects, (_p) => { return !_p._hide }), ['_project_view'], ['desc']).slice(0, 10)), (_project, index) => {
+                                _.map((_.orderBy(_.filter(_projects, (_p) => { return !_p._article_isPrivate }), ['_project_view'], ['desc']).slice(0, 10)), (_project, index) => {
                                     return (
                                         <Card className={`border border-0 rounded-0 card_${index}`} key={index}>
                                             <Card.Body>
@@ -393,7 +394,7 @@ const Home = (props) => {
                                                         {_handleJSONTOHTML(_project._project_image, index)}
                                                     </div>
                                                 </Link>
-                                                <p className='text-muted author'>by <b>{_project._project_author}</b>, {moment(new Date(_project.createdAt)).fromNow()}</p>
+                                                <p className='text-muted author'>by <b>{_project._project_author}</b>, {<Moment fromNow>{_project.updatedAt}</Moment>}</p>
                                             </Card.Body>
                                         </Card>
                                     )
@@ -413,7 +414,7 @@ const Home = (props) => {
                     <div className='_sliderArticles'>
                         <Slider {..._sliderArticlesSettings}>
                             {
-                                _.map(_.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['_article_view'], ['desc']).slice(0, 10), (_article, index) => {
+                                _.map(_.orderBy(_.filter(_articles, (_a) => { return !_a._article_isPrivate }), ['_article_views'], ['desc']).slice(0, 10), (_article, index) => {
                                     return (
                                         <Card className={`border border-0 rounded-0 card_${index}`} key={index}>
                                             <div className='borderTop'></div>
@@ -443,7 +444,7 @@ const Home = (props) => {
                                                             Read More About it<b className='pink_dot'>.</b>
                                                         </span>
                                                     </Button>
-                                                    <span className='text-muted information align-self-end'><b>{_.size(_article._article_view)}</b> Views <FontAwesomeIcon icon={faCircleDot} />, {moment(new Date(_article.createdAt)).fromNow()}</span>
+                                                    <span className='text-muted information align-self-end'><b>{_.size(_article._article_views)}</b> Views <FontAwesomeIcon icon={faCircleDot} />, {<Moment fromNow>{_article.updatedAt}</Moment>}</span>
                                                     <div className='_shadowIndex'><p>{_.head(_article._article_title.split(/[\s.]+/)).length <= 2 ? _.head(_article._article_title.split(/[\s.]+/)) + ' ' + _.nth(_article._article_title.split(/[\s.]+/), 1) : _.head(_article._article_title.split(/[\s.]+/))}<b className='pink_dot'>.</b></p></div>
                                                 </Form>
                                             </Card.Body>
@@ -571,18 +572,19 @@ const Home = (props) => {
                                 <Col className='g-col-6'>
                                     <Form.Group
                                         controlId='_userNameInput'
-                                        className={`_formGroup ${_userNameFocused ? 'focused' : ''}`}>
+                                        className={`_formGroup ${_userNameFocused ? 'focused' : ''}`}
+                                    >
                                         <FloatingLabel
                                             label='Name.'
-                                            className='_formLabel'
+                                            className='_formLabel _labelWhite'
                                         >
                                             <Form.Control
                                                 {...register('_userNameInput', {
-                                                    required: 'Name missing.',
-                                                    pattern: {
-                                                        value: /^[a-zA-Z]{2,}$/,
-                                                        message: 'Use more than 1 letters.'
-                                                    },
+                                                    required: 'Must be 3 to 16 long.',
+													pattern: {
+														value: /^[a-zA-Z\s]{3,16}$/,
+														message: 'No numbers or symbols.'
+													},
                                                     onBlur: () => { setUserNameFocused(false) }
                                                 })}
                                                 placeholder='Name.'
@@ -614,10 +616,13 @@ const Home = (props) => {
                                     </Form.Group>
                                 </Col>
                                 <Col className='g-col-6'>
-                                    <Form.Group controlId='_userPhoneInput' className={`_formGroup ${_userPhoneFocused ? 'focused' : ''}`}>
+                                    <Form.Group
+                                        controlId='_userPhoneInput'
+                                        className={`_formGroup ${_userPhoneFocused ? 'focused' : ''}`}
+                                    >
                                         <FloatingLabel
                                             label='Phone.'
-                                            className='_formLabel'
+                                            className='_formLabel _labelWhite'
                                         >
                                             <Form.Control
                                                 {...register('_userPhoneInput', {
@@ -635,30 +640,37 @@ const Home = (props) => {
                                                 name='_userPhoneInput'
                                                 onFocus={() => { setUserPhoneFocused(true) }}
                                             />
-                                            {errors._userPhoneInput && (
-                                                <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_userPhoneInput', false) ? '' : 'toClear'}`}>
-                                                    {errors._userPhoneInput.message}
-                                                </Form.Text>
-                                            )}
-                                            {watch('_userPhoneInput', false) && (
-                                                <div className='_formClear'
-                                                    onClick={() => {
-                                                        reset({
-                                                            _userPhoneInput: ''
-                                                        });
-                                                    }}
-                                                ></div>
-                                            )}
+                                            {
+                                                errors._userPhoneInput && (
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_userPhoneInput', false) ? '' : 'toClear'}`}>
+                                                        {errors._userPhoneInput.message}
+                                                    </Form.Text>
+                                                )
+                                            }
+                                            {
+                                                watch('_userPhoneInput', false) && (
+                                                    <div className='_formClear'
+                                                        onClick={() => {
+                                                            reset({
+                                                                _userPhoneInput: ''
+                                                            });
+                                                        }}
+                                                    ></div>
+                                                )
+                                            }
                                         </FloatingLabel>
                                     </Form.Group>
                                 </Col>
                             </Row>
                             <Row className='g-col-12 grid'>
                                 <Col className='g-col-6'>
-                                    <Form.Group controlId='_userEmailInput' className={`_formGroup ${_userEmailFocused ? 'focused' : ''}`}>
+                                    <Form.Group
+                                        controlId='_userEmailInput'
+                                        className={`_formGroup ${_userEmailFocused ? 'focused' : ''}`}
+                                    >
                                         <FloatingLabel
                                             label='Email.'
-                                            className='_formLabel'
+                                            className='_formLabel _labelWhite'
                                         >
                                             <Form.Control
                                                 {...register('_userEmailInput', {
@@ -676,28 +688,35 @@ const Home = (props) => {
                                                 name='_userEmailInput'
                                                 onFocus={() => { setUserEmailFocused(true) }}
                                             />
-                                            {errors._userEmailInput && (
-                                                <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_userEmailInput', false) ? '' : 'toClear'}`}>
-                                                    {errors._userEmailInput.message}
-                                                </Form.Text>
-                                            )}
-                                            {watch('_userEmailInput', false) && (
-                                                <div className='_formClear'
-                                                    onClick={() => {
-                                                        reset({
-                                                            _userEmailInput: ''
-                                                        });
-                                                    }}
-                                                ></div>
-                                            )}
+                                            {
+                                                errors._userEmailInput && (
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_userEmailInput', false) ? '' : 'toClear'}`}>
+                                                        {errors._userEmailInput.message}
+                                                    </Form.Text>
+                                                )
+                                            }
+                                            {
+                                                watch('_userEmailInput', false) && (
+                                                    <div className='_formClear'
+                                                        onClick={() => {
+                                                            reset({
+                                                                _userEmailInput: ''
+                                                            });
+                                                        }}
+                                                    ></div>
+                                                )
+                                            }
                                         </FloatingLabel>
                                     </Form.Group>
                                 </Col>
                                 <Col className='g-col-6'>
-                                    <Form.Group controlId='_userNewsletterInput' className='_checkGroup _formGroup'>
+                                    <Form.Group
+                                        controlId='_userNewsletterInput'
+                                        className='_checkGroup _formGroup'
+                                    >
                                         <FloatingLabel
                                             label='Subscribe to receive our newsletter.'
-                                            className='_formLabel'
+                                            className='_formLabel _labelWhite'
                                         >
                                             <Form.Check
                                                 type='switch'
@@ -711,10 +730,13 @@ const Home = (props) => {
                             </Row>
                             <Row className='g-col-12 grid'>
                                 <Col className='g-col-12'>
-                                    <Form.Group controlId='_userMessageInput' className={`_formGroup ${_userMessageFocused ? 'focused' : ''}`}>
+                                    <Form.Group
+                                        controlId='_userMessageInput'
+                                        className={`_formGroup ${_userMessageFocused ? 'focused' : ''}`}
+                                    >
                                         <FloatingLabel
                                             label='Message.'
-                                            className='_formLabel'
+                                            className='_formLabel _labelWhite'
                                         >
                                             <Form.Control
                                                 {...register('_userMessageInput', {
@@ -729,20 +751,24 @@ const Home = (props) => {
                                                 name='_userMessageInput'
                                                 onFocus={() => { setUserMessageFocused(true) }}
                                             />
-                                            {errors._userMessageInput && (
-                                                <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 messageClear`}>
-                                                    {errors._userMessageInput.message}
-                                                </Form.Text>
-                                            )}
-                                            {watch('_userMessageInput', false) && (
-                                                <div className='_formClear _messageInput'
-                                                    onClick={() => {
-                                                        reset({
-                                                            _userMessageInput: ''
-                                                        });
-                                                    }}
-                                                ></div>
-                                            )}
+                                            {
+                                                errors._userMessageInput && (
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 messageClear`}>
+                                                        {errors._userMessageInput.message}
+                                                    </Form.Text>
+                                                )
+                                            }
+                                            {
+                                                watch('_userMessageInput', false) && (
+                                                    <div className='_formClear _messageInput'
+                                                        onClick={() => {
+                                                            reset({
+                                                                _userMessageInput: ''
+                                                            });
+                                                        }}
+                                                    ></div>
+                                                )
+                                            }
                                         </FloatingLabel>
                                     </Form.Group>
                                 </Col>
@@ -768,6 +794,7 @@ const Home = (props) => {
                     </div>
                 </div>
             </section>
+            
             <Modal show={_showModal} onHide={() => setShowModal(false)} centered>
                 <Form>
                     <Modal.Header closeButton>

@@ -55,6 +55,7 @@ form {
                 box-shadow: none;
                 margin: 0;
                 padding: 1vh;
+                min-height: unset;
                 @include _dimensions($width: '', $height: 7vh);
                 @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
             }
@@ -118,9 +119,15 @@ form {
                 padding: 0 1vh;
                 opacity: .9;
                 font-size: 2vh;
-                @include _transform($top: 3.5vh, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                @include _transform($top: 3.5vh, $left: .25vh, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
                 @include _dimensions($width: unset, $height: unset);
                 @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+            }
+
+            &._labelWhite {
+                label {
+                    background: $white;
+                }
             }
 
             &>._formControl:focus~label,
@@ -128,7 +135,8 @@ form {
             &>._formControl-plaintext~label,
             &>.form-select~label {
                 line-height: 2vh;
-                @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -25%, $r_deg: 0, $s_x: .85, $s_y: .85);
+                opacity: 1;
+                @include _transform($top: 0, $left: .75vh, $bottom: '', $right: '', $t_x: 0, $t_y: -25%, $r_deg: 0, $s_x: .85, $s_y: .85);
             }
         }
 
@@ -199,7 +207,7 @@ form {
         @include _dimensions($width: '', $height: 7vh);
         @include _transitions($property: '', $duration: .25s, $timing: '', $delay: '');
 
-        &::before {
+        &:not(.btn-link)::before {
             content: '';
             position: absolute;
             color: $white;
@@ -281,7 +289,7 @@ form {
             @include _dimensions($width: max-content, $height: max-content);
         }
 
-        &:hover {
+        &:not(.btn-link):hover {
             border: none;
             background: transparent !important;
             color: $white !important;
@@ -310,11 +318,20 @@ form {
                 border: .1vh solid rgba($color: $black, $alpha: .5);
             }
         }
+
+        &._red {
+            color: rgba($color: $red, $alpha: .5);
+            padding: 0;
+        }
     }
 
     &:hover {
         .btn {
             color: $black;
+
+            &._red {
+                color: $red;
+            }
 
             .buttonBorders {
                 border: .1vh solid $black;
@@ -638,12 +655,10 @@ form {
                                                 }
 
                                                 .list-group {
-                                                    overflow-y: auto;
-                                                    max-height: 46vh;
+                                                    max-height: 40vh;
                                                     background: $white;
-                                                    margin: 0 -2vh;
                                                     padding: 0;
-                                                    @include _dimensions($width: calc(100% + 4vh), $height: '');
+                                                    @include _dimensions($width: 100%, $height: '');
 
                                                     &-item {
                                                         position: relative;
@@ -685,8 +700,7 @@ form {
                                 z-index: 10000;
 
                                 .list-group {
-                                    overflow-y: auto;
-                                    max-height: 46vh;
+                                    max-height: 40vh;
                                     background: $white;
                                     margin: 0;
                                     padding: 0;
@@ -1301,5 +1315,19 @@ form {
 .row {
     .col {
         padding: 0;
+    }
+}
+
+.scrollable-container {
+    &::-webkit-scrollbar {
+
+        &--thumb {
+            opacity: .75;
+
+            &:hover {
+                opacity: 1;
+                width: 1vh;
+            }
+        }
     }
 }

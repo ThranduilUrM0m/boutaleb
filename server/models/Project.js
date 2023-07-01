@@ -4,6 +4,7 @@ const { Schema } = mongoose;
 const Project = new Schema({
     _project_title: {
         type: String,
+        unique: true,
         required: [true, 'Please provide a title']
     },
     _project_image: {
@@ -12,6 +13,7 @@ const Project = new Schema({
     },
     _project_link: {
         type: String,
+        unique: true,
         required: [true, 'Please provide a link']
     },
     _project_author: {

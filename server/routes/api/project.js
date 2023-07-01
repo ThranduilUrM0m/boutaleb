@@ -55,14 +55,15 @@ router.get('/', (req, res, next) => {
 });
 
 router.param('id', (req, res, next, id) => {
-    return Project.findById(id, (err, _project) => {
-        if (err) {
-            return res.sendStatus(404);
-        } else if (_project) {
+    return Project.findById(id)
+        .then(_project => {
+            if (!_project) {
+                return res.sendStatus(404);
+            }
             req._project = _project;
-            return next();
-        }
-    }).catch(next);
+            next();
+        })
+        .catch(next);
 });
 
 router.get('/:id', (req, res, next) => {

@@ -272,6 +272,7 @@ section {
 
         .g-col-7 {
             position: relative;
+            box-shadow: 0 0 1rem rgba($color: $liteGray, $alpha: .75);
 
             ._sliderArticles {
                 position: relative;
@@ -284,7 +285,7 @@ section {
                         .slick-track {
                             .slick-slide {
                                 background: $white;
-
+                                
                                 &>div {
                                     .card {
                                         background: $white;

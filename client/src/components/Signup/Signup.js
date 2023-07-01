@@ -4,6 +4,7 @@ import {
 	useNavigate,
 	useLocation
 } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
@@ -15,28 +16,69 @@ import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRectangleXmark, faSquareCheck } from '@fortawesome/free-regular-svg-icons';
 import _ from 'lodash';
-import { io } from "socket.io-client";
+import { io } from 'socket.io-client';
 
 const _socketURL = _.isEqual(process.env.NODE_ENV, 'production')
 	? window.location.hostname
 	: 'localhost:8800';
 const _socket = io(_socketURL, { 'transports': ['websocket', 'polling'] });
 
+const usePersistentFingerprint = () => {
+    const [_fingerprint, setFingerprint] = useState('');
+
+    useEffect(() => {
+        const generateFingerprint = async () => {
+            // Check if the persistent identifier exists in storage (e.g., cookie or local storage)
+            const persistentIdentifier = localStorage.getItem('persistentIdentifier');
+
+            if (persistentIdentifier) {
+                // Use the persistent identifier if available
+                setFingerprint(persistentIdentifier);
+            } else {
+                // Fallback to generating a new fingerprint using FingerprintJS
+                const fp = await FingerprintJS.load();
+                const { visitorId } = await fp.get();
+                setFingerprint(visitorId);
+
+                // Store the persistent identifier for future visits
+                localStorage.setItem('persistentIdentifier', visitorId);
+            }
+        };
+
+        generateFingerprint();
+    }, []);
+
+    return _fingerprint;
+};
+
 const Signup = (props) => {
-	const fpPromise = FingerprintJS.load();
+    /* In this Component the _fingerprint variable is not needed at load, so it's working fine,
+    but what if someday the user is using somethin to block it or it just doesn't work,
+    i'll have to make sure the field can be empty at axios calls */
+    const _fingerprint = usePersistentFingerprint();
+    const [isFingerprintLoaded, setIsFingerprintLoaded] = useState(false);
 
 	let location = useLocation();
 	let navigate = useNavigate();
 
 	const _user = _useStore((state) => state._user);
+    const addUser = _useStore((state) => state.addUser);
 
-	const [_userEmailValue, setUserEmailValue] = useState('');
+	const {
+		register,
+		handleSubmit,
+		watch,
+		reset,
+		formState: { errors }
+	} = useForm({
+		mode: 'onTouched',
+		reValidateMode: 'onSubmit',
+		reValidateMode: 'onChange'
+	});
+
 	const [_userEmailFocused, setUserEmailFocused] = useState(false);
-	const [_userUsernameValue, setUserUsernameValue] = useState('');
-	const [_userUsernameFocused, setUserUsernameFocused] = useState(false);
-	const [_userPasswordValue, setUserPasswordValue] = useState('');
+	const [_userNameFocused, setUserUsernameFocused] = useState(false);
 	const [_userPasswordFocused, setUserPasswordFocused] = useState(false);
-	const [_userPasswordConfirmValue, setUserPasswordConfirmValue] = useState('');
 	const [_userPasswordConfirmFocused, setUserPasswordConfirmFocused] = useState(false);
 
 	const [_showModal, setShowModal] = useState(false);
@@ -48,49 +90,53 @@ const Signup = (props) => {
 		if (!_.isEmpty(_user)) {
 			navigate('/dashboard', { replace: true, state: { from: location } });
 		}
-	}, [location, navigate, _user]);
 
-	const _handleClose = () => {
-		setShowModal(false);
-	}
+		const subscription = watch((value, { name, type }) => { });
+		return () => subscription.unsubscribe();
+	}, [location, navigate, _user, watch]);
 
-	const _handleShow = () => {
-		setShowModal(true);
-	}
+	const onSubmit = async (values) => {
+		values._user_fingerprint = _fingerprint;
 
-	const _signup = async (event) => {
-		const fp = await fpPromise;
-		const result = await fp.get();
-		let _fingerprint = result.visitorId;
-
-		event.preventDefault();
 		try {
-			if (_userPasswordValue !== _userPasswordConfirmValue) throw new Error('Please check your password confirmation');
-			await API.signup({ _userEmailValue, _userUsernameValue, _userPasswordValue, _fingerprint })
+			if (values._user_password !== values._user_passwordConfirm) throw new Error('Please check your password confirmation');
+			await API.signup(values)
 				.then((res) => {
-					setUserEmailValue('');
-					setUserUsernameValue('');
-					setUserPasswordValue('');
-					setUserPasswordConfirmValue('');
+					addUser(res.data);
 					setModalHeader('Hello ✔ and Welcome !');
 					setModalBody('We have sent you a verification email, all you have to do next is just click the link in the email and boom you are one of us now.');
 					setModalIcon(<FontAwesomeIcon icon={faSquareCheck} />);
-					_handleShow();
+					setShowModal(true);
 					_socket.emit('action', { type: '_userCreated', data: res.data._user });
+				})
+				.then(() => {
+					reset({
+                        _user_email: '',
+                        _user_username: '',
+                        _user_password: '',
+                        _user_passwordConfirm: ''
+                    });
 				})
 				.catch((error) => {
 					setModalHeader('We\'re sorry !');
 					setModalBody(error.response.data.text);
 					setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
-					_handleShow();
+					setShowModal(true);
 				});
 		} catch (error) {
 			setModalHeader('We\'re sorry !');
 			setModalBody(JSON.stringify(error));
 			setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
-			_handleShow();
+			setShowModal(true);
 		}
 	}
+
+	const onError = (error) => {
+		setModalHeader('We\'re sorry !');
+		setModalBody(error);
+		setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
+		setShowModal(true);
+	};
 
 	const _toLogin = async (event) => {
 		event.preventDefault();
@@ -111,7 +157,7 @@ const Signup = (props) => {
 								<p>To speak louder.</p>
 								<Button
 									type='submit'
-									className='border border-0 rounded-0'
+									className='border border-0 rounded-0 w-100'
 									variant='outline-light'
 								>
 									<div className='buttonBorders'>
@@ -134,57 +180,196 @@ const Signup = (props) => {
 							<h3>Signup<b className='pink_dot'>.</b></h3>
 						</Card.Header>
 						<Card.Body>
-							<Form className='grid'>
+							<Form onSubmit={handleSubmit(onSubmit, onError)} className='grid'>
 								<Row className='g-col-12'>
-									<Form.Group controlId='_userEmailInput' className={`_formGroup ${_userEmailFocused ? 'focused' : ''}`}>
+									<Form.Group
+										controlId='_user_email'
+										className={`_formGroup ${_userEmailFocused ? 'focused' : ''}`}
+									>
 										<FloatingLabel
-											controlId='_userEmailInput'
 											label='Email.'
 											className='_formLabel'
 										>
-											<Form.Control placeholder="Email." autoComplete='new-password' type='email' className='_formControl border border-0 rounded-0' name='_userEmailInput' value={_userEmailValue} onChange={(event) => setUserEmailValue(event.target.value)} onFocus={() => setUserEmailFocused(true)} onBlur={() => setUserEmailFocused(false)} />
+											<Form.Control
+												{...register('_user_email', {
+													required: 'Email missing.',
+													pattern: {
+														value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
+														message: 'Email invalid.'
+													},
+													onBlur: () => { setUserEmailFocused(false) }
+												})}
+												placeholder='Email.'
+												autoComplete='new-password'
+												type='text'
+												className={`_formControl border rounded-0 ${errors._user_email ? 'border-danger' : ''}`}
+												name='_user_email'
+                                                onFocus={() => { setUserEmailFocused(true) }}
+											/>
+											{
+												errors._user_email && (
+													<Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_user_email', false) ? '' : 'toClear'}`}>
+														{errors._user_email.message}
+													</Form.Text>
+												)
+											}
+                                            {
+                                                watch('_user_email', false) && (
+                                                    <div className='_formClear'
+                                                        onClick={() => {
+                                                            reset({
+                                                                _user_email: ''
+                                                            });
+                                                        }}
+                                                    ></div>
+                                                )
+                                            }
 										</FloatingLabel>
 									</Form.Group>
 								</Row>
 								<Row className='g-col-12'>
-									<Form.Group controlId='_userUsernameInput' className={`_formGroup ${_userUsernameFocused ? 'focused' : ''}`}>
+									<Form.Group
+										controlId='_user_username'
+										className={`_formGroup ${_userNameFocused ? 'focused' : ''}`}
+									>
 										<FloatingLabel
-											controlId='_userUsernameInput'
 											label='Username.'
 											className='_formLabel'
 										>
-											<Form.Control placeholder="Username." autoComplete='new-password' type='email' className='_formControl border border-0 rounded-0' name='_userUsernameInput' value={_userUsernameValue} onChange={(event) => setUserUsernameValue(event.target.value)} onFocus={() => setUserUsernameFocused(true)} onBlur={() => setUserUsernameFocused(false)} />
+											<Form.Control
+												{...register('_user_username', {
+													required: 'Must be 3 to 16 long.',
+													pattern: {
+														value: /^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9_]{3,16}$/i,
+														message: 'At least 1 letter and 1 number.'
+													},
+													onBlur: () => { setUserUsernameFocused(false) }
+												})}
+												placeholder='Username.'
+												autoComplete='new-password'
+												type='text'
+												className={`_formControl border rounded-0 ${errors._user_username ? 'border-danger' : ''}`}
+												name='_user_username'
+												onFocus={() => setUserUsernameFocused(true)}
+											/>
+											{
+												errors._user_username && (
+													<Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_user_username', false) ? '' : 'toClear'}`}>
+														{errors._user_username.message}
+													</Form.Text>
+												)
+											}
+                                            {
+                                                watch('_user_username', false) && (
+                                                    <div className='_formClear'
+                                                        onClick={() => {
+                                                            reset({
+                                                                _user_username: ''
+                                                            });
+                                                        }}
+                                                    ></div>
+                                                )
+                                            }
 										</FloatingLabel>
 									</Form.Group>
 								</Row>
 								<Row className='g-col-12'>
-									<Form.Group controlId='_userPasswordInput' className={`_formGroup ${_userPasswordFocused ? 'focused' : ''}`}>
+									<Form.Group
+										controlId='_user_password'
+										className={`_formGroup ${_userPasswordFocused ? 'focused' : ''}`}
+									>
 										<FloatingLabel
-											controlId='_userPasswordInput'
 											label='Password.'
 											className='_formLabel'
 										>
-											<Form.Control placeholder="Password." autoComplete='new-password' type='email' className='_formControl border border-0 rounded-0' name='_userPasswordInput' value={_userPasswordValue} onChange={(event) => setUserPasswordValue(event.target.value)} onFocus={() => setUserPasswordFocused(true)} onBlur={() => setUserPasswordFocused(false)} />
+											<Form.Control
+												{...register('_user_password', {
+													required: 'Password missing.',
+													pattern: {
+														value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[a-zA-Z\d!@#$%^&*()]{8,}$/,
+														message: 'At least 1 upper and 1 lowercase letter, 1 number and 1 symbol.'
+													},
+													onBlur: () => { setUserPasswordFocused(false) }
+												})}
+												placeholder='Password.'
+												autoComplete='new-password'
+												type='password'
+												className={`_formControl border rounded-0 ${errors._user_password ? 'border-danger' : ''}`}
+												name='_user_password'
+												onFocus={() => setUserPasswordFocused(true)}
+											/>
+                                            {
+                                                errors._user_password && (
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_user_password', false) ? '' : 'toClear'}`}>
+                                                        {errors._user_password.message}
+                                                    </Form.Text>
+                                                )
+                                            }
+                                            {
+                                                watch('_user_password', false) && (
+                                                    <div className='_formClear'
+                                                        onClick={() => {
+                                                            reset({
+                                                                _user_password: ''
+                                                            });
+                                                        }}
+                                                    ></div>
+                                                )
+                                            }
 										</FloatingLabel>
 									</Form.Group>
 								</Row>
 								<Row className='g-col-12'>
-									<Form.Group controlId='_userPasswordConfirmInput' className={`_formGroup ${_userPasswordConfirmFocused ? 'focused' : ''}`}>
+									<Form.Group
+										controlId='_user_passwordConfirm'
+										className={`_formGroup ${_userPasswordConfirmFocused ? 'focused' : ''}`}
+									>
 										<FloatingLabel
-											controlId='_userPasswordConfirmInput'
 											label='Confirm Password.'
 											className='_formLabel'
 										>
-											<Form.Control placeholder="Confirm Password." autoComplete='new-password' type='email' className='_formControl border border-0 rounded-0' name='_userPasswordConfirmInput' value={_userPasswordConfirmValue} onChange={(event) => setUserPasswordConfirmValue(event.target.value)} onFocus={() => setUserPasswordConfirmFocused(true)} onBlur={() => setUserPasswordConfirmFocused(false)} />
+											<Form.Control
+												{...register('_user_passwordConfirm', {
+													required: 'Password missing.',
+													pattern: {
+														value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[a-zA-Z\d!@#$%^&*()]{8,}$/,
+														message: 'At least 1 upper and 1 lowercase letter, 1 number and 1 symbol.'
+													},
+													onBlur: () => { setUserPasswordConfirmFocused(false) }
+												})}
+												placeholder='Confirm Password.'
+												autoComplete='new-password'
+												type='password'
+												className={`_formControl border rounded-0 ${errors._user_passwordConfirm ? 'border-danger' : ''}`}
+												name='_user_passwordConfirm'
+												onFocus={() => setUserPasswordConfirmFocused(true)}
+											/>
+                                            {
+                                                errors._user_passwordConfirm && (
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_user_passwordConfirm', false) ? '' : 'toClear'}`}>
+                                                        {errors._user_passwordConfirm.message}
+                                                    </Form.Text>
+                                                )
+                                            }
+                                            {
+                                                watch('_user_passwordConfirm', false) && (
+                                                    <div className='_formClear'
+                                                        onClick={() => {
+                                                            reset({
+                                                                _user_passwordConfirm: ''
+                                                            });
+                                                        }}
+                                                    ></div>
+                                                )
+                                            }
 										</FloatingLabel>
 									</Form.Group>
 								</Row>
 								<Row className='g-col-12'>
 									<Button
-										type='button'
-										className='border border-0 rounded-0'
+										type='submit'
+										className='border border-0 rounded-0 w-100'
 										variant='outline-light'
-										onClick={(event) => _signup(event)}
 									>
 										<div className='buttonBorders'>
 											<div className='borderTop'></div>
@@ -202,7 +387,8 @@ const Signup = (props) => {
 					</Card>
 				</div>
 			</section>
-			<Modal show={_showModal} onHide={() => _handleClose()} centered>
+
+			<Modal show={_showModal} onHide={() => setShowModal(false)} centered>
 				<Form>
 					<Modal.Header closeButton>
 						<Modal.Title>{_modalHeader}</Modal.Title>
@@ -210,7 +396,7 @@ const Signup = (props) => {
 					<Modal.Body className='text-muted'>{_modalBody}</Modal.Body>
 					<Modal.Footer>
 						{_modalIcon}
-						<Button className='border border-0 rounded-0 inverse' variant='outline-light' onClick={() => _handleClose()}>
+						<Button className='border border-0 rounded-0 inverse w-50' variant='outline-light' onClick={() => setShowModal(false)}>
 							<div className='buttonBorders'>
 								<div className='borderTop'></div>
 								<div className='borderRight'></div>

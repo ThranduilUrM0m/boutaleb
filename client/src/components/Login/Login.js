@@ -142,7 +142,7 @@ const Login = (props) => {
 												{...register('_userPasswordInput', {
 													required: 'Password missing.',
 													pattern: {
-														value: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/i,
+														value: /^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9_]{8,}$/i,
 														message: 'At least 1 letter and 1 number.'
 													},
 													onBlur: () => { setUserPasswordFocused(false) }
@@ -165,7 +165,7 @@ const Login = (props) => {
 								<Row className='g-col-12'>
 									<Button
 										type='submit'
-										className='border border-0 rounded-0'
+										className='border border-0 rounded-0 w-100'
 										variant='outline-light'
 									>
 										<div className='buttonBorders'>
@@ -194,7 +194,7 @@ const Login = (props) => {
 								<p>To speak louder.</p>
 								<Button
 									type='submit'
-									className='border border-0 rounded-0'
+									className='border border-0 rounded-0 w-100'
 									variant='outline-light'
 								>
 									<div className='buttonBorders'>

@@ -26,9 +26,9 @@
             "last 1 safari version"
         ]
     },
-    "proxy": "http://localhost:8800",
     "dependencies": {
         "@fingerprintjs/fingerprintjs": "*",
+        "@fingerprintjs/fingerprintjs-pro-react": "^2.4.0",
         "@fortawesome/fontawesome-svg-core": "*",
         "@fortawesome/free-brands-svg-icons": "*",
         "@fortawesome/free-regular-svg-icons": "*",
@@ -37,21 +37,28 @@
         "axios": "*",
         "bootstrap": "*",
         "downshift": "*",
+        "http-proxy-middleware": "*",
         "jquery": "*",
         "lodash": "*",
+        "lodash-es": "*",
         "moment": "*",
         "react": "*",
         "react-bootstrap": "*",
         "react-dom": "*",
         "react-hook-form": "*",
+        "react-moment": "*",
         "react-router": "*",
         "react-router-dom": "*",
         "react-scripts": "*",
         "react-slick": "*",
-        "sass": "^1.56.0",
+        "sass": "*",
+        "simplebar-react": "*",
         "slick-carousel": "*",
         "socket.io-client": "*",
         "web-vitals": "*",
         "zustand": "*"
+    },
+    "devDependencies": {
+        "@babel/plugin-proposal-private-property-in-object": "*"
     }
 }

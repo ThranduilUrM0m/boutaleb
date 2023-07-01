@@ -2,6 +2,7 @@
 import Article from './models/Article.js';
 import Permission from './models/Permission.js';
 import Project from './models/Project.js';
+import Testimony from './models/Testimony.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -120,23 +121,33 @@ const setUpExpress = () => {
         socket.on('action', (action) => {
             switch (action.type) {
                 case '_userConnected':
-                    db.collection("users").find({}).toArray((err, docs) => {
-                        io.sockets.emit('action', { type: '_userConnectedLoad', data: { users: docs } });
+                    db.collection("user").find({}).toArray((err, docs) => {
+                        io.sockets.emit('action', { type: '_userConnectedLoad', data: { user: docs } });
                     });
                     break;
                 case '_userDisonnected':
-                    db.collection("users").find({}).toArray((err, docs) => {
-                        io.sockets.emit('action', { type: '_userConnectedLoad', data: { users: docs } });
+                    db.collection("user").find({}).toArray((err, docs) => {
+                        io.sockets.emit('action', { type: '_userDisonnectedLoad', data: { user: docs } });
                     });
                     break;
                 case '_userCreated':
-                    db.collection("users").find({}).toArray((err, docs) => {
-                        io.sockets.emit('action', { type: '_userConnectedLoad', data: { users: docs } });
+                    db.collection("user").find({}).toArray((err, docs) => {
+                        io.sockets.emit('action', { type: '_userCreatedLoad', data: { user: docs } });
                     });
                     break;
                 case '_userConfirmed':
-                    db.collection("users").find({}).toArray((err, docs) => {
-                        io.sockets.emit('action', { type: '_userConnectedLoad', data: { users: docs } });
+                    db.collection("user").find({}).toArray((err, docs) => {
+                        io.sockets.emit('action', { type: '_userConfirmedLoad', data: { user: docs } });
+                    });
+                    break;
+                case '_testimonyCreated':
+                    db.collection("testimony").find({}).toArray((err, docs) => {
+                        io.sockets.emit('action', { type: '_testimonyCreatedLoad', data: { testimony: docs } });
+                    });
+                    break;
+                case '_testimonyUpdated':
+                    db.collection("testimony").find({}).toArray((err, docs) => {
+                        io.sockets.emit('action', { type: '_testimonyUpdatedLoad', data: { testimony: docs } });
                     });
                     break;
                 default:

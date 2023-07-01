@@ -5,6 +5,7 @@ section {
     &._s1 {
         .g-col-7 {
             position: relative;
+            box-shadow: 0 0 1rem rgba($color: $liteGray, $alpha: .75);
 
             .card {
                 background: $white;

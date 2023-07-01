@@ -1,34 +1,44 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { _useStore } from '../../store/store';
 import axios from 'axios';
 import Button from 'react-bootstrap/Button';
-import Card from 'react-bootstrap/Card';
+import Form from 'react-bootstrap/Form';
+import FloatingLabel from 'react-bootstrap/FloatingLabel';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Modal from 'react-bootstrap/Modal';
+import API from '../../utils/API';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCommentAlt, faThumbsDown, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
-import { faEye } from '@fortawesome/free-regular-svg-icons';
+import { faLocationDot, faPhone } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faRectangleXmark, faSquareCheck } from '@fortawesome/free-regular-svg-icons';
 import _ from 'lodash';
 import $ from 'jquery';
 
+//The first section needs some logo or shapes to break the whiteness; maybe
+//The second section needs some engagement, something to click or do.
 const AboutUs = (props) => {
-    const _articles = _useStore((state) => state._articles);
-    const setArticles = _useStore((state) => state.setArticles);
+    const {
+        register,
+        handleSubmit,
+        watch,
+        reset,
+        formState: { errors }
+    } = useForm({
+        mode: 'onTouched',
+        reValidateMode: 'onChange',
+        reValidateMode: 'onSubmit'
+    });
 
-    const _getArticles = useCallback(
-        async () => {
-            try {
-                axios('/api/article')
-                    .then((response) => {
-                        setArticles(response.data._articles);
-                    })
-                    .catch((error) => {
-                        console.log(error);
-                    });
-            } catch (error) {
-                console.log(error);
-            }
-        },
-        [setArticles]
-    );
+    const [_userNameFocused, setUserNameFocused] = useState(false);
+    const [_userPhoneFocused, setUserPhoneFocused] = useState(false);
+    const [_userEmailFocused, setUserEmailFocused] = useState(false);
+    const [_userMessageFocused, setUserMessageFocused] = useState(false);
+
+    const [_showModal, setShowModal] = useState(false);
+    const [_modalHeader, setModalHeader] = useState('');
+    const [_modalBody, setModalBody] = useState('');
+    const [_modalIcon, setModalIcon] = useState('');
 
     const _typewriting = () => {
         $(document).ready(function () {
@@ -85,15 +95,46 @@ const AboutUs = (props) => {
         };
     }
 
-    const _handleArticleJSONTOHTML = () => {
-        const html = $.parseHTML(_.get(_.find(_articles, { '_article_title': 'boutaleb.' }), '_article_body'));
-        $('._aboutus ._s3 ._figure').html($(html).find('img').first());
+    const onSubmit = async (values) => {
+        try {
+            await API._sendMessage(values)
+                .then((res) => {
+                    reset({
+                        _userNameInput: '',
+                        _userPhoneInput: '',
+                        _userEmailInput: '',
+                        _userMessageInput: '',
+                        _userNewsletterInput: false
+                    });
+                    setModalHeader('Hello ✔ and Welcome !');
+                    setModalBody('Hello and welcome our stranger, Thank you for reaching out to us, \nHow about you joins us, not only you can give a feedback, but you can discover much more about our community.');
+                    setModalIcon(<FontAwesomeIcon icon={faSquareCheck} />);
+                    setShowModal(true);
+                })
+                .catch((error) => {
+                    setModalHeader('We\'re sorry !');
+                    setModalBody('Something wrong in your information has blocked this message from being sent');
+                    setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
+                    setShowModal(true);
+                });
+        } catch (error) {
+            setModalHeader('We\'re sorry !');
+            setModalBody(JSON.stringify(error));
+            setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
+            setShowModal(true);
+        }
     }
+
+    const onError = (error) => {
+        setModalHeader('We\'re sorry !');
+        setModalBody('Please check the fields for valid information.');
+        setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
+        setShowModal(true);
+    };
 
     useEffect(() => {
         _typewriting();
-        _getArticles();
-    }, [_getArticles]);
+    }, []);
 
     return (
         <main className='_aboutus'>
@@ -133,6 +174,295 @@ const AboutUs = (props) => {
                     </ul>
                 </div>
             </section>
+            <section className='_s3'>
+
+            </section>
+            <section className='_s4 grid'>
+                <div className='letter-grid d-flex justify-content-center flex-wrap text-center'></div>
+                <div className='g-col-12'>
+                    <div className='before'></div>
+                </div>
+                <div className='g-col-12 grid'>
+                    <div className='g-col-4 d-flex flex-column justify-content-center align-items-center'>
+                        <div className='text-center'>
+                            <h5>Other ways to get in touch</h5>
+                        </div>
+                        <div className='grid align-items-start'>
+                            <FontAwesomeIcon icon={faLocationDot} />
+                            <span className='w-100 g-col-11'>
+                                <p>Maroc</p>
+                                <p>Meknès,</p>
+                                <p>Av Marjane 1.</p>
+                            </span>
+                        </div>
+                        <div className='grid align-items-start'>
+                            <FontAwesomeIcon icon={faPhone} />
+                            <span className='w-100 g-col-11'>
+                                <p>(+212) 6 54 52 84 92</p>
+                            </span>
+                        </div>
+                        <div className='grid align-items-start'>
+                            <FontAwesomeIcon icon={faEnvelope} />
+                            <span className='w-100 g-col-11'>
+                                <p>contact@boutaleb.dev</p>
+                            </span>
+                        </div>
+                    </div>
+                    <div className='g-col-8'>
+                        <Form onSubmit={handleSubmit(onSubmit, onError)} className='grid'>
+                            <Row className='g-col-12 grid'>
+                                <Col className='g-col-6'>
+                                    <Form.Group
+                                        controlId='_userNameInput'
+                                        className={`_formGroup ${_userNameFocused ? 'focused' : ''}`}
+                                    >
+                                        <FloatingLabel
+                                            label='Name.'
+                                            className='_formLabel _labelWhite'
+                                        >
+                                            <Form.Control
+                                                {...register('_userNameInput', {
+                                                    required: 'Must be 3 to 16 long.',
+                                                    pattern: {
+                                                        value: /^[a-zA-Z\s]{3,16}$/,
+                                                        message: 'No numbers or symbols.'
+                                                    },
+                                                    onBlur: () => { setUserNameFocused(false) }
+                                                })}
+                                                placeholder='Name.'
+                                                autoComplete='new-password'
+                                                type='text'
+                                                className={`_formControl border rounded-0 ${errors._userNameInput ? 'border-danger' : ''}`}
+                                                name='_userNameInput'
+                                                onFocus={() => { setUserNameFocused(true) }}
+                                            />
+                                            {
+                                                errors._userNameInput && (
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_userNameInput', false) ? '' : 'toClear'}`}>
+                                                        {errors._userNameInput.message}
+                                                    </Form.Text>
+                                                )
+                                            }
+                                            {
+                                                watch('_userNameInput', false) && (
+                                                    <div className='_formClear'
+                                                        onClick={() => {
+                                                            reset({
+                                                                _userNameInput: ''
+                                                            });
+                                                        }}
+                                                    ></div>
+                                                )
+                                            }
+                                        </FloatingLabel>
+                                    </Form.Group>
+                                </Col>
+                                <Col className='g-col-6'>
+                                    <Form.Group
+                                        controlId='_userPhoneInput'
+                                        className={`_formGroup ${_userPhoneFocused ? 'focused' : ''}`}
+                                    >
+                                        <FloatingLabel
+                                            label='Phone.'
+                                            className='_formLabel _labelWhite'
+                                        >
+                                            <Form.Control
+                                                {...register('_userPhoneInput', {
+                                                    required: 'Phone number missing.',
+                                                    pattern: {
+                                                        value: /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/,
+                                                        message: 'Phone number invalid.'
+                                                    },
+                                                    onBlur: () => { setUserPhoneFocused(false) }
+                                                })}
+                                                placeholder='Phone.'
+                                                autoComplete='new-password'
+                                                type='text'
+                                                className={`_formControl border rounded-0 ${errors._userPhoneInput ? 'border-danger' : ''}`}
+                                                name='_userPhoneInput'
+                                                onFocus={() => { setUserPhoneFocused(true) }}
+                                            />
+                                            {
+                                                errors._userPhoneInput && (
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_userPhoneInput', false) ? '' : 'toClear'}`}>
+                                                        {errors._userPhoneInput.message}
+                                                    </Form.Text>
+                                                )
+                                            }
+                                            {
+                                                watch('_userPhoneInput', false) && (
+                                                    <div className='_formClear'
+                                                        onClick={() => {
+                                                            reset({
+                                                                _userPhoneInput: ''
+                                                            });
+                                                        }}
+                                                    ></div>
+                                                )
+                                            }
+                                        </FloatingLabel>
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                            <Row className='g-col-12 grid'>
+                                <Col className='g-col-6'>
+                                    <Form.Group
+                                        controlId='_userEmailInput'
+                                        className={`_formGroup ${_userEmailFocused ? 'focused' : ''}`}
+                                    >
+                                        <FloatingLabel
+                                            label='Email.'
+                                            className='_formLabel _labelWhite'
+                                        >
+                                            <Form.Control
+                                                {...register('_userEmailInput', {
+                                                    required: 'Email missing.',
+                                                    pattern: {
+                                                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
+                                                        message: 'Email invalid.'
+                                                    },
+                                                    onBlur: () => { setUserEmailFocused(false) }
+                                                })}
+                                                placeholder='Email.'
+                                                autoComplete='new-password'
+                                                type='text'
+                                                className={`_formControl border rounded-0 ${errors._userEmailInput ? 'border-danger' : ''}`}
+                                                name='_userEmailInput'
+                                                onFocus={() => { setUserEmailFocused(true) }}
+                                            />
+                                            {
+                                                errors._userEmailInput && (
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_userEmailInput', false) ? '' : 'toClear'}`}>
+                                                        {errors._userEmailInput.message}
+                                                    </Form.Text>
+                                                )
+                                            }
+                                            {
+                                                watch('_userEmailInput', false) && (
+                                                    <div className='_formClear'
+                                                        onClick={() => {
+                                                            reset({
+                                                                _userEmailInput: ''
+                                                            });
+                                                        }}
+                                                    ></div>
+                                                )
+                                            }
+                                        </FloatingLabel>
+                                    </Form.Group>
+                                </Col>
+                                <Col className='g-col-6'>
+                                    <Form.Group
+                                        controlId='_userNewsletterInput'
+                                        className='_checkGroup _formGroup'
+                                    >
+                                        <FloatingLabel
+                                            label='Subscribe to receive our newsletter.'
+                                            className='_formLabel _labelWhite'
+                                        >
+                                            <Form.Check
+                                                type='switch'
+                                                className='_formSwitch'
+                                                name='_userNewsletterInput'
+                                                {...register('_userNewsletterInput', {})}
+                                            />
+                                        </FloatingLabel>
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                            <Row className='g-col-12 grid'>
+                                <Col className='g-col-12'>
+                                    <Form.Group
+                                        controlId='_userMessageInput'
+                                        className={`_formGroup ${_userMessageFocused ? 'focused' : ''}`}
+                                    >
+                                        <FloatingLabel
+                                            label='Message.'
+                                            className='_formLabel _labelWhite'
+                                        >
+                                            <Form.Control
+                                                {...register('_userMessageInput', {
+                                                    required: 'Please provide a message.',
+                                                    onBlur: () => { setUserMessageFocused(false) }
+                                                })}
+                                                placeholder='Message.'
+                                                as='textarea'
+                                                autoComplete='new-password'
+                                                type='text'
+                                                className={`_formControl border rounded-0 ${errors._userMessageInput ? 'border-danger' : ''}`}
+                                                name='_userMessageInput'
+                                                onFocus={() => { setUserMessageFocused(true) }}
+                                            />
+                                            {
+                                                errors._userMessageInput && (
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 messageClear`}>
+                                                        {errors._userMessageInput.message}
+                                                    </Form.Text>
+                                                )
+                                            }
+                                            {
+                                                watch('_userMessageInput', false) && (
+                                                    <div className='_formClear _messageInput'
+                                                        onClick={() => {
+                                                            reset({
+                                                                _userMessageInput: ''
+                                                            });
+                                                        }}
+                                                    ></div>
+                                                )
+                                            }
+                                        </FloatingLabel>
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                            <Row className='g-col-12 d-flex justify-content-end'>
+                                <Button
+                                    type='submit'
+                                    className='border border-0 rounded-0 inverse w-25'
+                                    variant='outline-light'
+                                >
+                                    <div className='buttonBorders'>
+                                        <div className='borderTop'></div>
+                                        <div className='borderRight'></div>
+                                        <div className='borderBottom'></div>
+                                        <div className='borderLeft'></div>
+                                    </div>
+                                    <span>
+                                        Send Message<b className='pink_dot'>.</b>
+                                    </span>
+                                </Button>
+                            </Row>
+                        </Form>
+                    </div>
+                </div>
+            </section>
+            <Modal show={_showModal} onHide={() => setShowModal(false)} centered>
+                <Form>
+                    <Modal.Header closeButton>
+                        <Modal.Title>{_modalHeader}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body className='text-muted'>{_modalBody}</Modal.Body>
+                    <Modal.Footer>
+                        {_modalIcon}
+                        <Button
+                            type='button'
+                            className='border border-0 rounded-0 inverse w-25'
+                            variant='outline-light'
+                            onClick={() => setShowModal(false)}
+                        >
+                            <div className='buttonBorders'>
+                                <div className='borderTop'></div>
+                                <div className='borderRight'></div>
+                                <div className='borderBottom'></div>
+                                <div className='borderLeft'></div>
+                            </div>
+                            <span>
+                                Close<b className='pink_dot'>.</b>
+                            </span>
+                        </Button>
+                    </Modal.Footer>
+                </Form>
+            </Modal>
         </main>
     );
 }
