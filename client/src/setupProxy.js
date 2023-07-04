@@ -7,5 +7,5 @@ module.exports = (app) => {
 			target: 'http://localhost:8800',
 			changeOrigin: true,
 		})
-	);
+	)
 };

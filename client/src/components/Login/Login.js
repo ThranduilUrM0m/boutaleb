@@ -11,7 +11,6 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import API from '../../utils/API';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRectangleXmark } from '@fortawesome/free-regular-svg-icons';
 import _ from 'lodash';
@@ -60,7 +59,7 @@ const Login = (props) => {
 
 	const onSubmit = async (values) => {
 		try {
-			await API.login(values)
+			/* await api.login(values)
 				.then((res) => {
 					setUser(res.data._user);
 					_socket.emit('action', { type: '_userConnected', data: res.data._user });
@@ -71,7 +70,7 @@ const Login = (props) => {
 					setModalBody(error.response.data.text);
 					setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
 					setShowModal(true);
-				});
+				}); */
 		} catch (error) {
 			setModalHeader('We\'re sorry !');
 			setModalBody(JSON.stringify(error));

@@ -13,14 +13,18 @@ import session from 'express-session';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import http from 'http';
-import { Server } from "socket.io";
+import { Server } from 'socket.io';
 import os from 'os';
 import cluster from 'cluster';
-import userController from './controllers/userController.js';
+import dotenv from 'dotenv';
+import passport from 'passport';
+import { Strategy as LocalStrategy } from 'passport-local';
+import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import router from './routes/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+dotenv.config();
 
 let workers = [];
 
@@ -70,10 +74,10 @@ const setUpExpress = () => {
     mongoose
         .connect(process.env.MONGODB_URI, { useUnifiedTopology: true, useNewUrlParser: true })
         .then(() => {
-            console.log("Connected to mongoDB");
+            console.log('Connected to mongoDB');
         })
         .catch((e) => {
-            console.log("Error while DB connecting");
+            console.log('Error while DB connecting');
             console.log(e);
         });
     mongoose.set('debug', true);
@@ -88,13 +92,10 @@ const setUpExpress = () => {
     app.use(session({ secret: '_secret', cookie: { maxAge: 60000 }, resave: false, saveUninitialized: false }));
 
     //Définition du routeur
-    const _router = express.Router();
-    app.use("/user", _router);
-    userController(_router);
     app.use(router);
 
     /*Adds the react production build to serve react requests*/
-    app.use(express.static(path.join(__dirname, "../client/build")));
+    app.use(express.static(path.join(__dirname, '../client/build')));
 
     /*React root*/
     if (process.env.NODE_ENV === 'production') {
@@ -115,38 +116,38 @@ const setUpExpress = () => {
     //This creates our socket using the instance of the server
     const io = new Server(server);
 
-    io.on("connection", (socket) => {
+    io.on('connection', (socket) => {
         console.log('IO Server Connected');
 
         socket.on('action', (action) => {
             switch (action.type) {
                 case '_userConnected':
-                    db.collection("user").find({}).toArray((err, docs) => {
+                    db.collection('user').find({}).toArray((err, docs) => {
                         io.sockets.emit('action', { type: '_userConnectedLoad', data: { user: docs } });
                     });
                     break;
                 case '_userDisonnected':
-                    db.collection("user").find({}).toArray((err, docs) => {
+                    db.collection('user').find({}).toArray((err, docs) => {
                         io.sockets.emit('action', { type: '_userDisonnectedLoad', data: { user: docs } });
                     });
                     break;
                 case '_userCreated':
-                    db.collection("user").find({}).toArray((err, docs) => {
+                    db.collection('user').find({}).toArray((err, docs) => {
                         io.sockets.emit('action', { type: '_userCreatedLoad', data: { user: docs } });
                     });
                     break;
                 case '_userConfirmed':
-                    db.collection("user").find({}).toArray((err, docs) => {
+                    db.collection('user').find({}).toArray((err, docs) => {
                         io.sockets.emit('action', { type: '_userConfirmedLoad', data: { user: docs } });
                     });
                     break;
                 case '_testimonyCreated':
-                    db.collection("testimony").find({}).toArray((err, docs) => {
+                    db.collection('testimony').find({}).toArray((err, docs) => {
                         io.sockets.emit('action', { type: '_testimonyCreatedLoad', data: { testimony: docs } });
                     });
                     break;
                 case '_testimonyUpdated':
-                    db.collection("testimony").find({}).toArray((err, docs) => {
+                    db.collection('testimony').find({}).toArray((err, docs) => {
                         io.sockets.emit('action', { type: '_testimonyUpdatedLoad', data: { testimony: docs } });
                     });
                     break;

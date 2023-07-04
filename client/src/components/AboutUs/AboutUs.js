@@ -8,7 +8,6 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Modal from 'react-bootstrap/Modal';
-import API from '../../utils/API';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLocationDot, faPhone } from '@fortawesome/free-solid-svg-icons';
 import { faEnvelope, faRectangleXmark, faSquareCheck } from '@fortawesome/free-regular-svg-icons';
@@ -97,7 +96,7 @@ const AboutUs = (props) => {
 
     const onSubmit = async (values) => {
         try {
-            await API._sendMessage(values)
+            /* await api._sendMessage(values)
                 .then((res) => {
                     reset({
                         _userNameInput: '',
@@ -116,7 +115,7 @@ const AboutUs = (props) => {
                     setModalBody('Something wrong in your information has blocked this message from being sent');
                     setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
                     setShowModal(true);
-                });
+                }); */
         } catch (error) {
             setModalHeader('We\'re sorry !');
             setModalBody(JSON.stringify(error));

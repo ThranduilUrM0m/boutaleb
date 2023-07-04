@@ -5,9 +5,8 @@ import {
     useLocation
 } from 'react-router-dom';
 import Dropdown from 'react-bootstrap/Dropdown';
-import API from '../../utils/API';
 import _ from 'lodash';
-import { io } from "socket.io-client";
+import { io } from 'socket.io-client';
 
 const _socketURL = _.isEqual(process.env.NODE_ENV, 'production')
     ? window.location.hostname
@@ -22,15 +21,15 @@ const ToLogout = (props) => {
 	const setUser = _useStore((state) => state.setUser);
 
     const _handleClick = async () => {
-        await API.logout(_user)
+        /* await api.logout(_user)
 			.then(() => {
                 setUser({});
                 _socket.emit('action', { type:'_userDisonnected', data: _user });
-                navigate("/login", { replace: true, state: { from: location } });
+                navigate('/login', { replace: true, state: { from: location } });
 			})
 			.catch((error) => {
                 console.log(error);
-			});
+			}); */
     }
 
     return (

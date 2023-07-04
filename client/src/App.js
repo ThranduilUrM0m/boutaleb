@@ -27,10 +27,8 @@ const _socketURL = _.isEqual(process.env.NODE_ENV, 'production')
 const _socket = io(_socketURL, { 'transports': ['websocket', 'polling'] });
 
 let App = (props) => {
-    const setUsers = _useStore((state) => state.setUsers);
-
 	useEffect(() => {
-		_socket.on('action', (action) => {
+		/* _socket.on('action', (action) => {
             switch (action.type) {
                 case '_userConnectedLoad':
                     setUsers(action.data.users);
@@ -47,8 +45,8 @@ let App = (props) => {
                 default:
                     return false;
             }
-        });
-	}, [setUsers]);
+        }); */
+	}, []);
 
 	return (
 		<Container fluid className='_app'>

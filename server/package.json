@@ -1,5 +1,5 @@
 {
-    "name": "INIT",
+    "name": "boutaleb.",
     "version": "1.0.0",
     "main": "server.js",
     "scripts": {
@@ -20,6 +20,9 @@
         "jwt-simple": "*",
         "mongoose": "*",
         "morgan": "*",
+        "passport": "*",
+        "passport-jwt": "*",
+        "passport-local": "*",
         "password-hash": "*",
         "sib-api-v3-sdk": "*",
         "socket.io": "*"

@@ -28,7 +28,6 @@
     },
     "dependencies": {
         "@fingerprintjs/fingerprintjs": "*",
-        "@fingerprintjs/fingerprintjs-pro-react": "^2.4.0",
         "@fortawesome/fontawesome-svg-core": "*",
         "@fortawesome/free-brands-svg-icons": "*",
         "@fortawesome/free-regular-svg-icons": "*",

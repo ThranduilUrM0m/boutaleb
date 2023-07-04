@@ -21,12 +21,6 @@ const User = new Schema({
         type: String,
         required: true
     },
-    _user_passwordResetToken: {
-        type: String
-    },
-    _user_passwordResetExpires: {
-        type: Date
-    },
     _user_fingerprint: {
         type: String
     },
@@ -52,14 +46,14 @@ const User = new Schema({
     }]
 }, { timestamps: true });
 
-User.methods = {
+/* User.methods = {
     authenticate: (_userPasswordValue, findUser) => {
         return passwordHash.verify(_userPasswordValue, findUser._user_password);
     },
     getToken: (findUser) => {
         return jwt.encode(findUser, '_boutaleb');
     }
-}
+} */
 
 User.index({ updatedAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 7, partialFilterExpression: { _user_toDelete: { $eq: true } } })
-export default mongoose.model("User", User);
+export default mongoose.models.User || mongoose.model("User", User);

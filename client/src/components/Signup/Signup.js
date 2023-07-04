@@ -11,7 +11,6 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import API from '../../utils/API';
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRectangleXmark, faSquareCheck } from '@fortawesome/free-regular-svg-icons';
@@ -100,7 +99,7 @@ const Signup = (props) => {
 
 		try {
 			if (values._user_password !== values._user_passwordConfirm) throw new Error('Please check your password confirmation');
-			await API.signup(values)
+			/* await api._signup(values)
 				.then((res) => {
 					addUser(res.data);
 					setModalHeader('Hello ✔ and Welcome !');
@@ -122,7 +121,7 @@ const Signup = (props) => {
 					setModalBody(error.response.data.text);
 					setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
 					setShowModal(true);
-				});
+				}); */
 		} catch (error) {
 			setModalHeader('We\'re sorry !');
 			setModalBody(JSON.stringify(error));
@@ -177,7 +176,7 @@ const Signup = (props) => {
 				<div className='g-col-6 d-flex justify-content-center align-items-center'>
 					<Card className='border border-0 rounded-0'>
 						<Card.Header className='rounded-0'>
-							<h3>Signup<b className='pink_dot'>.</b></h3>
+							<h3>Thr@nduilUrM0m<b className='pink_dot'>.</b></h3>
 						</Card.Header>
 						<Card.Body>
 							<Form onSubmit={handleSubmit(onSubmit, onError)} className='grid'>
@@ -238,10 +237,10 @@ const Signup = (props) => {
 										>
 											<Form.Control
 												{...register('_user_username', {
-													required: 'Must be 3 to 16 long.',
+													required: 'Must be 3 to 20 long.',
 													pattern: {
-														value: /^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9_]{3,16}$/i,
-														message: 'At least 1 letter and 1 number.'
+														value: /^[a-zA-Z0-9_]{3,20}$/,
+														message: 'Must be 3 to 20 long.'
 													},
 													onBlur: () => { setUserUsernameFocused(false) }
 												})}

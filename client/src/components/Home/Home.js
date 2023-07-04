@@ -14,7 +14,6 @@ import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import Modal from 'react-bootstrap/Modal';
 import Slider from 'react-slick';
-import API from '../../utils/API';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLocationDot, faPhone, faCircleDot, faIcons } from '@fortawesome/free-solid-svg-icons';
 import { faEnvelope, faObjectGroup, faRectangleXmark, faSquareCheck } from '@fortawesome/free-regular-svg-icons';
@@ -265,7 +264,7 @@ const Home = (props) => {
 
     const onSubmit = async (values) => {
         try {
-            await API._sendMessage(values)
+            /* await api._sendMessage(values)
                 .then((res) => {
                     reset({
                         _userNameInput: '',
@@ -284,7 +283,7 @@ const Home = (props) => {
                     setModalBody('Something wrong in your information has blocked this message from being sent');
                     setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
                     setShowModal(true);
-                });
+                }); */
         } catch (error) {
             setModalHeader('We\'re sorry !');
             setModalBody(JSON.stringify(error));

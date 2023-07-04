@@ -7,11 +7,10 @@ import {
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import API from "../../utils/API";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRectangleXmark, faSquareCheck } from '@fortawesome/free-regular-svg-icons';
 import _ from 'lodash';
-import { io } from "socket.io-client";
+import { io } from 'socket.io-client';
 
 const _socketURL = _.isEqual(process.env.NODE_ENV, 'production')
     ? window.location.hostname
@@ -33,18 +32,27 @@ const Confirmation = (props) => {
     }, [_tokenID]);
 
     const _confirmation = async (token) => {
-        await API.confirmation({ token })
-            .then((res) => {
-                setModalHeader('Hello ✔ and Welcome !');
-                setModalBody(res.data.text);
-                setModalIcon(<FontAwesomeIcon icon={faSquareCheck} />);
-                _socket.emit('action', { type:'_userConfirmed', data: res.data._user });
-            })
-            .catch((error) => {
-                setModalHeader('We\'re sorry !');
-                setModalBody(error.response.data.text);
-                setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
-            });
+        try {
+            /* await api._confirm({ token })
+                .then((res) => {
+                    setModalHeader('Hello ✔ and Welcome !');
+                    setModalBody(res.data.text);
+                    setModalIcon(<FontAwesomeIcon icon={faSquareCheck} />);
+                    _socket.emit('action', { type:'_userConfirmed', data: res.data._user });
+                })
+                .catch((error) => {
+                    setModalHeader('We\'re sorry !');
+                    setModalBody(error.response.data.text);
+                    setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
+                    setShowModal(true);
+                }); */
+        } catch (error) {
+			console.log(error);
+			setModalHeader('We\'re sorry !');
+			setModalBody(JSON.stringify(error));
+			setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
+			setShowModal(true);
+        }
     }
 
     const _handleClose = () => {
@@ -53,7 +61,7 @@ const Confirmation = (props) => {
     }
 
     return (
-        <main className="_confirmation">
+        <main className='_confirmation'>
             <Modal show={_showModal} onHide={() => _handleClose()} centered>
                 <Form>
                     <Modal.Header closeButton>

@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
 import { _useStore } from '../../store/store';
-import API from '../../utils/API';
 
 const Dashboard = (props) => {
     const _user = _useStore((state) => state._user);
@@ -9,13 +8,13 @@ const Dashboard = (props) => {
     const _getUsers = useCallback(
         async () => {
             try {
-                await API.get_users()
+                /* await api.get_users()
                     .then((res) => {
                         setUsers(res.data._users);
                     })
                     .catch((error) => {
                         console.log(error);
-                    });
+                    }); */
             } catch (error) {
                 console.log(error);
             }
