@@ -644,12 +644,39 @@ form {
                                                         @include _transform($top: 50%, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
                                                     }
 
-                                                    input {
+                                                    ._formControl {
                                                         margin: 0;
+                                                        padding: 0 0 0 calc(2vh + 0.5rem);
+                                                        
+                                                        &._typing {
+                                                            color: transparent;
+                                                        }
+                                                    }
+
+                                                    ._autocorrect {
+                                                        position: absolute;
+                                                        padding: 1vh;
+                                                        line-height: 1.25;
+                                                        font-size: 1rem;
+                                                        font-weight: 400;
+                                                        @include _dimensions($width: fit-content, $height: 7vh);
+                                                        @include _transform($top: 0, $left: calc(1vh + 0.5rem), $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+
+                                                        p {
+                                                            margin: 0;
+                                                            
+                                                            &._tagSuggestion {
+                                                                color: $liteGray;
+                                                            }
+    
+                                                            &._typedCharacters {
+                                                                color: $black;
+                                                            }
+                                                        }
                                                     }
 
                                                     label {
-                                                        @include _transform($top: '', $left: 1vh, $bottom: '', $right: '', $t_x: '', $t_y: '', $r_deg: '', $s_x: '', $s_y: '');
+                                                        @include _transform($top: '', $left: calc(1vh + 0.5rem), $bottom: '', $right: '', $t_x: '', $t_y: '', $r_deg: '', $s_x: '', $s_y: '');
                                                         color: rgba($black, .25);
                                                     }
                                                 }
@@ -698,6 +725,36 @@ form {
 
                             ._formGroup {
                                 z-index: 10000;
+
+                                ._formLabel {
+                                    ._formControl {
+                                        &._typing {
+                                            color: transparent;
+                                        }
+                                    }
+
+                                    ._autocorrect {
+                                        position: absolute;
+                                        padding: 1vh;
+                                        line-height: 1.25;
+                                        font-size: 1rem;
+                                        font-weight: 400;
+                                        @include _dimensions($width: fit-content, $height: 7vh);
+                                        @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+
+                                        p {
+                                            margin: 0;
+                                            
+                                            &._searchSuggestion {
+                                                color: $liteGray;
+                                            }
+
+                                            &._typedCharacters {
+                                                color: $black;
+                                            }
+                                        }
+                                    }
+                                }
 
                                 .list-group {
                                     max-height: 40vh;
@@ -1330,4 +1387,14 @@ form {
             }
         }
     }
+}
+
+pre {
+    display: inherit;
+    margin: 0;
+    overflow: unset;
+    font-size: inherit;
+    font-family: inherit;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
 }

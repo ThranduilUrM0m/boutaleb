@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
     NavLink,
+    useLocation
 } from 'react-router-dom';
 import { _useStore } from '../../store/store';
 import axios from 'axios';
@@ -19,8 +20,6 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import { useForm } from 'react-hook-form';
 import Downshift from 'downshift';
 import logo from '../../assets/_images/logo.svg';
-import ToLogin from './ToLogin';
-import ToLogout from './ToLogout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faEye } from '@fortawesome/free-regular-svg-icons';
 import { faCommentAlt, faThumbsDown, faThumbsUp, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
@@ -33,18 +32,24 @@ const Header = (props) => {
     const _projects = _useStore((state) => state._projects);
     const setProjects = _useStore((state) => state.setProjects);
 
-    const _user = _useStore((state) => state._user);
+    const [_typedCharactersSearch, setTypedCharactersSearch] = useState('');
+    const [_searchSuggestion, setSearchSuggestion] = useState('');
+
+    let location = useLocation();
 
     const {
         register,
         watch,
-        reset,
+        resetField,
         setFocus,
         getValues,
         setValue
     } = useForm({
         mode: 'onTouched',
-        reValidateMode: 'onSubmit'
+        reValidateMode: 'onSubmit',
+        defaultValues: {
+            _searchInput: ''
+        }
     });
 
     const [_searchFocused, setSearchFocused] = useState(false);
@@ -162,14 +167,12 @@ const Header = (props) => {
                     <Navbar.Collapse className='show'>
                         <Nav className='d-flex flex-row justify-content-end'>
                             <Nav.Item className='me-auto'>
-                                <NavLink to='/' className='logo d-flex align-items-center h-100'>
+                                <NavLink to='/' className='logo d-flex align-items-center'>
                                     <img className='img-fluid' src={logo} alt='#' />
                                 </NavLink>
                             </Nav.Item>
                             <Nav.Item>
-                                <Form
-                                    onClick={() => setFocus('_searchInput')}
-                                >
+                                <Form onClick={() => setFocus('_searchInput')}>
                                     <Downshift
                                         onSelect={
                                             selection => {
@@ -180,7 +183,7 @@ const Header = (props) => {
                                             }
                                         }
                                         itemToString={
-                                            item => (item ? item.value : getValues('_searchInput'))
+                                            item => (item ? item.value : getValues('_searchInput') || '')
                                         }
                                     >
                                         {({
@@ -194,6 +197,7 @@ const Header = (props) => {
                                             openMenu
                                         }) => (
                                             <Form.Group
+                                                controlId='_searchInput'
                                                 className={`_formGroup _searchGroup ${_searchFocused || !_.isEmpty(getValues('_searchInput')) ? 'focused' : ''}`}
                                             >
                                                 <FloatingLabel
@@ -206,10 +210,31 @@ const Header = (props) => {
                                                         placeholder='Search.'
                                                         autoComplete='new-password'
                                                         type='text'
-                                                        className='_formControl border border-0 rounded-0'
+                                                        className={`_formControl border border-0 rounded-0 ${!_.isEmpty(_typedCharactersSearch) ? '_typing' : ''}`}
                                                         name='_searchInput'
                                                         {...getInputProps({
                                                             onChange: (event) => {
+                                                                const firstSuggestion = _.orderBy(
+                                                                    _.uniqBy(
+                                                                        _.filter(
+                                                                            _.union(_articleItems, _projectItems),
+                                                                            (item) =>
+                                                                                !event.target.value ||
+                                                                                _.includes(
+                                                                                    _.lowerCase(item.value),
+                                                                                    _.lowerCase(event.target.value)
+                                                                                )
+                                                                        ),
+                                                                        'value'
+                                                                    ),
+                                                                    ['value'],
+                                                                    ['asc']
+                                                                )[0];
+
+                                                                setTypedCharactersSearch(event.target.value);
+                                                                //Using && returns false so if you are using it to affect to a variable, keep in mind it will affect in false
+                                                                setSearchSuggestion((!_.isEmpty(event.target.value) && firstSuggestion) ? (firstSuggestion.value) : '');
+
                                                                 setCurrentPage(_.toNumber(1));
                                                                 setValue('_searchInput', event.target.value);
                                                                 setShowModal(!_.isEmpty(event.target.value) ? true : false);
@@ -219,21 +244,28 @@ const Header = (props) => {
                                                                 setSearchFocused(true);
                                                             },
                                                             onBlur: (event) => {
+                                                                // This onBlur will fire everytime the form changes instead of when loosing focus, 
+                                                                // because the Downshift is interacting with outside elements
                                                                 setSearchFocused(!_.isEmpty(event.target.value) ? true : false);
                                                             }
                                                         })}
                                                     />
+                                                    <span className='d-flex align-items-center _autocorrect'>
+                                                        {_.size(_.slice(_.lowerCase(_searchSuggestion), 0, _.lowerCase(_searchSuggestion).indexOf(_.lowerCase(_typedCharactersSearch)))) > 0 && <p className='_searchSuggestion'>{_.slice(_.lowerCase(_searchSuggestion), 0, _.lowerCase(_searchSuggestion).indexOf(_.lowerCase(_typedCharactersSearch)))}</p>}
+                                                        {_.size(_.lowerCase(_typedCharactersSearch)) > 0 && <p className='_typedCharacters'>{_.lowerCase(_searchSuggestion).indexOf(_.lowerCase(_typedCharactersSearch)) < 1 ? _.capitalize(_typedCharactersSearch) : _typedCharactersSearch}</p>}
+                                                        {_.size(_.slice(_.lowerCase(_searchSuggestion), _.lowerCase(_searchSuggestion).indexOf(_.lowerCase(_typedCharactersSearch)) + _.size(_.lowerCase(_typedCharactersSearch)))) > 0 && <p className='_searchSuggestion'>{_.slice(_.lowerCase(_searchSuggestion), _.lowerCase(_searchSuggestion).indexOf(_.lowerCase(_typedCharactersSearch)) + _.size(_.lowerCase(_typedCharactersSearch)))}</p>}
+                                                    </span>
                                                 </FloatingLabel>
                                                 {
-                                                    watch('_searchInput', false)
+                                                    (!_.isEmpty(watch('_searchInput')) || !_.isEmpty(_typedCharactersSearch)) 
                                                         ?
                                                         <div className='_searchButton _formClear'
                                                             onClick={() => {
+                                                                setTypedCharactersSearch('');
+                                                                setSearchSuggestion('');
+                                                                resetField('_searchInput');
                                                                 clearSelection();
                                                                 setShowModal(false);
-                                                                reset({
-                                                                    _searchInput: ''
-                                                                });
                                                             }}
                                                         ></div>
                                                         :
@@ -244,28 +276,40 @@ const Header = (props) => {
                                                     {...getMenuProps()}
                                                 >
                                                     {
-                                                        isOpen && !_showAccountDropdown
-                                                            ?
-                                                            _.map(
-                                                                _.orderBy(_.uniqBy(_.filter(_.union(_articleItems, _projectItems), (item) => { return !inputValue || _.includes(_.lowerCase(item.value), _.lowerCase(inputValue)) }), 'value'), ['value'], ['asc'])
-                                                                , (item, index) => {
-                                                                    return (
-                                                                        <ListGroup.Item
-                                                                            className='border border-0 rounded-0 d-flex align-items-center'
-                                                                            {...getItemProps({
-                                                                                key: index,
-                                                                                index,
-                                                                                item
-                                                                            })}
-                                                                        >
-                                                                            <FontAwesomeIcon icon={faMagnifyingGlass} className='me-2' />
-                                                                            {item.value}
-                                                                        </ListGroup.Item>
-                                                                    )
-                                                                }
+                                                        (isOpen && !_showAccountDropdown) &&
+                                                        _.map(
+                                                            _.orderBy(
+                                                                _.uniqBy(
+                                                                    _.filter(
+                                                                        _.union(_articleItems, _projectItems),
+                                                                        (item) => 
+                                                                            !inputValue ||
+                                                                            _.includes(
+                                                                                _.lowerCase(item.value),
+                                                                                _.lowerCase(inputValue)
+                                                                            )
+                                                                    ),
+                                                                    'value'
+                                                                ),
+                                                                ['value'],
+                                                                ['asc']
                                                             )
-                                                            :
-                                                            null
+                                                            , (item, index) => {
+                                                                return (
+                                                                    <ListGroup.Item
+                                                                        className='border border-0 rounded-0 d-flex align-items-center'
+                                                                        {...getItemProps({
+                                                                            key: index,
+                                                                            index,
+                                                                            item
+                                                                        })}
+                                                                    >
+                                                                        <FontAwesomeIcon icon={faMagnifyingGlass} className='me-2' />
+                                                                        {item.value}
+                                                                    </ListGroup.Item>
+                                                                )
+                                                            }
+                                                        )
                                                     }
                                                 </ListGroup>
                                             </Form.Group>
@@ -284,9 +328,28 @@ const Header = (props) => {
                                             <span className='hover_effect'></span>
                                         </span>
                                     </Dropdown.Toggle>
-                                    {
-                                        _.isEmpty(_user) ? <ToLogin /> : <ToLogout />
-                                    }
+                                    <Dropdown.Menu className='border rounded-0'>
+                                        {
+                                            _.isEqual(location.pathname, '/login') ?
+                                                ''
+                                                :
+                                                <Dropdown.Item
+                                                    href='/login'
+                                                >
+                                                    Login<b className='pink_dot'>.</b>
+                                                </Dropdown.Item>
+                                        }
+                                        {
+                                            _.isEqual(location.pathname, '/signup') ?
+                                                ''
+                                                :
+                                                <Dropdown.Item
+                                                    href='/signup'
+                                                >
+                                                    Signup<b className='pink_dot'>.</b>
+                                                </Dropdown.Item>
+                                        }
+                                    </Dropdown.Menu>
                                 </Dropdown>
                             </Nav.Item>
                         </Nav>
@@ -356,6 +419,7 @@ const Header = (props) => {
                     </Navbar.Offcanvas>
                 </Container>
             </Navbar>
+
             <Modal className='_searchModal' enforceFocus={false} show={_showModal} onEntered={() => setFocus('_searchInput')} onHide={() => setShowModal(false)} fullscreen>
                 <Modal.Header></Modal.Header>
                 <Modal.Body>
@@ -372,7 +436,7 @@ const Header = (props) => {
                                         <Card className={`g-col-3 border border-0 rounded-0 card_${index}`} key={index}>
                                             <Card.Body className='d-flex flex-column'>
                                                 <figure>{_handleJSONTOHTML('_searchModal', _object._article_body ? _object._article_body : _object._project_image, index)}</figure>
-                                                <p className='text-muted author'>by <b>{_object._article_author ? _object._article_author : _object._project_author}</b>, {<Moment fromNow>{_object.updatedAt}</Moment>}</p>
+                                                <p className='text-muted author'>by <b>{_object._article_author ? _object._article_author : _object._project_author}</b>, {<Moment local fromNow>{_object.updatedAt}</Moment>}</p>
                                                 <h4>{_object._article_title ? _object._article_title : _object._project_title}</h4>
                                                 <p className='category align-self-end'>{_object._article_category ? _object._article_category : 'Project'}</p>
                                                 <ul className='text-muted tags'>

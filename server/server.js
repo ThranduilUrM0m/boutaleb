@@ -3,6 +3,8 @@ import Article from './models/Article.js';
 import Permission from './models/Permission.js';
 import Project from './models/Project.js';
 import Testimony from './models/Testimony.js';
+import User from './models/User.js';
+import Token from './models/Token.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -17,10 +19,9 @@ import { Server } from 'socket.io';
 import os from 'os';
 import cluster from 'cluster';
 import dotenv from 'dotenv';
-import passport from 'passport';
-import { Strategy as LocalStrategy } from 'passport-local';
-import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import router from './routes/index.js';
+import passport from 'passport';
+import './config/passport.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -68,6 +69,19 @@ const setUpExpress = () => {
     //On définit notre objet express nommé app
     const app = express();
     app.use(cors());
+
+    // Initialize Passport.js
+    app.use(passport.initialize());
+
+    // Middleware for handling authentication
+    app.use((req, res, next) => {
+        passport.authenticate('jwt', { session: false }, (err, user) => {
+            if (user) {
+                req.user = user;
+            }
+            next();
+        })(req, res, next);
+    });
 
     //Connexion à la base de donnée
     mongoose.Promise = global.Promise;

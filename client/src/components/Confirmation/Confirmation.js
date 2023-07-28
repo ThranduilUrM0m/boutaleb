@@ -4,6 +4,7 @@ import {
     useLocation,
     useParams
 } from 'react-router-dom';
+import axios from 'axios';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
@@ -28,30 +29,34 @@ const Confirmation = (props) => {
     const [_modalIcon, setModalIcon] = useState('');
 
     useEffect(() => {
-        _confirmation(_tokenID);
-    }, [_tokenID]);
+        _confirmation();
+    }, []);
 
-    const _confirmation = async (token) => {
+    const _confirmation = async () => {
         try {
-            /* await api._confirm({ token })
-                .then((res) => {
+            return axios.post('/api/user/_confirm', { _tokenID })
+                .then((response) => {
+                    _socket.emit('action', { type: '_userConfirmed', data: response.data._user });
                     setModalHeader('Hello ✔ and Welcome !');
-                    setModalBody(res.data.text);
+                    setModalBody(response.data.text);
                     setModalIcon(<FontAwesomeIcon icon={faSquareCheck} />);
-                    _socket.emit('action', { type:'_userConfirmed', data: res.data._user });
+                    setShowModal(true);
                 })
                 .catch((error) => {
-                    setModalHeader('We\'re sorry !');
-                    setModalBody(error.response.data.text);
-                    setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
-                    setShowModal(true);
-                }); */
+                    if (error.response && error.response.status === 400) {
+                        setModalHeader('We\'re sorry!');
+                        setModalBody(error.response.data.text);
+                        setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
+                        setShowModal(true);
+                    } else {
+                        console.error(error); // Print the error to the console for debugging purposes
+                    }
+                });
         } catch (error) {
-			console.log(error);
-			setModalHeader('We\'re sorry !');
-			setModalBody(JSON.stringify(error));
-			setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
-			setShowModal(true);
+            setModalHeader('We\'re sorry !');
+            setModalBody(JSON.stringify(error));
+            setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
+            setShowModal(true);
         }
     }
 
@@ -67,10 +72,10 @@ const Confirmation = (props) => {
                     <Modal.Header closeButton>
                         <Modal.Title>{_modalHeader}</Modal.Title>
                     </Modal.Header>
-                    <Modal.Body className='text-muted'>{_modalBody}</Modal.Body>
+                    <Modal.Body className='text-muted'><pre>{_modalBody}</pre></Modal.Body>
                     <Modal.Footer>
                         {_modalIcon}
-                        <Button className='border border-0 rounded-0 inverse' variant='outline-light' onClick={() => _handleClose()}>
+                        <Button className='border border-0 rounded-0 inverse w-50 ml-1' variant='outline-light' onClick={() => _handleClose()}>
                             <div className='buttonBorders'>
                                 <div className='borderTop'></div>
                                 <div className='borderRight'></div>

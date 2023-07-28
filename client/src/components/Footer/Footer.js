@@ -1,4 +1,7 @@
 import React from 'react';
+import {
+	useLocation
+} from 'react-router-dom';
 import Moment from 'react-moment';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -8,8 +11,10 @@ import { faHeart } from '@fortawesome/free-solid-svg-icons';
 import { faCopyright } from '@fortawesome/free-regular-svg-icons';
 
 const Footer = (props) => {
+    let location = useLocation();
+
     return (
-        <footer>
+        <footer className={location.pathname === '/dashboard' ? '_dashboard' : ''}>
             <Container fluid>
                 <Row className='grid'>
                     <Col className='g-col-6'>
@@ -25,7 +30,7 @@ const Footer = (props) => {
                             </li>
                             <li className='list-inline-item'>
                                 <FontAwesomeIcon icon={faCopyright} />
-                                <span>{<Moment format='YYYY' date={new Date()} />}</span> - With <FontAwesomeIcon icon={faHeart} /> from Zakariae boutaleb.
+                                <span>{<Moment local format='YYYY' date={new Date()} />}</span> - With <FontAwesomeIcon icon={faHeart} /> from Zakariae boutaleb.
                             </li>
                         </ul>
                     </Col>

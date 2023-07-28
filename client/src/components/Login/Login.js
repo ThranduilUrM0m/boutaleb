@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { _useStore } from '../../store/store';
 import {
 	useNavigate,
 	useLocation
 } from 'react-router-dom';
+import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
@@ -22,24 +23,30 @@ const _socketURL = _.isEqual(process.env.NODE_ENV, 'production')
 const _socket = io(_socketURL, { 'transports': ['websocket', 'polling'] });
 
 const Login = (props) => {
+	const _userIsAuthenticated = _useStore((state) => state._userIsAuthenticated);
+	const setUserIsAuthenticated = _useStore((state) => state.setUserIsAuthenticated);
+	const setUser = _useStore((state) => state.setUser);
+
 	let location = useLocation();
 	let navigate = useNavigate();
-
-	const _user = _useStore((state) => state._user);
-	const setUser = _useStore((state) => state.setUser);
 
 	const {
 		register,
 		handleSubmit,
 		watch,
+		reset,
 		formState: { errors }
 	} = useForm({
 		mode: 'onTouched',
 		reValidateMode: 'onSubmit',
-		reValidateMode: 'onChange'
+		reValidateMode: 'onChange',
+		defaultValues: {
+			_user_identification: '',
+			_user_password: '',
+		}
 	});
 
-	const [_userEmailFocused, setUserEmailFocused] = useState(false);
+	const [_userIdentificationFocused, setUserIdentificationFocused] = useState(false);
 	const [_userPasswordFocused, setUserPasswordFocused] = useState(false);
 
 	const [_showModal, setShowModal] = useState(false);
@@ -47,22 +54,46 @@ const Login = (props) => {
 	const [_modalBody, setModalBody] = useState('');
 	const [_modalIcon, setModalIcon] = useState('');
 
-	useEffect(() => {
-		if (!_.isEmpty(_user)) {
-			navigate('/dashboard', { replace: true, state: { from: location } });
+	const checkAuthentication = useCallback(async () => {
+		try {
+			// Check if the token is valid by calling the new endpoint
+			const response = await axios.get('/api/user/_checkToken', {
+				headers: {
+					Authorization: `Bearer ${localStorage.getItem('jwtToken')}`,
+				},
+			});
+
+			if (response.status === 200) {
+				// User is authenticated, set the state and redirect to a certain page
+				setUserIsAuthenticated(true);
+				navigate('/dashboard', { replace: true, state: { from: location } });
+			}
+		} catch (error) {
+			// User is not authenticated or an error occurred, handle the case accordingly
+			// For example, you can ignore the error if the status is 401 (Unauthorized)
+			if (error.response && error.response.status !== 401) {
+				console.error('FUCK YOU, LOGIN YOU BASTARD');
+			}
 		}
+	}, [setUserIsAuthenticated, navigate, location]);
 
-		const subscription = watch((value, { name, type }) => {});
+	useEffect(() => {
+		checkAuthentication();
 
-        return () => subscription.unsubscribe();
-	}, [location, navigate, _user, watch]);
+		const subscription = watch((value, { name, type }) => { });
+		return () => subscription.unsubscribe();
+	}, [checkAuthentication, watch]);
 
 	const onSubmit = async (values) => {
 		try {
-			/* await api.login(values)
-				.then((res) => {
-					setUser(res.data._user);
-					_socket.emit('action', { type: '_userConnected', data: res.data._user });
+			return axios.post('/api/user/_login', values)
+				.then((response) => {
+					// Store the token in local storage
+					localStorage.setItem('jwtToken', response.data.token);
+
+					setUser(response.data._user);
+					setUserIsAuthenticated(true);
+					_socket.emit('action', { type: '_userConnected', data: response.data._user });
 					navigate('/dashboard', { replace: true, state: { from: location } });
 				})
 				.catch((error) => {
@@ -70,8 +101,9 @@ const Login = (props) => {
 					setModalBody(error.response.data.text);
 					setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
 					setShowModal(true);
-				}); */
+				});
 		} catch (error) {
+			//Something shitty happens if incorrect password
 			setModalHeader('We\'re sorry !');
 			setModalBody(JSON.stringify(error));
 			setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
@@ -102,62 +134,88 @@ const Login = (props) => {
 						<Card.Body>
 							<Form onSubmit={handleSubmit(onSubmit, onError)} className='grid'>
 								<Row className='g-col-12'>
-									<Form.Group controlId='_userEmailInput' className={`_formGroup ${_userEmailFocused ? 'focused' : ''}`}>
+									<Form.Group controlId='_user_identification' className={`_formGroup ${_userIdentificationFocused ? 'focused' : ''}`}>
 										<FloatingLabel
-											label='Email.'
+											label='Email Or Username.'
 											className='_formLabel'
 										>
 											<Form.Control
-												{...register('_userEmailInput', {
-													required: 'Email missing.',
+												{...register('_user_identification', {
+													required: 'Identification missing.',
 													pattern: {
-														value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
-														message: 'Email invalid.'
+														value: /^(?:[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}|[a-zA-Z0-9_]{3,20})$/i,
+														message: 'Identification invalid.'
 													},
-													onBlur: () => { setUserEmailFocused(false) }
+													onBlur: () => { setUserIdentificationFocused(false) }
 												})}
-												placeholder='Name.'
+												placeholder='Email Or Username.'
 												autoComplete='new-password'
 												type='text'
 												className='_formControl border rounded-0'
-												name='_userEmailInput'
-												onFocus={() => setUserEmailFocused(true)}
+												name='_user_identification'
+												onFocus={() => setUserIdentificationFocused(true)}
 											/>
-											{errors._userEmailInput && (
-												<Form.Text className='bg-danger text-white bg-opacity-75 rounded-1'>
-													{errors._userEmailInput.message}
-												</Form.Text>
-											)}
+											{
+												errors._user_identification && (
+													<Form.Text className='bg-danger text-white bg-opacity-75 rounded-1'>
+														{errors._user_identification.message}
+													</Form.Text>
+												)
+											}
+											{
+												!_.isEmpty(watch('_user_identification')) && (
+													<div className='_formClear'
+														onClick={() => {
+															reset({
+																_user_identification: ''
+															});
+														}}
+													></div>
+												)
+											}
 										</FloatingLabel>
 									</Form.Group>
 								</Row>
 								<Row className='g-col-12'>
-									<Form.Group controlId='_userPasswordInput' className={`_formGroup ${_userPasswordFocused ? 'focused' : ''}`}>
+									<Form.Group controlId='_user_password' className={`_formGroup ${_userPasswordFocused ? 'focused' : ''}`}>
 										<FloatingLabel
 											label='Password.'
 											className='_formLabel'
 										>
 											<Form.Control
-												{...register('_userPasswordInput', {
+												{...register('_user_password', {
 													required: 'Password missing.',
 													pattern: {
-														value: /^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9_]{8,}$/i,
-														message: 'At least 1 letter and 1 number.'
+														value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[a-zA-Z\d!@#$%^&*()]{8,}$/,
+														message: 'At least 1 upper and 1 lowercase letter, 1 number and 1 symbol.'
 													},
 													onBlur: () => { setUserPasswordFocused(false) }
 												})}
-												placeholder='Name.'
+												placeholder='Password.'
 												autoComplete='new-password'
 												type='password'
 												className='_formControl border rounded-0'
-												name='_userPasswordInput'
+												name='_user_password'
 												onFocus={() => setUserPasswordFocused(true)}
 											/>
-											{errors._userPasswordInput && (
-												<Form.Text className='bg-danger text-white bg-opacity-75 rounded-1'>
-													{errors._userPasswordInput.message}
-												</Form.Text>
-											)}
+											{
+												errors._user_password && (
+													<Form.Text className='bg-danger text-white bg-opacity-75 rounded-1'>
+														{errors._user_password.message}
+													</Form.Text>
+												)
+											}
+											{
+												!_.isEmpty(watch('_user_password')) && (
+													<div className='_formClear'
+														onClick={() => {
+															reset({
+																_user_password: ''
+															});
+														}}
+													></div>
+												)
+											}
 										</FloatingLabel>
 									</Form.Group>
 								</Row>
@@ -217,10 +275,10 @@ const Login = (props) => {
 					<Modal.Header closeButton>
 						<Modal.Title>{_modalHeader}</Modal.Title>
 					</Modal.Header>
-					<Modal.Body className='text-muted'>{_modalBody}</Modal.Body>
+					<Modal.Body className='text-muted'><pre>{_modalBody}</pre></Modal.Body>
 					<Modal.Footer>
 						{_modalIcon}
-						<Button className='border border-0 rounded-0 inverse' variant='outline-light' onClick={() => setShowModal(false)}>
+						<Button className='border border-0 rounded-0 inverse w-50' variant='outline-light' onClick={() => setShowModal(false)}>
 							<div className='buttonBorders'>
 								<div className='borderTop'></div>
 								<div className='borderRight'></div>

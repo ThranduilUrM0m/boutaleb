@@ -26,7 +26,14 @@ const AboutUs = (props) => {
     } = useForm({
         mode: 'onTouched',
         reValidateMode: 'onChange',
-        reValidateMode: 'onSubmit'
+        reValidateMode: 'onSubmit',
+		defaultValues: {
+            _name: '',
+            _phone: '',
+            _emailSender: '',
+            _message: '',
+            _newsletter: false
+		}
     });
 
     const [_userNameFocused, setUserNameFocused] = useState(false);
@@ -96,26 +103,28 @@ const AboutUs = (props) => {
 
     const onSubmit = async (values) => {
         try {
-            /* await api._sendMessage(values)
-                .then((res) => {
-                    reset({
-                        _userNameInput: '',
-                        _userPhoneInput: '',
-                        _userEmailInput: '',
-                        _userMessageInput: '',
-                        _userNewsletterInput: false
-                    });
+            return axios.post('/api/user/_sendMessage', values)
+				.then((response) => {
                     setModalHeader('Hello ✔ and Welcome !');
                     setModalBody('Hello and welcome our stranger, Thank you for reaching out to us, \nHow about you joins us, not only you can give a feedback, but you can discover much more about our community.');
                     setModalIcon(<FontAwesomeIcon icon={faSquareCheck} />);
                     setShowModal(true);
-                })
-                .catch((error) => {
+				})
+				.then(() => {
+					reset({
+                        _name: '',
+                        _phone: '',
+                        _emailSender: '',
+                        _message: '',
+                        _newsletter: false
+					});
+				})
+				.catch((error) => {
                     setModalHeader('We\'re sorry !');
                     setModalBody('Something wrong in your information has blocked this message from being sent');
                     setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
                     setShowModal(true);
-                }); */
+				});
         } catch (error) {
             setModalHeader('We\'re sorry !');
             setModalBody(JSON.stringify(error));
@@ -208,11 +217,11 @@ const AboutUs = (props) => {
                         </div>
                     </div>
                     <div className='g-col-8'>
-                        <Form onSubmit={handleSubmit(onSubmit, onError)} className='grid'>
+                    <Form onSubmit={handleSubmit(onSubmit, onError)} className='grid'>
                             <Row className='g-col-12 grid'>
                                 <Col className='g-col-6'>
                                     <Form.Group
-                                        controlId='_userNameInput'
+                                        controlId='_name'
                                         className={`_formGroup ${_userNameFocused ? 'focused' : ''}`}
                                     >
                                         <FloatingLabel
@@ -220,10 +229,10 @@ const AboutUs = (props) => {
                                             className='_formLabel _labelWhite'
                                         >
                                             <Form.Control
-                                                {...register('_userNameInput', {
-                                                    required: 'Must be 3 to 16 long.',
+                                                {...register('_name', {
+                                                    required: 'Must be at least 2 characters.',
                                                     pattern: {
-                                                        value: /^[a-zA-Z\s]{3,16}$/,
+                                                        value: /^[a-zA-Z\s]{2,}$/i,
                                                         message: 'No numbers or symbols.'
                                                     },
                                                     onBlur: () => { setUserNameFocused(false) }
@@ -231,23 +240,23 @@ const AboutUs = (props) => {
                                                 placeholder='Name.'
                                                 autoComplete='new-password'
                                                 type='text'
-                                                className={`_formControl border rounded-0 ${errors._userNameInput ? 'border-danger' : ''}`}
-                                                name='_userNameInput'
+                                                className={`_formControl border rounded-0 ${errors._name ? 'border-danger' : ''}`}
+                                                name='_name'
                                                 onFocus={() => { setUserNameFocused(true) }}
                                             />
                                             {
-                                                errors._userNameInput && (
-                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_userNameInput', false) ? '' : 'toClear'}`}>
-                                                        {errors._userNameInput.message}
+                                                errors._name && (
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${!_.isEmpty(watch('_name')) ? '' : 'toClear'}`}>
+                                                        {errors._name.message}
                                                     </Form.Text>
                                                 )
                                             }
                                             {
-                                                watch('_userNameInput', false) && (
+                                                !_.isEmpty(watch('_name')) && (
                                                     <div className='_formClear'
                                                         onClick={() => {
                                                             reset({
-                                                                _userNameInput: ''
+                                                                _name: ''
                                                             });
                                                         }}
                                                     ></div>
@@ -258,7 +267,7 @@ const AboutUs = (props) => {
                                 </Col>
                                 <Col className='g-col-6'>
                                     <Form.Group
-                                        controlId='_userPhoneInput'
+                                        controlId='_phone'
                                         className={`_formGroup ${_userPhoneFocused ? 'focused' : ''}`}
                                     >
                                         <FloatingLabel
@@ -266,7 +275,7 @@ const AboutUs = (props) => {
                                             className='_formLabel _labelWhite'
                                         >
                                             <Form.Control
-                                                {...register('_userPhoneInput', {
+                                                {...register('_phone', {
                                                     required: 'Phone number missing.',
                                                     pattern: {
                                                         value: /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/,
@@ -277,23 +286,23 @@ const AboutUs = (props) => {
                                                 placeholder='Phone.'
                                                 autoComplete='new-password'
                                                 type='text'
-                                                className={`_formControl border rounded-0 ${errors._userPhoneInput ? 'border-danger' : ''}`}
-                                                name='_userPhoneInput'
+                                                className={`_formControl border rounded-0 ${errors._phone ? 'border-danger' : ''}`}
+                                                name='_phone'
                                                 onFocus={() => { setUserPhoneFocused(true) }}
                                             />
                                             {
-                                                errors._userPhoneInput && (
-                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_userPhoneInput', false) ? '' : 'toClear'}`}>
-                                                        {errors._userPhoneInput.message}
+                                                errors._phone && (
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${!_.isEmpty(watch('_phone')) ? '' : 'toClear'}`}>
+                                                        {errors._phone.message}
                                                     </Form.Text>
                                                 )
                                             }
                                             {
-                                                watch('_userPhoneInput', false) && (
+                                                !_.isEmpty(watch('_phone')) && (
                                                     <div className='_formClear'
                                                         onClick={() => {
                                                             reset({
-                                                                _userPhoneInput: ''
+                                                                _phone: ''
                                                             });
                                                         }}
                                                     ></div>
@@ -331,13 +340,13 @@ const AboutUs = (props) => {
                                             />
                                             {
                                                 errors._userEmailInput && (
-                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_userEmailInput', false) ? '' : 'toClear'}`}>
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${!_.isEmpty(watch('_userEmailInput')) ? '' : 'toClear'}`}>
                                                         {errors._userEmailInput.message}
                                                     </Form.Text>
                                                 )
                                             }
                                             {
-                                                watch('_userEmailInput', false) && (
+                                                !_.isEmpty(watch('_userEmailInput')) && (
                                                     <div className='_formClear'
                                                         onClick={() => {
                                                             reset({
@@ -400,7 +409,7 @@ const AboutUs = (props) => {
                                                 )
                                             }
                                             {
-                                                watch('_userMessageInput', false) && (
+                                                !_.isEmpty(watch('_userMessageInput')) && (
                                                     <div className='_formClear _messageInput'
                                                         onClick={() => {
                                                             reset({
@@ -435,12 +444,13 @@ const AboutUs = (props) => {
                     </div>
                 </div>
             </section>
+            
             <Modal show={_showModal} onHide={() => setShowModal(false)} centered>
                 <Form>
                     <Modal.Header closeButton>
                         <Modal.Title>{_modalHeader}</Modal.Title>
                     </Modal.Header>
-                    <Modal.Body className='text-muted'>{_modalBody}</Modal.Body>
+                    <Modal.Body className='text-muted'><pre>{_modalBody}</pre></Modal.Body>
                     <Modal.Footer>
                         {_modalIcon}
                         <Button

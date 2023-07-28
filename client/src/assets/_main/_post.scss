@@ -9,6 +9,7 @@ section {
             @include _dimensions($width: 100%, $height: 10vh);
 
             .breadcrumb {
+                position: relative;
                 display: flex;
                 padding: 0 10vh;
                 margin: 0;
@@ -18,8 +19,10 @@ section {
                     align-items: center;
                     margin-bottom: 0;
                     padding: 0 0 0 1.25vh;
+                    z-index: 1;
 
                     a {
+                        position: relative;
                         display: flex;
                         align-items: center;
                         color: rgba($black, .5);
@@ -28,6 +31,7 @@ section {
                         svg {
                             margin: 0 2.5vh;
                             @include _dimensions($width: 2.5vh, $height: 3vh);
+                            z-index: 1;
                         }
 
                         span {
@@ -41,6 +45,19 @@ section {
                         &:hover {
                             color: $black;
                         }
+
+                        &::before {
+                            content: '';
+                            position: absolute;
+                            background: darken($color: $sectionBackground, $amount: 6);
+                            @include _transform($top: 50%, $left: calc(7.5vh / 2), $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                            @include _dimensions($width: 4vh, $height: 4vh);
+                            z-index: 0;
+                        }
+                    }
+
+                    &:last-of-type {
+                        padding: 0 3.75vh 0 1.25vh;
                     }
                 }
 
@@ -48,6 +65,15 @@ section {
                     padding: 0 calc(var(--bs-breadcrumb-item-padding-x) + 2.5vh) 0 2.5vh;
                     color: rgba($color: $pink, $alpha: .5);
                     content: "→";
+                }
+
+                &::before {
+                    content: '';
+                    position: absolute;
+                    background: darken($color: $sectionBackground, $amount: 3);
+                    @include _transform($top: 50%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                    @include _dimensions($width: calc(100% - 20vh), $height: calc(100% + 2.5vh));
+                    z-index: 0;
                 }
             }
         }

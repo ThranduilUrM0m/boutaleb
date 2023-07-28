@@ -8,7 +8,6 @@ import {
 } from 'react-router-dom';
 import Breadcrumb from 'react-bootstrap/Breadcrumb';
 import axios from 'axios';
-import moment from 'moment';
 import Moment from 'react-moment';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Button from 'react-bootstrap/Button';
@@ -23,7 +22,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRectangleXmark, faNewspaper, faThumbsUp, faThumbsDown, faEye, faComment } from '@fortawesome/free-regular-svg-icons';
 import { faHouse, faShare, faEllipsisV, faReplyAll } from '@fortawesome/free-solid-svg-icons';
 import _ from 'lodash';
-import $ from 'jquery';
 import { io } from 'socket.io-client';
 
 import 'simplebar-react/dist/simplebar.min.css';
@@ -428,6 +426,8 @@ const Post = (props) => {
                         _socket.emit('action', { type: '_articleReviewed', data: res.data._article });
                     })
                     .catch((error) => {
+                        // Sometimes it says that _article._article_views is not iterable !
+                        // Always when opening a post from a link, cause at the refresh it works fine
                         setModalHeader('We\'re sorry !');
                         setModalBody(JSON.stringify(error));
                         setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
@@ -615,7 +615,7 @@ const Post = (props) => {
                 </Breadcrumb>
                 <div className='_postBox d-flex flex-column justify-content-center align-items-end'>
                     <h1 className='_title'>{_article._article_title}</h1>
-                    <p className='text-muted _author'><b>{_.capitalize(_article._article_author)}</b>, {<Moment fromNow>{_article.updatedAt}</Moment>}</p>
+                    <p className='text-muted _author'><b>{_.capitalize(_article._article_author)}</b>, {<Moment local fromNow>{_article.updatedAt}</Moment>}</p>
                     <div className='text-muted _body' dangerouslySetInnerHTML={{ __html: _article._article_body }}></div>
                     <div className='_vcuds d-flex'>
                         <div className='text-muted d-flex align-items-center views'>
@@ -732,13 +732,13 @@ const Post = (props) => {
                                             />
                                             {
                                                 errors._author && (
-                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_author', false) ? '' : 'toClear'}`}>
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${!_.isEmpty(watch('_author')) ? '' : 'toClear'}`}>
                                                         {errors._author.message}
                                                     </Form.Text>
                                                 )
                                             }
                                             {
-                                                watch('_author', false) && (
+                                                !_.isEmpty(watch('_author')) && (
                                                     <div className='_formClear'
                                                         onClick={() => {
                                                             reset({
@@ -778,13 +778,13 @@ const Post = (props) => {
                                             />
                                             {
                                                 errors._email && (
-                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_email', false) ? '' : 'toClear'}`}>
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${!_.isEmpty(watch('_email')) ? '' : 'toClear'}`}>
                                                         {errors._email.message}
                                                     </Form.Text>
                                                 )
                                             }
                                             {
-                                                watch('_email', false) && (
+                                                !_.isEmpty(watch('_email')) && (
                                                     <div className='_formClear'
                                                         onClick={() => {
                                                             reset({
@@ -827,7 +827,7 @@ const Post = (props) => {
                                                 )
                                             }
                                             {
-                                                watch('_body', false) && (
+                                                !_.isEmpty(watch('_body')) && (
                                                     <div className='_formClear _messageInput'
                                                         onClick={() => {
                                                             reset({
@@ -917,7 +917,7 @@ const Post = (props) => {
                                         <Card className={`border border-0 rounded-0 card_${_aCommentId}`} key={_aCommentId}>
                                             <Card.Body className='d-flex flex-column'>
                                                 <div className='_topRow d-flex'>
-                                                    <p className='text-muted author'><b>{_.capitalize(_aComment._author)}</b>, {<Moment fromNow>{_aComment.updatedAt}</Moment>}</p>
+                                                    <p className='text-muted author'><b>{_.capitalize(_aComment._author)}</b>, {<Moment local fromNow>{_aComment.updatedAt}</Moment>}</p>
                                                     <div className='interactions ms-auto d-flex'>
                                                         <div className='text-muted d-flex align-items-center replies'>
                                                             <p>{_.size(_.filter(_article._article_comments, { '_parentId': _aComment._id }))}</p>
@@ -1014,7 +1014,7 @@ const Post = (props) => {
                                                                 <Card className={`border border-0 rounded-0 card_${_replyId}`} key={_replyId}>
                                                                     <Card.Body className='d-flex flex-column'>
                                                                         <div className='_topRow d-flex'>
-                                                                            <p className='text-muted author'><b>{_.capitalize(_reply._author)}</b>, {<Moment fromNow>{_reply.updatedAt}</Moment>}</p>
+                                                                            <p className='text-muted author'><b>{_.capitalize(_reply._author)}</b>, {<Moment local fromNow>{_reply.updatedAt}</Moment>}</p>
                                                                             <div className='interactions ms-auto d-flex'>
                                                                                 <div className={`text-muted d-flex align-items-center upvotes ${!_.some(_.get(_reply, '_upvotes'), { _upvoter: _fingerprint }) ? '' : 'active'}`}>
                                                                                     <p>{_.size(_.get(_reply, '_upvotes'))}</p>
@@ -1092,12 +1092,12 @@ const Post = (props) => {
                     <Modal.Header closeButton>
                         <Modal.Title>{_modalHeader}</Modal.Title>
                     </Modal.Header>
-                    <Modal.Body className='text-muted'>{_modalBody}</Modal.Body>
+                    <Modal.Body className='text-muted'><pre>{_modalBody}</pre></Modal.Body>
                     <Modal.Footer>
                         {_modalIcon}
                         <Button
                             type='button'
-                            className='border border-0 rounded-0 inverse w-25'
+                            className='border border-0 rounded-0 inverse w-50'
                             variant='outline-light'
                             onClick={() => setShowModal(false)}
                         >

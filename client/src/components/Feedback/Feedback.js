@@ -379,9 +379,9 @@ const Feedback = (props) => {
                                         >
                                             <Form.Control
                                                 {...register('_testimony_author', {
-                                                    required: 'Must be 3 to 30 long.',
+                                                    required: 'Must be at least 2 characters.',
                                                     pattern: {
-                                                        value: /^[a-zA-Z\s]{2,30}$/,
+                                                        value: /^[a-zA-Z\s]{2,}$/i,
                                                         message: 'No numbers or symbols.'
                                                     },
                                                     onBlur: () => { setTestimonyAuthorFocused(false) }
@@ -395,13 +395,13 @@ const Feedback = (props) => {
                                             />
                                             {
                                                 errors._testimony_author && (
-                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_testimony_author', false) ? '' : 'toClear'}`}>
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${!_.isEmpty(watch('_testimony_author')) ? '' : 'toClear'}`}>
                                                         {errors._testimony_author.message}
                                                     </Form.Text>
                                                 )
                                             }
                                             {
-                                                watch('_testimony_author', false) && (
+                                                !_.isEmpty(watch('_testimony_author')) && (
                                                     <div className='_formClear'
                                                         onClick={() => {
                                                             reset({
@@ -441,13 +441,13 @@ const Feedback = (props) => {
                                             />
                                             {
                                                 errors._testimony_email && (
-                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_testimony_email', false) ? '' : 'toClear'}`}>
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${!_.isEmpty(watch('_testimony_email')) ? '' : 'toClear'}`}>
                                                         {errors._testimony_email.message}
                                                     </Form.Text>
                                                 )
                                             }
                                             {
-                                                watch('_testimony_email', false) && (
+                                                !_.isEmpty(watch('_testimony_email')) && (
                                                     <div className='_formClear'
                                                         onClick={() => {
                                                             reset({
@@ -490,7 +490,7 @@ const Feedback = (props) => {
                                                 )
                                             }
                                             {
-                                                watch('_testimony_body', false) && (
+                                                !_.isEmpty(watch('_testimony_body')) && (
                                                     <div className='_formClear _messageInput'
                                                         onClick={() => {
                                                             reset({
@@ -580,7 +580,7 @@ const Feedback = (props) => {
                                         <Card className={`border border-0 rounded-0 card_${_testimonyId}`} key={_testimonyId}>
                                             <Card.Body className='d-flex flex-column'>
                                                 <div className='_topRow d-flex'>
-                                                    <p className='text-muted author'><b>{_.capitalize(_testimony._testimony_author)}</b>, {<Moment fromNow>{_testimony._updatedAt}</Moment>}</p>
+                                                    <p className='text-muted author'><b>{_.capitalize(_testimony._testimony_author)}</b>, {<Moment local fromNow>{_testimony._updatedAt}</Moment>}</p>
                                                     <div className='interactions ms-auto d-flex'>
                                                         <div className='text-muted d-flex align-items-center replies'>
                                                             <p>{_.size(_.filter(_testimonies, { '_parentId': _testimony._id }))}</p>
@@ -675,7 +675,7 @@ const Feedback = (props) => {
                                                                 <Card className={`border border-0 rounded-0 card_${_replyId}`} key={_replyId}>
                                                                     <Card.Body className='d-flex flex-column'>
                                                                         <div className='_topRow d-flex'>
-                                                                            <p className='text-muted author'><b>{_.capitalize(_reply._testimony_author)}</b>, {<Moment fromNow>{_reply._updatedAt}</Moment>}</p>
+                                                                            <p className='text-muted author'><b>{_.capitalize(_reply._testimony_author)}</b>, {<Moment local fromNow>{_reply._updatedAt}</Moment>}</p>
                                                                             <div className='interactions ms-auto d-flex'>
                                                                                 <div className={`text-muted d-flex align-items-center upvotes ${!_.some(_.get(_reply, '_testimony_upvotes'), { _upvoter: _fingerprint }) ? '' : 'active'}`}>
                                                                                     <p>{_.size(_.get(_reply, '_testimony_upvotes'))}</p>
@@ -752,7 +752,7 @@ const Feedback = (props) => {
                         <Modal.Header closeButton>
                             <Modal.Title>{_modalHeader}</Modal.Title>
                         </Modal.Header>
-                        <Modal.Body className='text-muted'>{_modalBody}</Modal.Body>
+                        <Modal.Body className='text-muted'><pre>{_modalBody}</pre></Modal.Body>
                         <Modal.Footer>
                             {_modalIcon}
                             <Button

@@ -3,6 +3,36 @@ import { persist } from 'zustand/middleware';
 
 export const _useStore = create(persist(
     (set, get) => ({
+        // Users
+        _userIsAuthenticated: false,
+        setUserIsAuthenticated: (payload) => set(() => ({ _userIsAuthenticated: payload })),
+
+        _user: {},
+        setUser: (payload) => set(() => ({ _user: payload })),
+        addUser: (payload) => set((state) => ({ _users: [...state._users, payload] })),
+        deleteUser: (id) => {
+            set((state) => ({
+                _users: state._users.filter((_a) => _a._id !== id),
+            }));
+        },
+
+        _users: [],
+        setUsers: (payload) => set(() => ({ _users: payload })),
+        updateUsers: (payload) => set((state) => ({
+            _users: state._users.map((_a) => {
+                if (_a._id === payload._user._id) {
+                    return {
+                        ...payload._user,
+                    };
+                }
+                return _a;
+            })
+        })),
+
+        _userToEdit: {},
+        setUserToEdit: (payload) => set(() => ({ _userToEdit: payload })),
+        clearUserToEdit: () => set(() => ({ _userToEdit: {} })),
+
         // Articles
         _article: {},
         setArticle: (payload) => set(() => ({ _article: payload })),

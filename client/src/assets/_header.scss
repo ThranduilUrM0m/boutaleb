@@ -77,6 +77,7 @@ header {
                     .nav-item {
                         .logo {
                             margin: 0 0 0 5vh;
+                            @include _dimensions($width: '', $height: 100%);
 
                             img {
                                 @include _dimensions($width: '', $height: 3vh);
@@ -114,6 +115,32 @@ header {
                                         margin: 0;
                                         transform-origin: right center;
                                         @include _transform($top: 50%, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 0, $s_y: 0);
+                                        
+                                        &._typing {
+                                            color: transparent;
+                                        }
+                                    }
+
+                                    ._autocorrect {
+                                        position: absolute;
+                                        padding: 1vh;
+                                        line-height: 1.25;
+                                        font-size: 1rem;
+                                        font-weight: 400;
+                                        @include _dimensions($width: fit-content, $height: 7vh);
+                                        @include _transform($top: 50%, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+
+                                        p {
+                                            margin: 0;
+                                            
+                                            &._searchSuggestion {
+                                                color: rgba($white, .25);
+                                            }
+
+                                            &._typedCharacters {
+                                                color: $white;
+                                            }
+                                        }
                                     }
 
                                     label {

@@ -37,7 +37,14 @@ const Home = (props) => {
     } = useForm({
         mode: 'onTouched',
         reValidateMode: 'onChange',
-        reValidateMode: 'onSubmit'
+        reValidateMode: 'onSubmit',
+        defaultValues: {
+            _name: '',
+            _phone: '',
+            _emailSender: '',
+            _message: '',
+            _newsletter: false
+        }
     });
 
     const [_userNameFocused, setUserNameFocused] = useState(false);
@@ -255,35 +262,39 @@ const Home = (props) => {
     }
 
     const _handleArticleJSONTOHTML = (index) => {
+        //Cannot read properties of undefined (reading '_article_body')
+        //TypeError: Cannot read properties of undefined (reading '_article_body')
         let _i = index + 1;
         const html = $.parseHTML(_.orderBy(_.filter(_articles, (_a) => { return !_a._article_isPrivate }), ['_article_views'], ['desc']).slice(0, 10)[index]._article_body);
         $('._home ._s2 ._figure').html($(html).find('img').first());
-        $('._number p').html(_i < 10 ? '0'+_i : ''+_i);
-        $('._number p').attr('data-text', _i < 10 ? '0'+_i : ''+_i);
+        $('._number p').html(_i < 10 ? '0' + _i : '' + _i);
+        $('._number p').attr('data-text', _i < 10 ? '0' + _i : '' + _i);
     }
 
     const onSubmit = async (values) => {
         try {
-            /* await api._sendMessage(values)
-                .then((res) => {
-                    reset({
-                        _userNameInput: '',
-                        _userPhoneInput: '',
-                        _userEmailInput: '',
-                        _userMessageInput: '',
-                        _userNewsletterInput: false
-                    });
+            return axios.post('/api/user/_sendMessage', values)
+                .then((response) => {
                     setModalHeader('Hello ✔ and Welcome !');
                     setModalBody('Hello and welcome our stranger, Thank you for reaching out to us, \nHow about you joins us, not only you can give a feedback, but you can discover much more about our community.');
                     setModalIcon(<FontAwesomeIcon icon={faSquareCheck} />);
                     setShowModal(true);
+                })
+                .then(() => {
+                    reset({
+                        _name: '',
+                        _phone: '',
+                        _emailSender: '',
+                        _message: '',
+                        _newsletter: false
+                    });
                 })
                 .catch((error) => {
                     setModalHeader('We\'re sorry !');
                     setModalBody('Something wrong in your information has blocked this message from being sent');
                     setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
                     setShowModal(true);
-                }); */
+                });
         } catch (error) {
             setModalHeader('We\'re sorry !');
             setModalBody(JSON.stringify(error));
@@ -359,7 +370,7 @@ const Home = (props) => {
                             type='button'
                             className='border border-0 rounded-0 inverse w-25'
                             variant='outline-light'
-                            onClick={() => { $([document.documentElement, document.body]).animate({ scrollTop: $('._s4').offset().top }, 0); setFocus('_userNameInput'); }}
+                            onClick={() => { $([document.documentElement, document.body]).animate({ scrollTop: $('._s4').offset().top }, 0); setFocus('_name'); }}
                         >
                             <div className='buttonBorders'>
                                 <div className='borderTop'></div>
@@ -393,7 +404,7 @@ const Home = (props) => {
                                                         {_handleJSONTOHTML(_project._project_image, index)}
                                                     </div>
                                                 </Link>
-                                                <p className='text-muted author'>by <b>{_project._project_author}</b>, {<Moment fromNow>{_project.updatedAt}</Moment>}</p>
+                                                <p className='text-muted author'>by <b>{_project._project_author}</b>, {<Moment local fromNow>{_project.updatedAt}</Moment>}</p>
                                             </Card.Body>
                                         </Card>
                                     )
@@ -426,7 +437,7 @@ const Home = (props) => {
                                                     {/* Modify the bodies in mongodb, those articles aren't kinda fit to have an intriguing first phrase */}
                                                     {/* And figure out either; get the first paragraphe, and modify the articles to fit into that, or get the first phrases just enough to fill 3 lines */}
                                                     <span className='firstPhrase'>{_.slice(_.split(_.trim($(_article._article_body).find('span').text()), /\./g), 0, 1)}</span>
-                                                    <h2 className='align-self-start'>{_article._article_title}<br/>by <span>{_article._article_author}</span></h2>
+                                                    <h2 className='align-self-start'>{_article._article_title}<br />by <span>{_article._article_author}</span></h2>
                                                     <Button
                                                         type='button'
                                                         className='border border-0 rounded-0 inverse w-25 align-self-end'
@@ -443,7 +454,7 @@ const Home = (props) => {
                                                             Read More About it<b className='pink_dot'>.</b>
                                                         </span>
                                                     </Button>
-                                                    <span className='text-muted information align-self-end'><b>{_.size(_article._article_views)}</b> Views <FontAwesomeIcon icon={faCircleDot} />, {<Moment fromNow>{_article.updatedAt}</Moment>}</span>
+                                                    <span className='text-muted information align-self-end'><b>{_.size(_article._article_views)}</b> Views <FontAwesomeIcon icon={faCircleDot} />, {<Moment local fromNow>{_article.updatedAt}</Moment>}</span>
                                                     <div className='_shadowIndex'><p>{_.head(_article._article_title.split(/[\s.]+/)).length <= 2 ? _.head(_article._article_title.split(/[\s.]+/)) + ' ' + _.nth(_article._article_title.split(/[\s.]+/), 1) : _.head(_article._article_title.split(/[\s.]+/))}<b className='pink_dot'>.</b></p></div>
                                                 </Form>
                                             </Card.Body>
@@ -570,7 +581,7 @@ const Home = (props) => {
                             <Row className='g-col-12 grid'>
                                 <Col className='g-col-6'>
                                     <Form.Group
-                                        controlId='_userNameInput'
+                                        controlId='_name'
                                         className={`_formGroup ${_userNameFocused ? 'focused' : ''}`}
                                     >
                                         <FloatingLabel
@@ -578,34 +589,34 @@ const Home = (props) => {
                                             className='_formLabel _labelWhite'
                                         >
                                             <Form.Control
-                                                {...register('_userNameInput', {
-                                                    required: 'Must be 3 to 16 long.',
-													pattern: {
-														value: /^[a-zA-Z\s]{3,16}$/,
-														message: 'No numbers or symbols.'
-													},
+                                                {...register('_name', {
+                                                    required: 'Must be at least 2 characters.',
+                                                    pattern: {
+                                                        value: /^[a-zA-Z\s]{2,}$/i,
+                                                        message: 'No numbers or symbols.'
+                                                    },
                                                     onBlur: () => { setUserNameFocused(false) }
                                                 })}
                                                 placeholder='Name.'
                                                 autoComplete='new-password'
                                                 type='text'
-                                                className={`_formControl border rounded-0 ${errors._userNameInput ? 'border-danger' : ''}`}
-                                                name='_userNameInput'
+                                                className={`_formControl border rounded-0 ${errors._name ? 'border-danger' : ''}`}
+                                                name='_name'
                                                 onFocus={() => { setUserNameFocused(true) }}
                                             />
                                             {
-                                                errors._userNameInput && (
-                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_userNameInput', false) ? '' : 'toClear'}`}>
-                                                        {errors._userNameInput.message}
+                                                errors._name && (
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${!_.isEmpty(watch('_name')) ? '' : 'toClear'}`}>
+                                                        {errors._name.message}
                                                     </Form.Text>
                                                 )
                                             }
                                             {
-                                                watch('_userNameInput', false) && (
+                                                !_.isEmpty(watch('_name')) && (
                                                     <div className='_formClear'
                                                         onClick={() => {
                                                             reset({
-                                                                _userNameInput: ''
+                                                                _name: ''
                                                             });
                                                         }}
                                                     ></div>
@@ -616,7 +627,7 @@ const Home = (props) => {
                                 </Col>
                                 <Col className='g-col-6'>
                                     <Form.Group
-                                        controlId='_userPhoneInput'
+                                        controlId='_phone'
                                         className={`_formGroup ${_userPhoneFocused ? 'focused' : ''}`}
                                     >
                                         <FloatingLabel
@@ -624,7 +635,7 @@ const Home = (props) => {
                                             className='_formLabel _labelWhite'
                                         >
                                             <Form.Control
-                                                {...register('_userPhoneInput', {
+                                                {...register('_phone', {
                                                     required: 'Phone number missing.',
                                                     pattern: {
                                                         value: /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/,
@@ -635,23 +646,23 @@ const Home = (props) => {
                                                 placeholder='Phone.'
                                                 autoComplete='new-password'
                                                 type='text'
-                                                className={`_formControl border rounded-0 ${errors._userPhoneInput ? 'border-danger' : ''}`}
-                                                name='_userPhoneInput'
+                                                className={`_formControl border rounded-0 ${errors._phone ? 'border-danger' : ''}`}
+                                                name='_phone'
                                                 onFocus={() => { setUserPhoneFocused(true) }}
                                             />
                                             {
-                                                errors._userPhoneInput && (
-                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_userPhoneInput', false) ? '' : 'toClear'}`}>
-                                                        {errors._userPhoneInput.message}
+                                                errors._phone && (
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${!_.isEmpty(watch('_phone')) ? '' : 'toClear'}`}>
+                                                        {errors._phone.message}
                                                     </Form.Text>
                                                 )
                                             }
                                             {
-                                                watch('_userPhoneInput', false) && (
+                                                !_.isEmpty(watch('_phone')) && (
                                                     <div className='_formClear'
                                                         onClick={() => {
                                                             reset({
-                                                                _userPhoneInput: ''
+                                                                _phone: ''
                                                             });
                                                         }}
                                                     ></div>
@@ -664,7 +675,7 @@ const Home = (props) => {
                             <Row className='g-col-12 grid'>
                                 <Col className='g-col-6'>
                                     <Form.Group
-                                        controlId='_userEmailInput'
+                                        controlId='_emailSender'
                                         className={`_formGroup ${_userEmailFocused ? 'focused' : ''}`}
                                     >
                                         <FloatingLabel
@@ -672,7 +683,7 @@ const Home = (props) => {
                                             className='_formLabel _labelWhite'
                                         >
                                             <Form.Control
-                                                {...register('_userEmailInput', {
+                                                {...register('_emailSender', {
                                                     required: 'Email missing.',
                                                     pattern: {
                                                         value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
@@ -683,23 +694,23 @@ const Home = (props) => {
                                                 placeholder='Email.'
                                                 autoComplete='new-password'
                                                 type='text'
-                                                className={`_formControl border rounded-0 ${errors._userEmailInput ? 'border-danger' : ''}`}
-                                                name='_userEmailInput'
+                                                className={`_formControl border rounded-0 ${errors._emailSender ? 'border-danger' : ''}`}
+                                                name='_emailSender'
                                                 onFocus={() => { setUserEmailFocused(true) }}
                                             />
                                             {
-                                                errors._userEmailInput && (
-                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${watch('_userEmailInput', false) ? '' : 'toClear'}`}>
-                                                        {errors._userEmailInput.message}
+                                                errors._emailSender && (
+                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${!_.isEmpty(watch('_emailSender')) ? '' : 'toClear'}`}>
+                                                        {errors._emailSender.message}
                                                     </Form.Text>
                                                 )
                                             }
                                             {
-                                                watch('_userEmailInput', false) && (
+                                                !_.isEmpty(watch('_emailSender')) && (
                                                     <div className='_formClear'
                                                         onClick={() => {
                                                             reset({
-                                                                _userEmailInput: ''
+                                                                _emailSender: ''
                                                             });
                                                         }}
                                                     ></div>
@@ -758,7 +769,7 @@ const Home = (props) => {
                                                 )
                                             }
                                             {
-                                                watch('_userMessageInput', false) && (
+                                                !_.isEmpty(watch('_userMessageInput')) && (
                                                     <div className='_formClear _messageInput'
                                                         onClick={() => {
                                                             reset({
@@ -793,13 +804,13 @@ const Home = (props) => {
                     </div>
                 </div>
             </section>
-            
+
             <Modal show={_showModal} onHide={() => setShowModal(false)} centered>
                 <Form>
                     <Modal.Header closeButton>
                         <Modal.Title>{_modalHeader}</Modal.Title>
                     </Modal.Header>
-                    <Modal.Body className='text-muted'>{_modalBody}</Modal.Body>
+                    <Modal.Body className='text-muted'><pre>{_modalBody}</pre></Modal.Body>
                     <Modal.Footer>
                         {_modalIcon}
                         <Button

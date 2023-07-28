@@ -15,7 +15,7 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import Slider from 'react-slick';
 import Downshift from 'downshift';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircleDot, faMinus, faAngleRight, faArrowDownLong, faArrowUpLong, faCommentAlt, faEllipsisV, faHashtag, faArrowLeftLong, faMagnifyingGlass, faArrowRightLong, faThumbsDown, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
+import { faAngleRight, faArrowDownLong, faArrowUpLong, faCommentAlt, faEllipsisV, faHashtag, faArrowLeftLong, faMagnifyingGlass, faArrowRightLong, faThumbsDown, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 import { faClock, faEye, faFolder } from '@fortawesome/free-regular-svg-icons';
 import _ from 'lodash';
 import $ from 'jquery';
@@ -27,16 +27,28 @@ const Blog = (props) => {
     const _articles = _useStore((state) => state._articles);
     const setArticles = _useStore((state) => state.setArticles);
 
+    const [_typedCharactersTag, setTypedCharactersTag] = useState('');
+    const [_tagSuggestion, setTagSuggestion] = useState('');
+
+    const [_typedCharactersSearch, setTypedCharactersSearch] = useState('');
+    const [_searchSuggestion, setSearchSuggestion] = useState('');
+
+    //I added defaultValues so check if the fields are strings or something else
     const {
         register,
         watch,
-        reset,
+        resetField,
         getValues,
         setValue,
         formState: { errors }
     } = useForm({
         mode: 'onTouched',
-        reValidateMode: 'onSubmit'
+        reValidateMode: 'onSubmit',
+		defaultValues: {
+            _filterSort: '',
+            _searchInput: '',
+            _filterTags: ''
+		}
     });
 
     const [_showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -131,25 +143,25 @@ const Blog = (props) => {
                     ), (_articleTimeframe) => {
                         return _.isEqual(_filterTimeframe, 'Today')
                             ? (
-                                <Moment date={_articleTimeframe.updatedAt} isSame={moment(new Date(), 'day')}>
+                                <Moment local date={_articleTimeframe.updatedAt} isSame={moment(new Date(), 'day')}>
                                     {same => same}
                                 </Moment>
                             )
                             : _.isEqual(_filterTimeframe, 'PastWeek')
                                 ? (
-                                    <Moment date={_articleTimeframe.updatedAt} isSame={moment(new Date(), 'week')}>
+                                    <Moment local date={_articleTimeframe.updatedAt} isSame={moment(new Date(), 'week')}>
                                         {same => same}
                                     </Moment>
                                 )
                                 : _.isEqual(_filterTimeframe, 'PastMonth')
                                     ? (
-                                        <Moment date={_articleTimeframe.updatedAt} isSame={moment(new Date(), 'month')}>
+                                        <Moment local date={_articleTimeframe.updatedAt} isSame={moment(new Date(), 'month')}>
                                             {same => same}
                                         </Moment>
                                     )
                                     : _.isEqual(_filterTimeframe, 'PastYear')
                                         ? (
-                                            <Moment date={_articleTimeframe.updatedAt} isSame={moment(new Date(), 'year')}>
+                                            <Moment local date={_articleTimeframe.updatedAt} isSame={moment(new Date(), 'year')}>
                                                 {same => same}
                                             </Moment>
                                         )
@@ -360,7 +372,7 @@ const Blog = (props) => {
                                             <div className='borderLeft'></div>
                                             <Card.Body className='d-flex flex-column'>
                                                 <figure>{_handleJSONTOHTML('_sliderArticles', _article._article_body, index)}</figure>
-                                                <p className='text-muted author'>by <b>{_article._article_author}</b>, {<Moment fromNow>{_article.updatedAt}</Moment>}</p>
+                                                <p className='text-muted author'>by <b>{_article._article_author}</b>, {<Moment local fromNow>{_article.updatedAt}</Moment>}</p>
                                                 <h4>{_article._article_title}</h4>
                                                 <p className='category align-self-end'>{_article._article_category}</p>
                                                 <Button
@@ -389,6 +401,7 @@ const Blog = (props) => {
                     </div>
                 </div>
             </section>
+            
             <Modal className='_blogModal' show={_showModal} onHide={() => setShowModal(false)} centered>
                 <Modal.Header closeButton>
                     <Modal.Title className='d-flex'>
@@ -693,7 +706,7 @@ const Blog = (props) => {
                                                 }
                                             }
                                             itemToString={
-                                                item => (item ? item.value : getValues('_filterTags'))
+                                                item => (item ? item.value : getValues('_filterTags') || '')
                                             }
                                         >
                                             {({
@@ -717,29 +730,82 @@ const Blog = (props) => {
                                                     >
                                                         <FontAwesomeIcon icon={faHashtag} className='me-2' />
                                                         <Form.Control
-                                                            {...register('_filterTags', {})}
+                                                            {...register('_filterTags', { persist: true } )}
                                                             placeholder='Tags.'
                                                             autoComplete='new-password'
                                                             type='text'
-                                                            className='_formControl border border-0 rounded-0'
+                                                            className={`_formControl border border-0 rounded-0 ${!_.isEmpty(_typedCharactersTag) ? '_typing' : ''}`}
                                                             name='_filterTags'
                                                             {...getInputProps({
+                                                                onChange: (event) => {
+                                                                    const firstSuggestion = _.orderBy(
+                                                                        _.uniqBy(
+                                                                            _.filter(
+                                                                                _articleTags,
+                                                                                (item) =>
+                                                                                    !event.target.value ||
+                                                                                    _.includes(
+                                                                                        _.lowerCase(item.value),
+                                                                                        _.lowerCase(event.target.value)
+                                                                                    )
+                                                                            ),
+                                                                            'value'
+                                                                        ),
+                                                                        ['value'],
+                                                                        ['asc']
+                                                                    )[0];
+
+                                                                    setTypedCharactersTag(event.target.value);
+                                                                    setTagSuggestion(firstSuggestion && (firstSuggestion.value));
+                                                                },
                                                                 onFocus: () => {
                                                                     openMenu();
                                                                 },
-                                                                onBlur: (event) => {
-                                                                    if (_.isEmpty(event.target.value)) clearSelection();
+                                                                onBlur: () => {
+                                                                    const firstSuggestion = _.orderBy(
+                                                                        _.uniqBy(
+                                                                            _.filter(
+                                                                                _articleTags,
+                                                                                (item) =>
+                                                                                    !inputValue ||
+                                                                                    _.includes(
+                                                                                        _.lowerCase(item.value),
+                                                                                        _.lowerCase(inputValue)
+                                                                                    )
+                                                                            ),
+                                                                            'value'
+                                                                        ),
+                                                                        ['value'],
+                                                                        ['asc']
+                                                                    )[0];
+
+                                                                    if (firstSuggestion && _typedCharactersTag) {
+                                                                        setValue('_filterTags', firstSuggestion.value);
+                                                                    } else {
+                                                                        // Handle the case where no matching suggestion is found
+                                                                        resetField('_filterTags');
+                                                                    }
+
+                                                                    setTypedCharactersTag('');
+                                                                    setTagSuggestion('');
+
+                                                                    //if (_.isEmpty(event.target.value)) clearSelection();
                                                                 }
                                                             })}
                                                         />
+                                                        <span className='d-flex align-items-center _autocorrect'>
+                                                            {_.size(_.slice(_.lowerCase(_tagSuggestion), 0, _.lowerCase(_tagSuggestion).indexOf(_.lowerCase(_typedCharactersTag)))) > 0 && <p className='_tagSuggestion'>{_.slice(_.lowerCase(_tagSuggestion), 0, _.lowerCase(_tagSuggestion).indexOf(_.lowerCase(_typedCharactersTag)))}</p>}
+                                                            {_.size(_.lowerCase(_typedCharactersTag)) > 0 && <p className='_typedCharacters'>{_.lowerCase(_tagSuggestion).indexOf(_.lowerCase(_typedCharactersTag)) < 1 ? _.capitalize(_typedCharactersTag) : _typedCharactersTag}</p>}
+                                                            {_.size(_.slice(_.lowerCase(_tagSuggestion), _.lowerCase(_tagSuggestion).indexOf(_.lowerCase(_typedCharactersTag)) + _.size(_.lowerCase(_typedCharactersTag)))) > 0 && <p className='_tagSuggestion'>{_.slice(_.lowerCase(_tagSuggestion), _.lowerCase(_tagSuggestion).indexOf(_.lowerCase(_typedCharactersTag)) + _.size(_.lowerCase(_typedCharactersTag)))}</p>}
+                                                        </span>
                                                         {
-                                                            watch('_filterTags', false) && (
+                                                            (!_.isEmpty(watch('_filterTags')) || !_.isEmpty(_typedCharactersTag)) && (
                                                                 <div className='_searchButton _formClear'
                                                                     onClick={() => {
+                                                                        setTypedCharactersTag('');
+                                                                        setTagSuggestion('');
+                                                                        resetField('_filterTags');
                                                                         clearSelection();
-                                                                        reset({
-                                                                            _filterTags: ''
-                                                                        });
                                                                     }}
                                                                 ></div>
                                                             )
@@ -751,28 +817,40 @@ const Blog = (props) => {
                                                             {...getMenuProps()}
                                                         >
                                                             {
-                                                                isOpen
-                                                                    ?
-                                                                    _.map(
-                                                                        _.orderBy(_.uniqBy(_.filter(_articleTags, (item) => { return !inputValue || _.includes(_.lowerCase(item.value), _.lowerCase(inputValue)) }), 'value'), ['value'], ['asc'])
-                                                                        , (item, index) => {
-                                                                            return (
-                                                                                <ListGroup.Item
-                                                                                    className='border border-0 rounded-0 d-flex align-items-center'
-                                                                                    {...getItemProps({
-                                                                                        key: item.value,
-                                                                                        index,
-                                                                                        item
-                                                                                    })}
-                                                                                >
-                                                                                    <FontAwesomeIcon icon={faMagnifyingGlass} className='me-2' />
-                                                                                    {item.value}
-                                                                                </ListGroup.Item>
-                                                                            )
-                                                                        }
+                                                                isOpen &&
+                                                                _.map(
+                                                                    _.orderBy(
+                                                                        _.uniqBy(
+                                                                            _.filter(
+                                                                                _articleTags,
+                                                                                (item) =>
+                                                                                    !inputValue ||
+                                                                                    _.includes(
+                                                                                        _.lowerCase(item.value),
+                                                                                        _.lowerCase(inputValue)
+                                                                                    )
+                                                                            ),
+                                                                            'value'
+                                                                        ),
+                                                                        ['value'],
+                                                                        ['asc']
                                                                     )
-                                                                    :
-                                                                    null
+                                                                    , (item, index) => {
+                                                                        return (
+                                                                            <ListGroup.Item
+                                                                                className='border border-0 rounded-0 d-flex align-items-center'
+                                                                                {...getItemProps({
+                                                                                    key: item.value,
+                                                                                    index,
+                                                                                    item
+                                                                                })}
+                                                                            >
+                                                                                <FontAwesomeIcon icon={faMagnifyingGlass} className='me-2' />
+                                                                                {item.value}
+                                                                            </ListGroup.Item>
+                                                                        )
+                                                                    }
+                                                                )
                                                             }
                                                         </ListGroup>
                                                     </SimpleBar>
@@ -793,7 +871,7 @@ const Blog = (props) => {
                                     }
                                 }
                                 itemToString={
-                                    item => (item ? item.value : getValues('_searchInput'))
+                                    item => (item ? item.value : getValues('_searchInput') || '')
                                 }
                             >
                                 {({
@@ -820,25 +898,77 @@ const Blog = (props) => {
                                                 placeholder='Search.'
                                                 autoComplete='new-password'
                                                 type='text'
-                                                className='_formControl border border-0 rounded-0'
+                                                className={`_formControl border border-0 rounded-0 ${!_.isEmpty(_typedCharactersSearch) ? '_typing' : ''}`}
                                                 name='_searchInput'
                                                 {...getInputProps({
                                                     onChange: (event) => {
+                                                        const firstSuggestion = _.orderBy(
+                                                            _.uniqBy(
+                                                                _.filter(
+                                                                    _articleItems,
+                                                                    (item) =>
+                                                                        !event.target.value ||
+                                                                        _.includes(
+                                                                            _.lowerCase(item.value),
+                                                                            _.lowerCase(event.target.value)
+                                                                        )
+                                                                ),
+                                                                'value'
+                                                            ),
+                                                            ['value'],
+                                                            ['asc']
+                                                        )[0];
+
+                                                        setTypedCharactersSearch(event.target.value);
+                                                        setSearchSuggestion((!_.isEmpty(event.target.value) && firstSuggestion) && (firstSuggestion.value));
+
                                                         setValue('_searchInput', event.target.value);
                                                     },
                                                     onFocus: () => {
                                                         openMenu();
+                                                    },
+                                                    onBlur: () => {
+                                                        const firstSuggestion = _.orderBy(
+                                                            _.uniqBy(
+                                                                _.filter(
+                                                                    _articleItems,
+                                                                    (item) =>
+                                                                        !inputValue ||
+                                                                        _.includes(
+                                                                            _.lowerCase(item.value),
+                                                                            _.lowerCase(inputValue)
+                                                                        )
+                                                                ),
+                                                                'value'
+                                                            ),
+                                                            ['value'],
+                                                            ['asc']
+                                                        )[0];
+
+                                                        if (firstSuggestion) {
+                                                            setValue('_searchInput', firstSuggestion.value);
+                                                        } else {
+                                                            resetField('_searchInput');
+                                                        }
+
+                                                        setTypedCharactersSearch('');
+                                                        setSearchSuggestion('');
                                                     }
                                                 })}
                                             />
+                                            <span className='d-flex align-items-center _autocorrect'>
+                                                {_.size(_.slice(_.lowerCase(_searchSuggestion), 0, _.lowerCase(_searchSuggestion).indexOf(_.lowerCase(_typedCharactersSearch)))) > 0 && <p className='_searchSuggestion'>{_.slice(_.lowerCase(_searchSuggestion), 0, _.lowerCase(_searchSuggestion).indexOf(_.lowerCase(_typedCharactersSearch)))}</p>}
+                                                {_.size(_.lowerCase(_typedCharactersSearch)) > 0 && <p className='_typedCharacters'>{_.lowerCase(_searchSuggestion).indexOf(_.lowerCase(_typedCharactersSearch)) < 1 ? _.capitalize(_typedCharactersSearch) : _typedCharactersSearch}</p>}
+                                                {_.size(_.slice(_.lowerCase(_searchSuggestion), _.lowerCase(_searchSuggestion).indexOf(_.lowerCase(_typedCharactersSearch)) + _.size(_.lowerCase(_typedCharactersSearch)))) > 0 && <p className='_searchSuggestion'>{_.slice(_.lowerCase(_searchSuggestion), _.lowerCase(_searchSuggestion).indexOf(_.lowerCase(_typedCharactersSearch)) + _.size(_.lowerCase(_typedCharactersSearch)))}</p>}
+                                            </span>
                                             {
-                                                watch('_searchInput', false) && (
+                                                (!_.isEmpty(watch('_searchInput')) || !_.isEmpty(_typedCharactersSearch)) && (
                                                     <div className='_searchButton _formClear'
                                                         onClick={() => {
+                                                            setTypedCharactersSearch('');
+                                                            setSearchSuggestion('');
+                                                            resetField('_searchInput');
                                                             clearSelection();
-                                                            reset({
-                                                                _searchInput: ''
-                                                            });
                                                         }}
                                                     ></div>
                                                 )
@@ -850,28 +980,40 @@ const Blog = (props) => {
                                                 {...getMenuProps()}
                                             >
                                                 {
-                                                    isOpen && !_showFilterDropdown
-                                                        ?
-                                                        _.map(
-                                                            _.orderBy(_.uniqBy(_.filter(_articleItems, (item) => { return !inputValue || _.includes(_.lowerCase(item.value), _.lowerCase(inputValue)) }), 'value'), ['value'], ['asc'])
-                                                            , (item, index) => {
-                                                                return (
-                                                                    <ListGroup.Item
-                                                                        className='border border-0 rounded-0 d-flex align-items-center justify-content-start'
-                                                                        {...getItemProps({
-                                                                            key: item.value,
-                                                                            index,
-                                                                            item
-                                                                        })}
-                                                                    >
-                                                                        <FontAwesomeIcon icon={faMagnifyingGlass} className='me-2' />
-                                                                        {item.value}
-                                                                    </ListGroup.Item>
-                                                                )
-                                                            }
+                                                    (isOpen && !_showFilterDropdown) &&
+                                                    _.map(
+                                                        _.orderBy(
+                                                            _.uniqBy(
+                                                                _.filter(
+                                                                    _articleItems,
+                                                                    (item) =>
+                                                                        !inputValue ||
+                                                                        _.includes(
+                                                                            _.lowerCase(item.value),
+                                                                            _.lowerCase(inputValue)
+                                                                        )
+                                                                ),
+                                                                'value'
+                                                            ),
+                                                            ['value'],
+                                                            ['asc']
                                                         )
-                                                        :
-                                                        null
+                                                        , (item, index) => {
+                                                            return (
+                                                                <ListGroup.Item
+                                                                    className='border border-0 rounded-0 d-flex align-items-center justify-content-start'
+                                                                    {...getItemProps({
+                                                                        key: item.value,
+                                                                        index,
+                                                                        item
+                                                                    })}
+                                                                >
+                                                                    <FontAwesomeIcon icon={faMagnifyingGlass} className='me-2' />
+                                                                    {item.value}
+                                                                </ListGroup.Item>
+                                                            )
+                                                        }
+                                                    )
                                                 }
                                             </ListGroup>
                                         </SimpleBar>
@@ -896,7 +1038,7 @@ const Blog = (props) => {
                                         <Card className={`g-col-4 border border-0 rounded-0 card_${index}`} key={index}>
                                             <Card.Body className='d-flex flex-column'>
                                                 <figure>{_handleJSONTOHTML('_blogModal', _article._article_body, index)}</figure>
-                                                <p className='text-muted author'>by <b>{_article._article_author}</b>, {<Moment fromNow>{_article.updatedAt}</Moment>}</p>
+                                                <p className='text-muted author'>by <b>{_article._article_author}</b>, {<Moment local fromNow>{_article.updatedAt}</Moment>}</p>
                                                 <h4>{_article._article_title}</h4>
                                                 <p className='category align-self-end'>{_article._article_category}</p>
                                                 <ul className='text-muted tags'>
