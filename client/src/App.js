@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { _useStore } from './store/store';
+import { _useStore } from './store';
 import {
 	Route,
 	Routes
@@ -23,7 +23,7 @@ import { io } from "socket.io-client";
 
 const _socketURL = _.isEqual(process.env.NODE_ENV, 'production')
     ? window.location.hostname
-    : 'localhost:8800';
+    : 'localhost:5000';
 const _socket = io(_socketURL, { 'transports': ['websocket', 'polling'] });
 
 let App = (props) => {

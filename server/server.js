@@ -1,10 +1,31 @@
 //Models
 import Article from './models/Article.js';
+import Benefit from './models/Benefit.js';
+import Client from './models/Client.js';
+import Comment from './models/Comment.js';
+import Department from './models/Department.js';
+import Downvote from './models/Downvote.js';
+import Expense from './models/Expense.js';
+import Expertise from './models/Expertise.js';
+import Income from './models/Income.js';
+import Insurance from './models/Insurance.js';
+import Investment from './models/Investment.js';
+import Invoice from './models/Invoice.js';
+import Loan from './models/Loan.js';
+import Payment from './models/Payment.js';
 import Permission from './models/Permission.js';
+import Priority from './models/Priority.js';
 import Project from './models/Project.js';
-import Testimony from './models/Testimony.js';
-import User from './models/User.js';
+import Revenue from './models/Revenue.js';
+import Role from './models/Role.js';
+import Salary from './models/Salary.js';
+import Saving from './models/Saving.js';
+import Team from './models/Team.js';
+import Testimonial from './models/Testimonial.js';
 import Token from './models/Token.js';
+import Upvote from './models/Upvote.js';
+import User from './models/User.js';
+import View from './models/View.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -122,7 +143,7 @@ const setUpExpress = () => {
     }
 
     //Définition et mise en place du port d'écoute
-    const port = process.env.PORT || 8800;
+    const port = process.env.PORT || 5000;
 
     //our server instance
     const server = http.createServer(app);
@@ -155,14 +176,14 @@ const setUpExpress = () => {
                         io.sockets.emit('action', { type: '_userConfirmedLoad', data: { user: docs } });
                     });
                     break;
-                case '_testimonyCreated':
-                    db.collection('testimony').find({}).toArray((err, docs) => {
-                        io.sockets.emit('action', { type: '_testimonyCreatedLoad', data: { testimony: docs } });
+                case '_testimonialCreated':
+                    db.collection('testimonial').find({}).toArray((err, docs) => {
+                        io.sockets.emit('action', { type: '_testimonialCreatedLoad', data: { testimonial: docs } });
                     });
                     break;
-                case '_testimonyUpdated':
-                    db.collection('testimony').find({}).toArray((err, docs) => {
-                        io.sockets.emit('action', { type: '_testimonyUpdatedLoad', data: { testimony: docs } });
+                case '_testimonialUpdated':
+                    db.collection('testimonial').find({}).toArray((err, docs) => {
+                        io.sockets.emit('action', { type: '_testimonialUpdatedLoad', data: { testimonial: docs } });
                     });
                     break;
                 default:

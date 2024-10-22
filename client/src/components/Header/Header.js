@@ -3,9 +3,10 @@ import {
     NavLink,
     useLocation
 } from 'react-router-dom';
-import { _useStore } from '../../store/store';
+import _useStore from '../../store';
 import axios from 'axios';
 import Moment from 'react-moment';
+import SimpleBar from 'simplebar-react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Container from 'react-bootstrap/Container';
@@ -17,66 +18,83 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
-import { useForm } from 'react-hook-form';
-import Downshift from 'downshift';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
+import { useCombobox } from 'downshift';
 import logo from '../../assets/_images/logo.svg';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faEye } from '@fortawesome/free-regular-svg-icons';
-import { faCommentAlt, faThumbsDown, faThumbsUp, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+import { faCommentAlt, faThumbsDown, faThumbsUp, faMagnifyingGlass, faHashtag } from '@fortawesome/free-solid-svg-icons';
 import _ from 'lodash';
 import $ from 'jquery';
 
-const Header = (props) => {
-    const _articles = _useStore((state) => state._articles);
-    const setArticles = _useStore((state) => state.setArticles);
-    const _projects = _useStore((state) => state._projects);
-    const setProjects = _useStore((state) => state.setProjects);
+import 'simplebar-react/dist/simplebar.min.css';
 
-    const [_typedCharactersSearch, setTypedCharactersSearch] = useState('');
-    const [_searchSuggestion, setSearchSuggestion] = useState('');
+/* 
+If i write something in the search box and then not delete it and just close the modal and go to another page the search box appears with the letter that was written, so u need to clear it on close 
+On selecting a Tag that has been selected before you shold stop it from re selecting
+*/
+const Header = (props) => {
+    const _articles = _useStore.useArticleStore(state => state._articles);
+    const setArticles = _useStore.useArticleStore(state => state['_articles_SET_STATE']);
+    const _projects = _useStore.useProjectStore(state => state._projects);
+    const setProjects = _useStore.useProjectStore(state => state['_projects_SET_STATE']);
 
     let location = useLocation();
 
+    const _validationSchema = Yup
+        .object()
+        .shape({
+            _searchInput: Yup.string()
+                .default('')
+        });
+
     const {
-        register,
         watch,
-        resetField,
         setFocus,
-        getValues,
-        setValue
+        setValue,
+        trigger,
+        control
     } = useForm({
         mode: 'onTouched',
-        reValidateMode: 'onSubmit',
+        reValidateMode: 'onChange',
+        resolver: yupResolver(_validationSchema),
         defaultValues: {
             _searchInput: ''
         }
     });
 
+    /* Focus State Variables */
     const [_searchFocused, setSearchFocused] = useState(false);
+
+    /* Dropdown State Variables */
     const [_showAccountDropdown, setShowAccountDropdown] = useState(false);
 
+    /* Modal State Variables */
     const [_currentPage, setCurrentPage] = useState(1);
     const [_cardsPerPage] = useState(4);
     const [_showModal, setShowModal] = useState(false);
 
+    /* Form.Control data */
     let _articleTags = _.map(_.uniq(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), ('_article_tags')))), (_tag, _index) => {
         return {
             value: _tag
         }
     });
-    let _projectTags = _.map(_.uniq(_.flattenDeep(_.map(_.filter(_projects, (_project) => { return !_project._project_hide }), ('_project_tag')))), (_tag, _index) => {
+    let _projectTags = _.map(_.uniq(_.flattenDeep(_.map(_.filter(_projects, (_project) => { return !_project._project_toDisplay }), ('_project_tags')))), (_tag, _index) => {
         return {
             value: _tag
         }
     });
-    let _articleItems = _.orderBy(_.uniqBy(_.map(_.union(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_tags')), _.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_title'), _.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_author'), _.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_category')), (_search, _index) => {
+    let _articleItems = _.orderBy(_.uniqBy(_.map(_.union(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_tags')), _.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_title'), _.compact(_.flatMap(_.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), (_article) => ({ username: _article._article_author.username, firstname: _article._article_author.firstname, lastname: _article._article_author.lastname, email: _article._article_author.email, teamTitle: _article._article_author.Team?._team_title })), (__u) => [__u.email, __u.firstname, __u.lastname, __u.teamTitle, __u.username])), _.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_category')), (_search, _index) => {
         return {
-            value: _.toLower(_search.replace(/\.$/, ""))
+            value: _.toLower(_search.replace(/\.$/, ''))
         }
     }), 'value'), ['value'], ['asc']);
-    let _projectItems = _.orderBy(_.uniqBy(_.map(_.union(_.flattenDeep(_.map(_.filter(_projects, (_project) => { return !_project._project_hide }), '_project_tag')), _.map(_.filter(_projects, (_project) => { return !_project._project_hide }), '_project_title'), _.map(_.filter(_projects, (_project) => { return !_project._project_hide }), '_project_author')), (_search, _index) => {
+    let _projectItems = _.orderBy(_.uniqBy(_.map(_.union(_.flattenDeep(_.map(_.filter(_projects, (_project) => { return !_project._project_toDisplay }), '_project_tags')), _.map(_.filter(_projects, (_project) => { return !_project._project_toDisplay }), '_project_title')), (_search, _index) => {
         return {
-            value: _.toLower(_search.replace(/\.$/, ""))
+            value: _.toLower(_search.replace(/\.$/, ''))
         }
     }), 'value'), ['value'], ['asc']);
 
@@ -127,7 +145,7 @@ const Header = (props) => {
         return _.filter(
             _.union(
                 _.orderBy(_.filter(_articles, (_articleSort) => { return !_articleSort._article_isPrivate }), ['updatedAt'], ['desc']),
-                _.orderBy(_.filter(_projects, (_projectSort) => { return !_projectSort._project_hide }), ['updatedAt'], ['desc'])
+                _.orderBy(_.filter(_projects, (_projectSort) => { return !_projectSort._project_toDisplay }), ['updatedAt'], ['desc'])
             ),
             (_search) => {
                 let _filterSearch = _.map(_.filter(_.union(_articleItems, _projectItems), (item) => { return _.includes(_.lowerCase(item.value), _.lowerCase(watch(['_searchInput'])[0])) }), (item, index) => { return (item.value) });
@@ -142,13 +160,92 @@ const Header = (props) => {
         );
     }
 
+    /* Downshift */
+    const [_typedCharactersSearch, setTypedCharactersSearch] = useState('');
+    const [_searchSuggestion, setSearchSuggestion] = useState('');
+    const [__items, setItems] = useState(
+        _.orderBy(
+            _.uniqBy(
+                _.union(_articleItems, _projectItems),
+                'value'
+            ),
+            ['value'],
+            ['asc']
+        )
+    );
+    const _handleSelect = (__selectedItem) => {
+        if (__selectedItem) {
+            /* calling setValue from react-hook-form only updates the value of the specified field, it does not trigger any event handlers associated with that field in useCombobox */
+            setValue('_searchInput', __selectedItem.value);
+            _handleChange(__selectedItem.value);
+        }
+    }
+    const _handleChange = (__inputValue) => {
+        const firstSuggestions = _.orderBy(
+            _.uniqBy(
+                _.filter(
+                    _.union(_articleItems, _projectItems),
+                    (item) =>
+                        !__inputValue ||
+                        _.includes(
+                            _.lowerCase(item.value),
+                            _.lowerCase(__inputValue)
+                        )
+                ),
+                'value'
+            ),
+            ['value'],
+            ['asc']
+        );
+
+        setTypedCharactersSearch(__inputValue);
+        setSearchSuggestion((!_.isEmpty(__inputValue) && firstSuggestions[0]) ? (firstSuggestions[0].value) : '');
+        setShowModal(!_.isEmpty(__inputValue) ? true : false);
+        setCurrentPage(_.toNumber(1));
+        setItems(firstSuggestions);
+    }
+    const _handleBlur = () => {
+        setSearchFocused(!_.isEmpty(watch('_searchInput')) ? true : false);
+        trigger('_searchInput');
+    }
+    const _handleFocus = () => {
+        setSearchFocused(true);
+    }
+    const {
+        getLabelProps,
+        getInputProps,
+        getItemProps,
+        getMenuProps,
+        highlightedIndex,
+        selectedItem,
+        isOpen
+    } = useCombobox({
+        items: __items,
+        onInputValueChange({ inputValue }) { _handleChange(inputValue) },
+        onSelectedItemChange: ({ selectedItem: __selectedItem }) => _handleSelect(__selectedItem),
+        itemToString: item => (item ? item.value : ''),
+        stateReducer: (state, actionAndChanges) => {
+            const { type, changes } = actionAndChanges;
+            switch (type) {
+                case useCombobox.stateChangeTypes.InputClick:
+                    return {
+                        ...changes,
+                        isOpen: true,
+                    };
+                default:
+                    return changes;
+            }
+        }
+    });
+    /* Downshift */
+
     useEffect(() => {
         _getArticles();
         _getProjects();
 
         const subscription = watch((value, { name, type }) => { });
         return () => subscription.unsubscribe();
-    }, [_getArticles, _getProjects, watch, setFocus]);
+    }, [_getArticles, _getProjects, watch]);
 
     return (
         <header>
@@ -173,155 +270,110 @@ const Header = (props) => {
                             </Nav.Item>
                             <Nav.Item>
                                 <Form onClick={() => setFocus('_searchInput')}>
-                                    <Downshift
-                                        onSelect={
-                                            selection => {
-                                                if (selection) {
-                                                    setValue('_searchInput', selection.value);
-                                                    setShowModal(!_.isEmpty(selection.value) ? true : false);
-                                                }
-                                            }
-                                        }
-                                        itemToString={
-                                            item => (item ? item.value : getValues('_searchInput') || '')
-                                        }
-                                    >
-                                        {({
-                                            getInputProps,
-                                            getItemProps,
-                                            getMenuProps,
-                                            clearSelection,
-                                            isOpen,
-                                            inputValue,
-                                            getRootProps,
-                                            openMenu
-                                        }) => (
+                                    <Controller
+                                        name='_searchInput'
+                                        control={control}
+                                        render={({ field }) => (
                                             <Form.Group
                                                 controlId='_searchInput'
-                                                className={`_formGroup _searchGroup ${_searchFocused || !_.isEmpty(getValues('_searchInput')) ? 'focused' : ''}`}
+                                                className={`_formGroup _searchGroup ${_searchFocused ? 'focused' : ''}`}
                                             >
                                                 <FloatingLabel
                                                     label='Search.'
                                                     className='_formLabel _autocomplete'
-                                                    {...getRootProps({}, { suppressRefError: true })}
+                                                    {...getLabelProps()}
                                                 >
                                                     <Form.Control
-                                                        {...register('_searchInput', { persist: true })}
-                                                        placeholder='Search.'
-                                                        autoComplete='new-password'
-                                                        type='text'
-                                                        className={`_formControl border border-0 rounded-0 ${!_.isEmpty(_typedCharactersSearch) ? '_typing' : ''}`}
-                                                        name='_searchInput'
                                                         {...getInputProps({
-                                                            onChange: (event) => {
-                                                                const firstSuggestion = _.orderBy(
-                                                                    _.uniqBy(
-                                                                        _.filter(
-                                                                            _.union(_articleItems, _projectItems),
-                                                                            (item) =>
-                                                                                !event.target.value ||
-                                                                                _.includes(
-                                                                                    _.lowerCase(item.value),
-                                                                                    _.lowerCase(event.target.value)
-                                                                                )
-                                                                        ),
-                                                                        'value'
-                                                                    ),
-                                                                    ['value'],
-                                                                    ['asc']
-                                                                )[0];
-
-                                                                setTypedCharactersSearch(event.target.value);
-                                                                //Using && returns false so if you are using it to affect to a variable, keep in mind it will affect in false
-                                                                setSearchSuggestion((!_.isEmpty(event.target.value) && firstSuggestion) ? (firstSuggestion.value) : '');
-
-                                                                setCurrentPage(_.toNumber(1));
-                                                                setValue('_searchInput', event.target.value);
-                                                                setShowModal(!_.isEmpty(event.target.value) ? true : false);
-                                                            },
-                                                            onFocus: () => {
-                                                                openMenu();
-                                                                setSearchFocused(true);
-                                                            },
-                                                            onBlur: (event) => {
-                                                                // This onBlur will fire everytime the form changes instead of when loosing focus, 
-                                                                // because the Downshift is interacting with outside elements
-                                                                setSearchFocused(!_.isEmpty(event.target.value) ? true : false);
-                                                            }
+                                                            ...field,
+                                                            onFocus: _handleFocus,
+                                                            onBlur: _handleBlur
                                                         })}
+                                                        placeholder='Search.'
+                                                        className={`_formControl rounded-0 ${!_.isEmpty(_typedCharactersSearch) ? '_typing' : ''}`}
                                                     />
                                                     <span className='d-flex align-items-center _autocorrect'>
-                                                        {_.size(_.slice(_.lowerCase(_searchSuggestion), 0, _.lowerCase(_searchSuggestion).indexOf(_.lowerCase(_typedCharactersSearch)))) > 0 && <p className='_searchSuggestion'>{_.slice(_.lowerCase(_searchSuggestion), 0, _.lowerCase(_searchSuggestion).indexOf(_.lowerCase(_typedCharactersSearch)))}</p>}
-                                                        {_.size(_.lowerCase(_typedCharactersSearch)) > 0 && <p className='_typedCharacters'>{_.lowerCase(_searchSuggestion).indexOf(_.lowerCase(_typedCharactersSearch)) < 1 ? _.capitalize(_typedCharactersSearch) : _typedCharactersSearch}</p>}
-                                                        {_.size(_.slice(_.lowerCase(_searchSuggestion), _.lowerCase(_searchSuggestion).indexOf(_.lowerCase(_typedCharactersSearch)) + _.size(_.lowerCase(_typedCharactersSearch)))) > 0 && <p className='_searchSuggestion'>{_.slice(_.lowerCase(_searchSuggestion), _.lowerCase(_searchSuggestion).indexOf(_.lowerCase(_typedCharactersSearch)) + _.size(_.lowerCase(_typedCharactersSearch)))}</p>}
+                                                        {
+                                                            (() => {
+                                                                const __searchSuggestionSplit = _.split(_searchSuggestion, '');
+                                                                const __typedCharactersSearchSplit = _.split(_typedCharactersSearch, '');
+                                                                const __startIndex = _.indexOf(__searchSuggestionSplit, _.head(__typedCharactersSearchSplit));
+
+                                                                return (
+                                                                    <>
+                                                                        {__startIndex !== -1 && (
+                                                                            <>
+                                                                                <p className='_searchSuggestion'>
+                                                                                    {_.join(_.slice(__searchSuggestionSplit, 0, __startIndex), '')}
+                                                                                </p>
+                                                                            </>
+                                                                        )}
+                                                                        <p className='_typedCharacters'>
+                                                                            {_typedCharactersSearch}
+                                                                        </p>
+                                                                        {__startIndex !== -1 && (
+                                                                            <>
+                                                                                <p className='_searchSuggestion'>
+                                                                                    {_.join(_.slice(__searchSuggestionSplit, __startIndex + _.size(__typedCharactersSearchSplit)), '')}
+                                                                                </p>
+                                                                            </>
+                                                                        )}
+                                                                    </>
+                                                                );
+                                                            })()
+                                                        }
                                                     </span>
                                                 </FloatingLabel>
                                                 {
-                                                    (!_.isEmpty(watch('_searchInput')) || !_.isEmpty(_typedCharactersSearch)) 
+                                                    (!_.isEmpty(watch('_searchInput')) || !_.isEmpty(_typedCharactersSearch))
                                                         ?
-                                                        <div className='_searchButton _formClear'
+                                                        <div className='_searchButton __close'
                                                             onClick={() => {
-                                                                setTypedCharactersSearch('');
-                                                                setSearchSuggestion('');
-                                                                resetField('_searchInput');
-                                                                clearSelection();
-                                                                setShowModal(false);
+                                                                /* calling setValue from react-hook-form only updates the value of the specified field, it does not trigger any event handlers associated with that field in useCombobox */
+                                                                setValue('_searchInput', '');
+                                                                _handleChange('');
                                                             }}
-                                                        ></div>
+                                                        >
+                                                        </div>
                                                         :
                                                         <div className='_searchButton'></div>
                                                 }
-                                                <ListGroup
-                                                    className='border border-0 rounded-0 d-block'
-                                                    {...getMenuProps()}
-                                                >
-                                                    {
-                                                        (isOpen && !_showAccountDropdown) &&
-                                                        _.map(
-                                                            _.orderBy(
-                                                                _.uniqBy(
-                                                                    _.filter(
-                                                                        _.union(_articleItems, _projectItems),
-                                                                        (item) => 
-                                                                            !inputValue ||
-                                                                            _.includes(
-                                                                                _.lowerCase(item.value),
-                                                                                _.lowerCase(inputValue)
-                                                                            )
-                                                                    ),
-                                                                    'value'
-                                                                ),
-                                                                ['value'],
-                                                                ['asc']
+                                                <SimpleBar className='_SimpleBar' style={{ maxHeight: '40vh' }} forceVisible='y' autoHide={false}>
+                                                    <ListGroup
+                                                        className={`border border-0 rounded-0 d-block ${!(isOpen && __items.length) && 'hidden'}`}
+                                                        {...getMenuProps()}
+                                                    >
+                                                        {
+                                                            (isOpen && !_showAccountDropdown) &&
+                                                            _.map(
+                                                                __items
+                                                                , (item, index) => {
+                                                                    return (
+                                                                        <ListGroup.Item
+                                                                            className={`border border-0 rounded-0 d-flex align-items-center ${highlightedIndex === index && 'bg-blue-300'} ${selectedItem === item && 'font-bold'}`}
+                                                                            key={`${item.value}${index}`}
+                                                                            {...getItemProps({ item, index })}
+                                                                        >
+                                                                            <FontAwesomeIcon icon={faMagnifyingGlass} className='me-2' />
+                                                                            {item.value}
+                                                                        </ListGroup.Item>
+                                                                    )
+                                                                }
                                                             )
-                                                            , (item, index) => {
-                                                                return (
-                                                                    <ListGroup.Item
-                                                                        className='border border-0 rounded-0 d-flex align-items-center'
-                                                                        {...getItemProps({
-                                                                            key: index,
-                                                                            index,
-                                                                            item
-                                                                        })}
-                                                                    >
-                                                                        <FontAwesomeIcon icon={faMagnifyingGlass} className='me-2' />
-                                                                        {item.value}
-                                                                    </ListGroup.Item>
-                                                                )
-                                                            }
-                                                        )
-                                                    }
-                                                </ListGroup>
+                                                        }
+                                                    </ListGroup>
+                                                </SimpleBar>
                                             </Form.Group>
                                         )}
-                                    </Downshift>
+                                    />
                                 </Form>
                             </Nav.Item>
                             <Nav.Item>
                                 <Dropdown
                                     show={_showAccountDropdown}
                                     onMouseEnter={() => setShowAccountDropdown(true)}
-                                    onMouseLeave={() => setShowAccountDropdown(false)}>
+                                    onMouseLeave={() => setShowAccountDropdown(false)}
+                                >
                                     <Dropdown.Toggle as='span'>
                                         <span className='d-flex align-items-center justify-content-center'>
                                             <FontAwesomeIcon icon={faUser} />
@@ -436,28 +488,70 @@ const Header = (props) => {
                                         <Card className={`g-col-3 border border-0 rounded-0 card_${index}`} key={index}>
                                             <Card.Body className='d-flex flex-column'>
                                                 <figure>{_handleJSONTOHTML('_searchModal', _object._article_body ? _object._article_body : _object._project_image, index)}</figure>
-                                                <p className='text-muted author'>by <b>{_object._article_author ? _object._article_author : _object._project_author}</b>, {<Moment local fromNow>{_object.updatedAt}</Moment>}</p>
+                                                <p className='text-muted author'>
+                                                    {
+                                                        (!_.isEmpty(_object._project_teams) || !_.isEmpty(_object._article_author))
+                                                        ?
+                                                        <>
+                                                            by <b>{_object._article_author ? (_.isEmpty(_object._article_author._user_lastname) && _.isEmpty(_object._article_author._user_firstname) ? _object._article_author._user_username : (!_.isEmpty(_object._article_author._user_lastname) ? _object._article_author._user_lastname + ' ' + _object._article_author._user_firstname : _object._article_author._user_firstname)) : _.join(_.map(_object._project_teams, 'Team._team_title'), ', ')}</b>, <Moment local fromNow>{_object.updatedAt}</Moment>
+                                                        </>
+                                                        :
+                                                        <>
+                                                            &nbsp;
+                                                        </>
+                                                    }
+                                                </p>
                                                 <h4>{_object._article_title ? _object._article_title : _object._project_title}</h4>
                                                 <p className='category align-self-end'>{_object._article_category ? _object._article_category : 'Project'}</p>
-                                                <ul className='text-muted tags'>
+                                                <ul className='text-muted tags d-flex flex-row align-items-start'>
                                                     {
                                                         _object._article_tags ?
                                                             _.map(_object._article_tags, (_t, _i) => {
                                                                 return (
-                                                                    <li key={_i} className='tag_item'>{_t}</li>
+                                                                    <li
+                                                                        className={`border rounded-0 d-flex align-items-center`}
+                                                                        key={`${_t}${_i}`}
+                                                                    >
+                                                                        <FontAwesomeIcon
+                                                                            icon={
+                                                                                faHashtag
+                                                                            }
+                                                                        />
+                                                                        <p>
+                                                                            {_.upperFirst(
+                                                                                _t
+                                                                            )}
+                                                                            .
+                                                                        </p>
+                                                                    </li>
                                                                 )
                                                             })
                                                             :
-                                                            _.map(_object._project_tag, (_t, _i) => {
+                                                            _.map(_object._project_tags, (_t, _i) => {
                                                                 return (
-                                                                    <li key={_i} className='tag_item'>{_t}</li>
+                                                                    <li
+                                                                        className={`border rounded-0 d-flex align-items-center`}
+                                                                        key={`${_t}${_i}`}
+                                                                    >
+                                                                        <FontAwesomeIcon
+                                                                            icon={
+                                                                                faHashtag
+                                                                            }
+                                                                        />
+                                                                        <p>
+                                                                            {_.upperFirst(
+                                                                                _t
+                                                                            )}
+                                                                            .
+                                                                        </p>
+                                                                    </li>
                                                                 )
                                                             })
                                                     }
                                                 </ul>
                                                 <Button
                                                     type='button'
-                                                    className='border border-0 rounded-0 inverse mt-auto align-self-end'
+                                                    className='border border-0 rounded-0 inverse align-self-end'
                                                     variant='outline-light'
                                                     href={_object._project_link ? _object._project_link : `/blog/${_object._id}`}
                                                     data-am-linearrow='tooltip tooltip-bottom'
@@ -467,10 +561,10 @@ const Header = (props) => {
                                                     <div className='line line-2'></div>
                                                 </Button>
                                                 <div className='_footerInformation d-flex'>
-                                                    <p className='d-flex align-items-center text-muted _views'><b>{_.size(_object._article_views ? _object._article_views : _object._project_view)}</b><FontAwesomeIcon icon={faEye} /></p>
-                                                    <p className='d-flex align-items-center text-muted _comments'><b>{_.size(_object._article_comments ? _object._article_comments : _object._project_comment)}</b><FontAwesomeIcon icon={faCommentAlt} /></p>
-                                                    <p className='d-flex align-items-center text-muted _upvotes'><b>{_.size(_object._article_upvotes ? _object._article_upvotes : _object._project_upvotes)}</b><FontAwesomeIcon icon={faThumbsUp} /></p>
-                                                    <p className='d-flex align-items-center text-muted _downvotes'><b>{_.size(_object._article_downvotes ? _object._article_downvotes : _object._project_downvotes)}</b><FontAwesomeIcon icon={faThumbsDown} /></p>
+                                                    { !_.isEmpty(_object._article_title) && <><p className='d-flex align-items-center text-muted _views'><b>{_.size(_object._article_views)}</b><FontAwesomeIcon icon={faEye} /></p></> }
+                                                    { !_.isEmpty(_object._article_title) && <><p className='d-flex align-items-center text-muted _comments'><b>{_.size(_object._article_comments)}</b><FontAwesomeIcon icon={faCommentAlt} /></p></> }
+                                                    { !_.isEmpty(_object._article_title) && <><p className='d-flex align-items-center text-muted _upvotes'><b>{_.size(_object._article_upvotes)}</b><FontAwesomeIcon icon={faThumbsUp} /></p></> }
+                                                    { !_.isEmpty(_object._article_title) && <><p className='d-flex align-items-center text-muted _downvotes'><b>{_.size(_object._article_downvotes)}</b><FontAwesomeIcon icon={faThumbsDown} /></p></> }
                                                 </div>
                                             </Card.Body>
                                         </Card>
@@ -506,17 +600,31 @@ const Header = (props) => {
                     </ul>
                     <div className='_suggestions m-auto'>
                         <div className='togglebtn'><span role='img' aria-label='sheep'>👉</span> May we suggest?</div>
-                        <ul className='text-muted tags'>
+                        <ul className='text-muted tags d-flex flex-row align-items-start'>
                             {
                                 _.map(
                                     _.union(_articleTags, _projectTags, _articleItems, _projectItems), (data, index) => {
                                         return (
                                             <li
-                                                key={index}
-                                                className='tag_item'
-                                                onClick={() => { setValue('_searchInput', data.value) }}
+                                                key={`${index}`}
+                                                className={`tag_item border rounded-0 d-flex align-items-center`}
+                                                onClick={() => {
+                                                    /* calling setValue from react-hook-form only updates the value of the specified field, it does not trigger any event handlers associated with that field in useCombobox */
+                                                    setValue('_searchInput', data.value);
+                                                    _handleChange(data.value);
+                                                }}
                                             >
-                                                {data.value}
+                                                <FontAwesomeIcon
+                                                    icon={
+                                                        faHashtag
+                                                    }
+                                                />
+                                                <p>
+                                                    {_.upperFirst(
+                                                        data.value
+                                                    )}
+                                                    .
+                                                </p>
                                             </li>
                                         )
                                     }

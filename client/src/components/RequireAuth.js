@@ -1,12 +1,11 @@
-import { _useStore } from '../store/store';
+import _useStore from '../store';
 import {
     Navigate,
     useLocation
 } from 'react-router-dom';
-import _ from 'lodash';
 
 const RequireAuth = ({ children }) => {
-	const _userIsAuthenticated = _useStore((state) => state._userIsAuthenticated);
+    const _userIsAuthenticated = _useStore.useUserStore(state => state._userIsAuthenticated);
     let location = useLocation();
 
     if (_userIsAuthenticated) {

@@ -7,10 +7,10 @@ const router = express.Router();
 router.post('/', (req, res, next) => {
     const { body } = req;
 
-    if (!body._permission_titre) {
+    if (!body._permission_title) {
         return res.status(422).json({
             errors: {
-                _permission_titre: 'is required',
+                _permission_title: 'is required',
             },
         });
     }
@@ -44,15 +44,19 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _permission: req._permission.toJSON(),
-    });
+        _permission: req._permission.toJSON()
+    })
 });
 
 router.patch('/:id', (req, res, next) => {
     const { body } = req;
 
-    if (typeof body._permission_titre !== 'undefined') {
-        req._permission._permission_titre = body._permission_titre;
+    if (typeof body._permission_title !== 'undefined') {
+        req._permission._permission_title = body._permission_title;
+    }
+
+    if (typeof body._permission_description !== 'undefined') {
+        req._permission._permission_description = body._permission_description;
     }
 
     return req._permission.save()

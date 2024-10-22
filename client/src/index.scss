@@ -17,6 +17,8 @@ $enable-cssgrid: true;
 @import '~bootstrap/scss/bootstrap';
 
 body {
+    --scrollbar-width: calc(100vw - 100%);
+    
     margin: 0;
     font-family: $mainFont;
     -webkit-font-smoothing: antialiased;

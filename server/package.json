@@ -21,7 +21,7 @@
         "http": "*",
         "https": "*",
         "jwt-simple": "*",
-        "lodash": "^4.17.21",
+        "lodash": "*",
         "mongoose": "*",
         "morgan": "*",
         "multer": "*",

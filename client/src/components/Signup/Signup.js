@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { _useStore } from '../../store/store';
+import _useStore from '../../store';
 import {
 	useNavigate,
 	useLocation
 } from 'react-router-dom';
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
@@ -20,7 +22,7 @@ import { io } from 'socket.io-client';
 
 const _socketURL = _.isEqual(process.env.NODE_ENV, 'production')
 	? window.location.hostname
-	: 'localhost:8800';
+	: 'localhost:5000';
 const _socket = io(_socketURL, { 'transports': ['websocket', 'polling'] });
 
 const usePersistentFingerprint = () => {
@@ -52,19 +54,40 @@ const usePersistentFingerprint = () => {
 };
 
 const Signup = (props) => {
-	const _userIsAuthenticated = _useStore((state) => state._userIsAuthenticated);
-	const setUserIsAuthenticated = _useStore((state) => state.setUserIsAuthenticated);
-	const addUser = _useStore((state) => state.addUser);
+    const addUser = _useStore.useUserStore(state => state['_user_ADD_STATE']);
+    const setUser = _useStore.useUserStore(state => state['_user_SET_STATE']);
+    const setUserIsAuthenticated = _useStore.useUserStore(state => state['_userIsAuthenticated_SET_STATE']);
 
 	/* In this Component the _fingerprint variable is not needed at load, so it's working fine,
 	but what if someday the user is using somethin to block it or it just doesn't work,
 	i'll have to make sure the field can be empty at axios calls */
 	const _fingerprint = usePersistentFingerprint();
-	const [isFingerprintLoaded, setIsFingerprintLoaded] = useState(false);
+	/* const [isFingerprintLoaded, setIsFingerprintLoaded] = useState(false); */
 
 	let location = useLocation();
 	let navigate = useNavigate();
 
+	const _validationSchema = Yup
+		.object()
+		.shape({
+			_user_email: Yup.string()
+				.default('')
+				.required('Email missing.')
+				.matches(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i, 'Email invalid.'),
+			_user_username: Yup.string()
+				.default('')
+				.required('Username missing.')
+				.matches(/^[a-zA-Z0-9_]{3,20}$/, 'Username must be 3 to 20 long..'),
+			_user_password: Yup.string()
+				.default('')
+				.required('Password missing.')
+				.matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[a-zA-Z\d!@#$%^&*()]{8,}$/, 'Password must contain at least 1 upper and 1 lowercase letter, 1 number and 1 symbol.'),
+			_user_passwordConfirm: Yup.string()
+				.default('')
+				.required('Confirmation missing.')
+				.matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[a-zA-Z\d!@#$%^&*()]{8,}$/, 'Password must contain at least 1 upper and 1 lowercase letter, 1 number and 1 symbol.'),
+		})
+		.required();
 	const {
 		register,
 		handleSubmit,
@@ -73,8 +96,8 @@ const Signup = (props) => {
 		formState: { errors }
 	} = useForm({
 		mode: 'onTouched',
-		reValidateMode: 'onSubmit',
 		reValidateMode: 'onChange',
+		resolver: yupResolver(_validationSchema),
 		defaultValues: {
 			_user_email: '',
 			_user_username: '',
@@ -96,25 +119,21 @@ const Signup = (props) => {
 	const checkAuthentication = useCallback(async () => {
 		try {
 			// Check if the token is valid by calling the new endpoint
-			const response = await axios.get('/api/user/_checkToken', {
+			return await axios.get('/api/user/_checkToken', {
 				headers: {
 					Authorization: `Bearer ${localStorage.getItem('jwtToken')}`,
 				},
-			});
-
-			if (response.status === 200) {
-				// User is authenticated, set the state and redirect to a certain page
-				setUserIsAuthenticated(true);
-				navigate('/dashboard', { replace: true, state: { from: location } });
-			}
+			})
+				.then((response) => {
+					return response.data._user
+				})
+				.catch((error) => {
+					return false;
+				});
 		} catch (error) {
-			// User is not authenticated or an error occurred, handle the case accordingly
-			// For example, you can ignore the error if the status is 401 (Unauthorized)
-			if (error.response && error.response.status !== 401) {
-				console.error('FUCK YOU, LOGIN YOU BASTARD');
-			}
+			return false;
 		}
-	}, [setUserIsAuthenticated, navigate, location]);
+	}, []);
 
 	const onSubmit = async (values) => {
 		values._user_fingerprint = _fingerprint;
@@ -165,11 +184,19 @@ const Signup = (props) => {
 	}
 
 	useEffect(() => {
-		checkAuthentication();
+		const checkUserAuthentication = async () => {
+			const isAuthenticated = await checkAuthentication();
+			if (isAuthenticated) {
+				setUser(isAuthenticated);
+				setUserIsAuthenticated(true);
+				navigate('/dashboard', { replace: true, state: { from: location } });
+			}
+		};
+		checkUserAuthentication();
 
 		const subscription = watch((value, { name, type }) => { });
 		return () => subscription.unsubscribe();
-	}, [checkAuthentication, watch]);
+	}, [checkAuthentication, watch, setUser, location, navigate, setUserIsAuthenticated]);
 
 	return (
 		<main className='_signup'>
@@ -219,37 +246,29 @@ const Signup = (props) => {
 											className='_formLabel'
 										>
 											<Form.Control
-												{...register('_user_email', {
-													required: 'Email missing.',
-													pattern: {
-														value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
-														message: 'Email invalid.'
-													},
-													onBlur: () => { setUserEmailFocused(false) }
-												})}
+												{...register('_user_email')}
+												onBlur={() => setUserEmailFocused(false)}
+												onFocus={() => setUserEmailFocused(true)}
 												placeholder='Email.'
 												autoComplete='new-password'
 												type='text'
 												className={`_formControl border rounded-0 ${errors._user_email ? 'border-danger' : ''}`}
 												name='_user_email'
-												onFocus={() => { setUserEmailFocused(true) }}
 											/>
 											{
 												errors._user_email && (
-													<Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${!_.isEmpty(watch('_user_email')) ? '' : 'toClear'}`}>
+													<Form.Text className={`bg-danger d-flex align-items-center text-white bg-opacity-75 ${!_.isEmpty(watch('_user_email')) ? '' : 'toClear'}`}>
 														{errors._user_email.message}
 													</Form.Text>
 												)
 											}
 											{
 												!_.isEmpty(watch('_user_email')) && (
-													<div className='_formClear'
-														onClick={() => {
-															reset({
-																_user_email: ''
-															});
-														}}
-													></div>
+													<div
+														className='__close'
+														onClick={() => { reset({ _user_email: '' }); }}
+													>
+													</div>
 												)
 											}
 										</FloatingLabel>
@@ -265,37 +284,29 @@ const Signup = (props) => {
 											className='_formLabel'
 										>
 											<Form.Control
-												{...register('_user_username', {
-													required: 'Must be 3 to 20 long.',
-													pattern: {
-														value: /^[a-zA-Z0-9_]{3,20}$/,
-														message: 'Must be 3 to 20 long.'
-													},
-													onBlur: () => { setUserUsernameFocused(false) }
-												})}
+												{...register('_user_username')}
+												onBlur={() => setUserUsernameFocused(false)}
+												onFocus={() => setUserUsernameFocused(true)}
 												placeholder='Username.'
 												autoComplete='new-password'
 												type='text'
 												className={`_formControl border rounded-0 ${errors._user_username ? 'border-danger' : ''}`}
 												name='_user_username'
-												onFocus={() => setUserUsernameFocused(true)}
 											/>
 											{
 												errors._user_username && (
-													<Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${!_.isEmpty(watch('_user_username')) ? '' : 'toClear'}`}>
+													<Form.Text className={`bg-danger d-flex align-items-center text-white bg-opacity-75 ${!_.isEmpty(watch('_user_username')) ? '' : 'toClear'}`}>
 														{errors._user_username.message}
 													</Form.Text>
 												)
 											}
 											{
 												!_.isEmpty(watch('_user_username')) && (
-													<div className='_formClear'
-														onClick={() => {
-															reset({
-																_user_username: ''
-															});
-														}}
-													></div>
+													<div
+														className='__close'
+														onClick={() => { reset({ _user_username: '' }); }}
+													>
+													</div>
 												)
 											}
 										</FloatingLabel>
@@ -311,37 +322,29 @@ const Signup = (props) => {
 											className='_formLabel'
 										>
 											<Form.Control
-												{...register('_user_password', {
-													required: 'Password missing.',
-													pattern: {
-														value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[a-zA-Z\d!@#$%^&*()]{8,}$/,
-														message: 'At least 1 upper and 1 lowercase letter, 1 number and 1 symbol.'
-													},
-													onBlur: () => { setUserPasswordFocused(false) }
-												})}
+												{...register('_user_password')}
+												onBlur={() => setUserPasswordFocused(false)}
+												onFocus={() => setUserPasswordFocused(true)}
 												placeholder='Password.'
 												autoComplete='new-password'
 												type='password'
 												className={`_formControl border rounded-0 ${errors._user_password ? 'border-danger' : ''}`}
 												name='_user_password'
-												onFocus={() => setUserPasswordFocused(true)}
 											/>
 											{
 												errors._user_password && (
-													<Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${!_.isEmpty(watch('_user_password')) ? '' : 'toClear'}`}>
+													<Form.Text className={`bg-danger d-flex align-items-center text-white bg-opacity-75 ${!_.isEmpty(watch('_user_password')) ? '' : 'toClear'}`}>
 														{errors._user_password.message}
 													</Form.Text>
 												)
 											}
 											{
 												!_.isEmpty(watch('_user_password')) && (
-													<div className='_formClear'
-														onClick={() => {
-															reset({
-																_user_password: ''
-															});
-														}}
-													></div>
+													<div
+														className='__close'
+														onClick={() => { reset({ _user_password: '' }); }}
+													>
+													</div>
 												)
 											}
 										</FloatingLabel>
@@ -357,37 +360,29 @@ const Signup = (props) => {
 											className='_formLabel'
 										>
 											<Form.Control
-												{...register('_user_passwordConfirm', {
-													required: 'Password missing.',
-													pattern: {
-														value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[a-zA-Z\d!@#$%^&*()]{8,}$/,
-														message: 'At least 1 upper and 1 lowercase letter, 1 number and 1 symbol.'
-													},
-													onBlur: () => { setUserPasswordConfirmFocused(false) }
-												})}
+												{...register('_user_passwordConfirm')}
+												onBlur={() => setUserPasswordConfirmFocused(false)}
+												onFocus={() => setUserPasswordConfirmFocused(true)}
 												placeholder='Confirm Password.'
 												autoComplete='new-password'
 												type='password'
 												className={`_formControl border rounded-0 ${errors._user_passwordConfirm ? 'border-danger' : ''}`}
 												name='_user_passwordConfirm'
-												onFocus={() => setUserPasswordConfirmFocused(true)}
 											/>
 											{
 												errors._user_passwordConfirm && (
-													<Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${!_.isEmpty(watch('_user_passwordConfirm')) ? '' : 'toClear'}`}>
+													<Form.Text className={`bg-danger d-flex align-items-center text-white bg-opacity-75 ${!_.isEmpty(watch('_user_passwordConfirm')) ? '' : 'toClear'}`}>
 														{errors._user_passwordConfirm.message}
 													</Form.Text>
 												)
 											}
 											{
 												!_.isEmpty(watch('_user_passwordConfirm')) && (
-													<div className='_formClear'
-														onClick={() => {
-															reset({
-																_user_passwordConfirm: ''
-															});
-														}}
-													></div>
+													<div
+														className='__close'
+														onClick={() => { reset({ _user_passwordConfirm: '' }); }}
+													>
+													</div>
 												)
 											}
 										</FloatingLabel>

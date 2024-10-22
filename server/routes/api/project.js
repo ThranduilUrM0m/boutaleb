@@ -15,30 +15,6 @@ router.post('/', (req, res, next) => {
         });
     }
 
-    if (!body._project_image) {
-        return res.status(422).json({
-            errors: {
-                _project_image: 'is required',
-            },
-        });
-    }
-
-    if (!body._project_author) {
-        return res.status(422).json({
-            errors: {
-                _project_author: 'is required',
-            },
-        });
-    }
-
-    if (!body._project_link) {
-        return res.status(422).json({
-            errors: {
-                _project_link: 'is required',
-            },
-        });
-    }
-
     const finalProject = new Project(body);
     return finalProject.save()
         .then(() => {
@@ -49,6 +25,14 @@ router.post('/', (req, res, next) => {
 
 router.get('/', (req, res, next) => {
     return Project.find()
+        .populate({
+            path: '_project_teams.Team',
+            model: 'Team'
+        })
+        .populate({
+            path: '_project_teams.assignedTasks.__assignedTo',
+            model: 'User'
+        })
         .sort({ createdAt: 'descending' })
         .then((_projects) => res.json({ _projects: _projects.map(_project => _project.toJSON()) }))
         .catch(next);
@@ -56,6 +40,14 @@ router.get('/', (req, res, next) => {
 
 router.param('id', (req, res, next, id) => {
     return Project.findById(id)
+        .populate({
+            path: '_project_teams.Team',
+            model: 'Team'
+        })
+        .populate({
+            path: '_project_teams.assignedTasks.__assignedTo',
+            model: 'User'
+        })
         .then(_project => {
             if (!_project) {
                 return res.sendStatus(404);
@@ -79,10 +71,6 @@ router.patch('/:id', (req, res, next) => {
         req._project._project_title = body._project_title;
     }
 
-    if (typeof body._project_author !== 'undefined') {
-        req._project._project_author = body._project_author;
-    }
-
     if (typeof body._project_image !== 'undefined') {
         req._project._project_image = body._project_image;
     }
@@ -91,28 +79,32 @@ router.patch('/:id', (req, res, next) => {
         req._project._project_link = body._project_link;
     }
 
-    if (typeof body._project_hide !== 'undefined') {
-        req._project._project_hide = body._project_hide;
+    if (typeof body._project_toDisplay !== 'undefined') {
+        req._project._project_toDisplay = body._project_toDisplay;
     }
 
-    if (typeof body._project_tag !== 'undefined') {
-        req._project._project_tag = body._project_tag;
+    if (typeof body._project_tags !== 'undefined') {
+        req._project._project_tags = body._project_tags;
     }
 
-    if (typeof body._project_comment !== 'undefined') {
-        req._project._project_comment = body._project_comment;
+    if (typeof body._project_description !== 'undefined') {
+        req._project._project_description = body._project_description;
     }
 
-    if (typeof body._project_upvotes !== 'undefined') {
-        req._project._project_upvotes = body._project_upvotes;
+    if (typeof body._project_startDate !== 'undefined') {
+        req._project._project_startDate = body._project_startDate;
     }
 
-    if (typeof body._project_downvotes !== 'undefined') {
-        req._project._project_downvotes = body._project_downvotes;
+    if (typeof body._project_deadline !== 'undefined') {
+        req._project._project_deadline = body._project_deadline;
     }
 
-    if (typeof body._project_view !== 'undefined') {
-        req._project._project_view = body._project_view;
+    if (typeof body._project_milestones !== 'undefined') {
+        req._project._project_milestones = body._project_milestones;
+    }
+
+    if (typeof body._project_teams !== 'undefined') {
+        req._project._project_teams = body._project_teams;
     }
 
     return req._project.save()

@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 const Token = new Schema({
-    _userId: {
+    User: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'User'
@@ -18,4 +18,4 @@ const Token = new Schema({
 }, { timestamps: true });
 
 Token.index({ updatedAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 7, partialFilterExpression: { _userIsVerified: { $eq: true } } })
-export default mongoose.models.Token || mongoose.model("Token", Token);
+export default mongoose.models.Token || mongoose.model('Token', Token);

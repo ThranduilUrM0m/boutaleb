@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { _useStore } from '../../store/store';
+import _useStore from '../../store';
 import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
 import axios from 'axios';
 import Moment from 'react-moment';
 import Button from 'react-bootstrap/Button';
@@ -18,11 +20,12 @@ import { faRectangleXmark, faThumbsUp, faThumbsDown } from '@fortawesome/free-re
 import _ from 'lodash';
 import { io } from 'socket.io-client';
 
+import 'moment-timezone';
 import 'simplebar-react/dist/simplebar.min.css';
 
 const _socketURL = _.isEqual(process.env.NODE_ENV, 'production')
     ? window.location.hostname
-    : 'localhost:8800';
+    : 'localhost:5000';
 const _socket = io(_socketURL, { 'transports': ['websocket', 'polling'] });
 
 const usePersistentFingerprint = () => {
@@ -53,51 +56,84 @@ const usePersistentFingerprint = () => {
     return _fingerprint;
 };
 
+
+/* This Shit doesn't work properly */
 const Feedback = (props) => {
-    const _testimony = _useStore((state) => state._testimony);
-    const addTestimony = _useStore((state) => state.addTestimony);
-    const deleteTestimony = _useStore((state) => state.deleteTestimony);
-    const _testimonies = _useStore((state) => state._testimonies);
-    const setTestimonies = _useStore((state) => state.setTestimonies);
-    const updateTestimonies = _useStore((state) => state.updateTestimonies);
-    const _testimonyToEdit = _useStore((state) => state._testimonyToEdit);
-    const setTestimonyToEdit = _useStore((state) => state.setTestimonyToEdit);
-    const clearTestimonyToEdit = _useStore((state) => state.clearTestimonyToEdit);
+    const addTestimonial = _useStore.useTestimonialStore(state => state['_testimonial_ADD_STATE']);
+    const deleteTestimonial = _useStore.useTestimonialStore(state => state['_testimonial_DELETE_STATE']);
+
+    const _testimonialToEdit = _useStore.useTestimonialStore(state => state._testimonialToEdit);
+    const setTestimonialToEdit = _useStore.useTestimonialStore(state => state['_testimonialToEdit_SET_STATE']);
+    const clearTestimonialToEdit = _useStore.useTestimonialStore(state => state['_testimonialToEdit_CLEAR_STATE']);
+
+    const _testimonials = _useStore.useTestimonialStore(state => state._testimonials);
+    const updateTestimonials = _useStore.useTestimonialStore(state => state['_testimonials_UPDATE_STATE_ITEM']);
+    const setTestimonials = _useStore.useTestimonialStore(state => state['_testimonials_SET_STATE']);
 
     /* In this Component the _fingerprint variable is not needed at load, so it's working fine,
     but what if someday the user is using somethin to block it or it just doesn't work,
     i'll have to make sure the field can be empty at axios calls */
     const _fingerprint = usePersistentFingerprint();
-    const [isFingerprintLoaded, setIsFingerprintLoaded] = useState(false);
 
+    const _validationSchema = Yup
+        .object()
+        .shape({
+            Parent: Yup.string()
+                .default(null),
+            _testimonial_author: Yup.string()
+                .default('')
+                .required('Please provide a valid name.')
+                .test('min-length', 'Must be at least 2 characters.', value => value && value.length >= 2)
+                .matches(/^[a-zA-Z\s]*$/i, 'No numbers or symbols.'),
+            _testimonial_email: Yup.string()
+                .default('')
+                .test(
+                    'empty-or-valid-email',
+                    'Email invalid.',
+                    __email => !__email || /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(__email)
+                ),
+            _testimonial_body: Yup.string()
+                .default('')
+                .required('Please provide a message.'),
+            _testimonial_isPrivate: Yup.boolean()
+                .default(false),
+            _testimonial_fingerprint: Yup.string()
+                .default(''),
+            _testimonial_upvotes: Yup.array()
+                .default([]),
+            _testimonial_downvotes: Yup.array()
+                .default([])
+        })
+        .required();
     const {
         register,
         handleSubmit,
         watch,
-        getValues,
         setValue,
         reset,
+        resetField,
+        trigger,
         setFocus,
         formState: { errors }
     } = useForm({
-        mode: 'onTouched',
-        reValidateMode: 'onChange',
+        mode: 'onChange',
         reValidateMode: 'onSubmit',
+        resolver: yupResolver(_validationSchema),
         defaultValues: {
-            _parentId: null,
-            _testimony_author: '',
-            _testimony_email: '',
-            _testimony_body: '',
-            _testimony_isPrivate: false,
-            _testimony_fingerprint: '',
-            _testimony_upvotes: [],
-            _testimony_downvotes: []
+            Parent: null,
+            _testimonial_author: '',
+            _testimonial_email: '',
+            _testimonial_body: '',
+            _testimonial_isPrivate: false,
+            _testimonial_fingerprint: '',
+            _testimonial_upvotes: [],
+            _testimonial_downvotes: []
         }
     });
 
-    const [_testimonyAuthorFocused, setTestimonyAuthorFocused] = useState(false);
-    const [_testimonyEmailFocused, setTestimonyEmailFocused] = useState(false);
-    const [_testimonyBodyFocused, setTestimonyBodyFocused] = useState(false);
+    const [_testimonialAuthorFocused, setTestimonialAuthorFocused] = useState(false);
+    const [_testimonialEmailFocused, setTestimonialEmailFocused] = useState(false);
+    const [_testimonialBodyFocused, setTestimonialBodyFocused] = useState(false);
 
     const [_showModal, setShowModal] = useState(false);
     const [_modalHeader, setModalHeader] = useState('');
@@ -105,6 +141,7 @@ const Feedback = (props) => {
     const [_modalIcon, setModalIcon] = useState('');
 
     const [_showReplyDropdown, setShowReplyDropdown] = useState({});
+
     const _handleMouseEnter = (index) => {
         setShowReplyDropdown((prevState) => ({
             ...prevState,
@@ -119,12 +156,12 @@ const Feedback = (props) => {
         }));
     };
 
-    const _getTestimonies = useCallback(
+    const _getTestimonials = useCallback(
         async () => {
             try {
-                axios('/api/testimony')
+                axios('/api/testimonial')
                     .then((response) => {
-                        setTestimonies(response.data._testimonies);
+                        setTestimonials(response.data._testimonials);
                     })
                     .catch((error) => {
                         console.log(error);
@@ -133,12 +170,12 @@ const Feedback = (props) => {
                 console.log(error);
             }
         },
-        [setTestimonies]
+        [setTestimonials]
     );
 
     const _handleReply = (_id) => {
-        setValue('_parentId', _id);
-        setFocus('_testimony_author');
+        setValue('Parent', _id);
+        setFocus('_testimonial_author');
     };
 
     const _handleVotes = (_t, _type) => {
@@ -147,73 +184,73 @@ const Feedback = (props) => {
 
         try {
             if (_type === 'up') {
-                if (_.isUndefined(_.find(_.get(_t, '_testimony_upvotes'), { _upvoter: _fingerprint }))) {
-                    _action = '_testimonyUpvoted';
-                    if (_.isUndefined(_.find(_.get(_t, '_testimony_downvotes'), { _downvoter: _fingerprint }))) {
-                        // 'I have never Upvoted / Downvoted this Testimony'
+                if (_.isUndefined(_.find(_.get(_t, '_testimonial_upvotes'), { _upvoter: _fingerprint }))) {
+                    _action = '_testimonialUpvoted';
+                    if (_.isUndefined(_.find(_.get(_t, '_testimonial_downvotes'), { _downvoter: _fingerprint }))) {
+                        // 'I have never Upvoted / Downvoted this Testimonial'
                         _values = {
                             ..._t,
-                            _testimony_upvotes: [
-                                ..._t._testimony_upvotes,
+                            _testimonial_upvotes: [
+                                ..._t._testimonial_upvotes,
                                 { _upvoter: _fingerprint }
                             ]
                         };
                     } else {
-                        // 'I have never Upvoted / already Downvoted this Testimony'
+                        // 'I have never Upvoted / already Downvoted this Testimonial'
                         _values = {
                             ..._t,
-                            _testimony_upvotes: [
-                                ..._t._testimony_upvotes,
+                            _testimonial_upvotes: [
+                                ..._t._testimonial_upvotes,
                                 { _upvoter: _fingerprint }
                             ],
-                            _testimony_downvotes: _.filter(_t._testimony_downvotes, _vote => _vote._downvoter !== _fingerprint)
+                            _testimonial_downvotes: _.filter(_t._testimonial_downvotes, _vote => _vote._downvoter !== _fingerprint)
                         };
                     }
                 } else {
-                    // 'I have already Upvoted this Testimony'
-                    _action = '_testimonyUpvoteRemoved';
+                    // 'I have already Upvoted this Testimonial'
+                    _action = '_testimonialUpvoteRemoved';
                     _values = {
                         ..._t,
-                        _testimony_upvotes: _.filter(_t._testimony_upvotes, _vote => _vote._upvoter !== _fingerprint)
+                        _testimonial_upvotes: _.filter(_t._testimonial_upvotes, _vote => _vote._upvoter !== _fingerprint)
                     };
                 }
             } else {
-                if (_.isUndefined(_.find(_.get(_t, '_testimony_downvotes'), { _downvoter: _fingerprint }))) {
-                    _action = '_testimonyDownvoted';
-                    if (_.isUndefined(_.find(_.get(_t, '_testimony_upvotes'), { _upvoter: _fingerprint }))) {
-                        // 'I have never Upvoted / Downvoted this Testimony'
+                if (_.isUndefined(_.find(_.get(_t, '_testimonial_downvotes'), { _downvoter: _fingerprint }))) {
+                    _action = '_testimonialDownvoted';
+                    if (_.isUndefined(_.find(_.get(_t, '_testimonial_upvotes'), { _upvoter: _fingerprint }))) {
+                        // 'I have never Upvoted / Downvoted this Testimonial'
                         _values = {
                             ..._t,
-                            _testimony_downvotes: [
-                                ..._t._testimony_downvotes,
+                            _testimonial_downvotes: [
+                                ..._t._testimonial_downvotes,
                                 { _downvoter: _fingerprint }
                             ]
                         };
                     } else {
-                        // 'I have never Downvoted / already Upvoted this Testimony'
+                        // 'I have never Downvoted / already Upvoted this Testimonial'
                         _values = {
                             ..._t,
-                            _testimony_downvotes: [
-                                ..._t._testimony_downvotes,
+                            _testimonial_downvotes: [
+                                ..._t._testimonial_downvotes,
                                 { _downvoter: _fingerprint }
                             ],
-                            _testimony_upvotes: _.filter(_t._testimony_upvotes, _vote => _vote._upvoter !== _fingerprint)
+                            _testimonial_upvotes: _.filter(_t._testimonial_upvotes, _vote => _vote._upvoter !== _fingerprint)
                         };
                     }
                 } else {
-                    // 'I have already Downvoted this Testimony'
-                    _action = '_testimonyDownvoteRemoved';
+                    // 'I have already Downvoted this Testimonial'
+                    _action = '_testimonialDownvoteRemoved';
                     _values = {
                         ..._t,
-                        _testimony_downvotes: _.filter(_t._testimony_downvotes, _vote => _vote._downvoter !== _fingerprint)
+                        _testimonial_downvotes: _.filter(_t._testimonial_downvotes, _vote => _vote._downvoter !== _fingerprint)
                     };
                 }
             }
 
-            return axios.patch(`/api/testimony/${_t._id}`, _values)
+            return axios.patch(`/api/testimonial/${_t._id}`, _values)
                 .then((res) => {
-                    updateTestimonies(res.data);
-                    _socket.emit('action', { type: _action, data: res.data._testimony });
+                    updateTestimonials(res.data);
+                    _socket.emit('action', { type: _action, data: res.data._testimonial });
                 })
                 .catch((error) => {
                     setModalHeader('We\'re sorry !');
@@ -230,67 +267,67 @@ const Feedback = (props) => {
     };
 
     const _handleEdit = (_t) => {
-        setValue('_parentId', _t._parentId);
-        setValue('_testimony_author', _t._testimony_author);
-        setValue('_testimony_email', _t._testimony_email);
-        setValue('_testimony_body', _t._testimony_body);
-        setValue('_testimony_isPrivate', _t._testimony_isPrivate);
-        setValue('_testimony_fingerprint', _t._testimony_fingerprint);
-        setValue('_testimony_upvotes', _t._testimony_upvotes);
-        setValue('_testimony_downvotes', _t._testimony_downvotes);
+        setValue('Parent', _t.Parent);
+        setValue('_testimonial_author', _t._testimonial_author);
+        setValue('_testimonial_email', _t._testimonial_email);
+        setValue('_testimonial_body', _t._testimonial_body);
+        setValue('_testimonial_isPrivate', _t._testimonial_isPrivate);
+        setValue('_testimonial_fingerprint', _t._testimonial_fingerprint);
+        setValue('_testimonial_upvotes', _t._testimonial_upvotes);
+        setValue('_testimonial_downvotes', _t._testimonial_downvotes);
 
-        // Set the testimony to be edited in the _testimonyToEdit state
-        setTestimonyToEdit(_t);
+        // Set the testimonial to be edited in the _testimonialToEdit state
+        setTestimonialToEdit(_t);
     };
 
     const _handleDelete = (_id) => {
-        return axios.delete(`/api/testimony/${_id}`)
+        return axios.delete(`/api/testimonial/${_id}`)
             .then((res) => {
-                deleteTestimony(_id);
-                if (_testimonyToEdit._id === _id)
+                deleteTestimonial(_id);
+                if (_testimonialToEdit._id === _id)
                     _handleCancel();
-                _socket.emit('action', { type: '_testimonyDeleted', data: res.data._testimony });
+                _socket.emit('action', { type: '_testimonialDeleted', data: res.data._testimonial });
             });
     };
 
     const _handleCancel = () => {
         // Reset the form fields
         reset({
-            _parentId: null,
-            _testimony_author: '',
-            _testimony_email: '',
-            _testimony_body: '',
-            _testimony_isPrivate: false,
-            _testimony_fingerprint: '',
-            _testimony_upvotes: [],
-            _testimony_downvotes: []
-
+            Parent: null,
+            _testimonial_author: '',
+            _testimonial_email: '',
+            _testimonial_body: '',
+            _testimonial_isPrivate: false,
+            _testimonial_fingerprint: '',
+            _testimonial_upvotes: [],
+            _testimonial_downvotes: []
         });
 
-        // Clear the _testimonyToEdit state
-        clearTestimonyToEdit();
+        // Clear the _testimonialToEdit state
+        clearTestimonialToEdit();
     };
 
     const onSubmit = async (values) => {
-        _.isEmpty(values._testimony_fingerprint) && (values._testimony_fingerprint = _fingerprint);
+        _.isEmpty(values._testimonial_fingerprint) && (values._testimonial_fingerprint = _fingerprint);
+        console.log(values);
 
         try {
-            if (_.isEmpty(_testimonyToEdit)) {
-                return axios.post('/api/testimony', values)
+            if (_.isEmpty(_testimonialToEdit)) {
+                return axios.post('/api/testimonial', values)
                     .then((res) => {
-                        addTestimony(res.data._testimony);
-                        _socket.emit('action', { type: '_testimonyCreated', data: res.data._testimony });
+                        addTestimonial(res.data._testimonial);
+                        _socket.emit('action', { type: '_testimonialCreated', data: res.data._testimonial });
                     })
                     .then(() => {
                         reset({
-                            _parentId: null,
-                            _testimony_author: '',
-                            _testimony_email: '',
-                            _testimony_body: '',
-                            _testimony_isPrivate: false,
-                            _testimony_fingerprint: '',
-                            _testimony_upvotes: [],
-                            _testimony_downvotes: []
+                            Parent: null,
+                            _testimonial_author: '',
+                            _testimonial_email: '',
+                            _testimonial_body: '',
+                            _testimonial_isPrivate: false,
+                            _testimonial_fingerprint: '',
+                            _testimonial_upvotes: [],
+                            _testimonial_downvotes: []
                         });
                     })
                     .catch((error) => {
@@ -300,25 +337,25 @@ const Feedback = (props) => {
                         setShowModal(true);
                     });
             } else {
-                return axios.patch(`/api/testimony/${_testimonyToEdit._id}`, values)
+                return axios.patch(`/api/testimonial/${_testimonialToEdit._id}`, values)
                     .then((res) => {
-                        updateTestimonies(res.data);
-                        _socket.emit('action', { type: '_testimonyUpdated', data: res.data._testimony });
+                        updateTestimonials(res.data);
+                        _socket.emit('action', { type: '_testimonialUpdated', data: res.data._testimonial });
                     })
                     .then(() => {
                         reset({
-                            _parentId: null,
-                            _testimony_author: '',
-                            _testimony_email: '',
-                            _testimony_body: '',
-                            _testimony_isPrivate: false,
-                            _testimony_fingerprint: '',
-                            _testimony_upvotes: [],
-                            _testimony_downvotes: []
+                            Parent: null,
+                            _testimonial_author: '',
+                            _testimonial_email: '',
+                            _testimonial_body: '',
+                            _testimonial_isPrivate: false,
+                            _testimonial_fingerprint: '',
+                            _testimonial_upvotes: [],
+                            _testimonial_downvotes: []
                         });
 
-                        // Clear the _testimonyToEdit state
-                        clearTestimonyToEdit();
+                        // Clear the _testimonialToEdit state
+                        clearTestimonialToEdit();
                     })
                     .catch((error) => {
                         setModalHeader('We\'re sorry !');
@@ -338,15 +375,16 @@ const Feedback = (props) => {
     const onError = (error) => {
         setModalHeader('We\'re sorry !');
         setModalBody('Please check the fields for valid information.');
+        console.log(error)
         setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
         setShowModal(true);
     };
 
     useEffect(() => {
-        _getTestimonies();
+        _getTestimonials();
 
         const handleBeforeUnload = () => {
-            clearTestimonyToEdit();
+            clearTestimonialToEdit();
         };
         window.addEventListener('beforeunload', handleBeforeUnload);
 
@@ -355,7 +393,7 @@ const Feedback = (props) => {
             subscription.unsubscribe();
             window.removeEventListener('beforeunload', handleBeforeUnload);
         };
-    }, [_getTestimonies, watch]);
+    }, [_getTestimonials, watch, clearTestimonialToEdit]);
 
     return (
         <main className='_feedback'>
@@ -370,45 +408,40 @@ const Feedback = (props) => {
                             <Form onSubmit={handleSubmit(onSubmit, onError)} className='grid'>
                                 <Row className='g-col-12'>
                                     <Form.Group
-                                        controlId='_testimony_author'
-                                        className={`_formGroup ${_testimonyAuthorFocused ? 'focused' : ''}`}
+                                        controlId='_testimonial_author'
+                                        className={`_formGroup ${_testimonialAuthorFocused ? 'focused' : ''}`}
                                     >
                                         <FloatingLabel
                                             label='Name.'
-                                            className='_formLabel _labelWhite'
+                                            className='_formLabel'
                                         >
                                             <Form.Control
-                                                {...register('_testimony_author', {
-                                                    required: 'Must be at least 2 characters.',
-                                                    pattern: {
-                                                        value: /^[a-zA-Z\s]{2,}$/i,
-                                                        message: 'No numbers or symbols.'
-                                                    },
-                                                    onBlur: () => { setTestimonyAuthorFocused(false) }
-                                                })}
+                                                {...register('_testimonial_author')}
+                                                onBlur={() => {
+                                                    setTestimonialAuthorFocused(false);
+                                                    trigger('_testimonial_author');
+                                                }}
+                                                onFocus={() => setTestimonialAuthorFocused(true)}
                                                 placeholder='Name.'
                                                 autoComplete='new-password'
                                                 type='text'
-                                                className={`_formControl border rounded-0 ${errors._testimony_author ? 'border-danger' : ''}`}
-                                                name='_testimony_author'
-                                                onFocus={() => { setTestimonyAuthorFocused(true) }}
+                                                className={`_formControl border rounded-0 ${errors._testimonial_author ? 'border-danger' : ''}`}
+                                                name='_testimonial_author'
                                             />
                                             {
-                                                errors._testimony_author && (
-                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${!_.isEmpty(watch('_testimony_author')) ? '' : 'toClear'}`}>
-                                                        {errors._testimony_author.message}
+                                                errors._testimonial_author && (
+                                                    <Form.Text className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watch('_testimonial_author')) ? '_fieldNotEmpty' : ''}`}>
+                                                        {errors._testimonial_author.message}
                                                     </Form.Text>
                                                 )
                                             }
                                             {
-                                                !_.isEmpty(watch('_testimony_author')) && (
-                                                    <div className='_formClear'
-                                                        onClick={() => {
-                                                            reset({
-                                                                _testimony_author: ''
-                                                            });
-                                                        }}
-                                                    ></div>
+                                                !_.isEmpty(watch('_testimonial_author')) && (
+                                                    <div
+                                                        className='__close'
+                                                        onClick={() => { resetField('_testimonial_author') }}
+                                                    >
+                                                    </div>
                                                 )
                                             }
                                         </FloatingLabel>
@@ -416,45 +449,40 @@ const Feedback = (props) => {
                                 </Row>
                                 <Row className='g-col-12'>
                                     <Form.Group
-                                        controlId='_testimony_email'
-                                        className={`_formGroup ${_testimonyEmailFocused ? 'focused' : ''}`}
+                                        controlId='_testimonial_email'
+                                        className={`_formGroup ${_testimonialEmailFocused ? 'focused' : ''}`}
                                     >
                                         <FloatingLabel
                                             label='Email.'
-                                            className='_formLabel _labelWhite'
+                                            className='_formLabel'
                                         >
                                             <Form.Control
-                                                {...register('_testimony_email', {
-                                                    required: 'Email missing.',
-                                                    pattern: {
-                                                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
-                                                        message: 'Email invalid.'
-                                                    },
-                                                    onBlur: () => { setTestimonyEmailFocused(false) }
-                                                })}
+                                                {...register('_testimonial_email')}
+                                                onBlur={() => {
+                                                    setTestimonialEmailFocused(false);
+                                                    trigger('_testimonial_email');
+                                                }}
+                                                onFocus={() => setTestimonialEmailFocused(true)}
                                                 placeholder='Email.'
                                                 autoComplete='new-password'
                                                 type='text'
-                                                className={`_formControl border rounded-0 ${errors._testimony_email ? 'border-danger' : ''}`}
-                                                name='_testimony_email'
-                                                onFocus={() => setTestimonyEmailFocused(true)}
+                                                className={`_formControl border rounded-0 ${errors._testimonial_email ? 'border-danger' : ''}`}
+                                                name='_testimonial_email'
                                             />
                                             {
-                                                errors._testimony_email && (
-                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 ${!_.isEmpty(watch('_testimony_email')) ? '' : 'toClear'}`}>
-                                                        {errors._testimony_email.message}
+                                                errors._testimonial_email && (
+                                                    <Form.Text className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watch('_testimonial_email')) ? '_fieldNotEmpty' : ''}`}>
+                                                        {errors._testimonial_email.message}
                                                     </Form.Text>
                                                 )
                                             }
                                             {
-                                                !_.isEmpty(watch('_testimony_email')) && (
-                                                    <div className='_formClear'
-                                                        onClick={() => {
-                                                            reset({
-                                                                _testimony_email: ''
-                                                            });
-                                                        }}
-                                                    ></div>
+                                                !_.isEmpty(watch('_testimonial_email')) && (
+                                                    <div
+                                                        className='__close'
+                                                        onClick={() => { resetField('_testimonial_email') }}
+                                                    >
+                                                    </div>
                                                 )
                                             }
                                         </FloatingLabel>
@@ -462,42 +490,41 @@ const Feedback = (props) => {
                                 </Row>
                                 <Row className='g-col-12'>
                                     <Form.Group
-                                        controlId='_testimony_body'
-                                        className={`_formGroup ${_testimonyBodyFocused ? 'focused' : ''}`}
+                                        controlId='_testimonial_body'
+                                        className={`_formGroup ${_testimonialBodyFocused ? 'focused' : ''}`}
                                     >
                                         <FloatingLabel
                                             label='Message.'
-                                            className='_formLabel _labelWhite'
+                                            className='_formLabel'
                                         >
                                             <Form.Control
-                                                {...register('_testimony_body', {
-                                                    required: 'Please provide a message.',
-                                                    onBlur: () => { setTestimonyBodyFocused(false) }
-                                                })}
+                                                {...register('_testimonial_body')}
+                                                onBlur={() => {
+                                                    setTestimonialBodyFocused(false);
+                                                    trigger('_testimonial_body');
+                                                }}
+                                                onFocus={() => setTestimonialBodyFocused(true)}
                                                 placeholder='Message.'
                                                 as='textarea'
                                                 autoComplete='new-password'
                                                 type='text'
-                                                className={`_formControl border rounded-0 ${errors._testimony_body ? 'border-danger' : ''}`}
-                                                name='_testimony_body'
-                                                onFocus={() => { setTestimonyBodyFocused(true) }}
+                                                className={`_formControl border rounded-0 ${errors._testimonial_body ? 'border-danger' : ''}`}
+                                                name='_testimonial_body'
                                             />
                                             {
-                                                errors._testimony_body && (
-                                                    <Form.Text className={`bg-danger text-white bg-opacity-75 rounded-1 messageClear`}>
-                                                        {errors._testimony_body.message}
+                                                errors._testimonial_body && (
+                                                    <Form.Text className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watch('_testimonial_body')) ? '_fieldNotEmpty' : ''}`}>
+                                                        {errors._testimonial_body.message}
                                                     </Form.Text>
                                                 )
                                             }
                                             {
-                                                !_.isEmpty(watch('_testimony_body')) && (
-                                                    <div className='_formClear _messageInput'
-                                                        onClick={() => {
-                                                            reset({
-                                                                _testimony_body: ''
-                                                            });
-                                                        }}
-                                                    ></div>
+                                                !_.isEmpty(watch('_testimonial_body')) && (
+                                                    <div
+                                                        className='__close _messageInput'
+                                                        onClick={() => { resetField('_testimonial_body') }}
+                                                    >
+                                                    </div>
                                                 )
                                             }
                                         </FloatingLabel>
@@ -505,7 +532,7 @@ const Feedback = (props) => {
                                 </Row>
                                 <Row className='g-col-12'>
                                     <Form.Group
-                                        controlId='_testimony_isPrivate'
+                                        controlId='_testimonial_isPrivate'
                                         className='_checkGroup _formGroup'
                                     >
                                         <FloatingLabel
@@ -513,10 +540,10 @@ const Feedback = (props) => {
                                             className='_formLabel _labelWhite'
                                         >
                                             <Form.Check
+                                                {...register('_testimonial_isPrivate')}
                                                 type='switch'
                                                 className='_formSwitch'
-                                                name='_testimony_isPrivate'
-                                                {...register('_testimony_isPrivate', {})}
+                                                name='_testimonial_isPrivate'
                                             />
                                         </FloatingLabel>
                                     </Form.Group>
@@ -534,14 +561,14 @@ const Feedback = (props) => {
                                             <div className='borderLeft'></div>
                                         </div>
                                         <span>
-                                            {!_.isEmpty(_testimonyToEdit) ? 'Update' : 'Submit'}<b className='pink_dot'>.</b>
+                                            {!_.isEmpty(_testimonialToEdit) ? 'Update' : 'Submit'}<b className='pink_dot'>.</b>
                                         </span>
                                     </Button>
                                 </Row>
                                 <Row className='g-col-12'>
                                     {
                                         //Upon click it just disapears or appears too fast
-                                        (!_.isEmpty(_testimonyToEdit) || watch('_parentId') !== null) && (
+                                        (!_.isEmpty(_testimonialToEdit) || watch('Parent') !== null) && (
                                             <Button
                                                 type='button'
                                                 className='border border-0 rounded-0 _red'
@@ -558,56 +585,57 @@ const Feedback = (props) => {
                     </Card>
                 </div>
                 <div className='g-col-6'>
-                    {/* Check for how to make the scroll bar wider upon hover and more cool */}
                     <SimpleBar style={{ maxHeight: '72vh' }} forceVisible='y' autoHide={false}>
                         {
-                            _.map(_.chain(_.filter(_testimonies, (_t) => { return !_t._testimony_isPrivate && _t._parentId === null }))
+                            _.map(_.chain(_.filter(_testimonials, (_t) => { return !_t._testimonial_isPrivate && _t.Parent === null }))
                                 .sortBy([
                                     // Sort by upvotes count in descending order
-                                    // This fires an error upon creating a new testimony
-                                    (_testimony) => -_.size(_testimony._testimony_upvotes),
-                                    // Sort by Testimony with the most Replies
-                                    (_testimony) => -_.size(_.filter(_testimonies, ['_parentId', _testimony._id])),
+                                    // This fires an error upon creating a new testimonial
+                                    (_testimonial) => -_.size(_testimonial._testimonial_upvotes),
+                                    // Sort by Testimonial with the most Replies
+                                    (_testimonial) => -_.size(_.filter(_testimonials, ['Parent', _testimonial._id])),
                                     // Sort by creation date in descending order
                                     '_createdAt',
                                     // Sort by update date in descending order
                                     '_updatedAt'
                                 ])
-                                .value(), (_testimony, index) => {
-                                    const _testimonyId = `_testimony_${index}`;
+                                .value(), (_testimonial, index) => {
+                                    const _testimonialId = `_testimonial_${index}`;
 
                                     return (
-                                        <Card className={`border border-0 rounded-0 card_${_testimonyId}`} key={_testimonyId}>
+                                        <Card className={`border border-0 rounded-0 card_${_testimonialId}`} key={_testimonialId}>
                                             <Card.Body className='d-flex flex-column'>
                                                 <div className='_topRow d-flex'>
-                                                    <p className='text-muted author'><b>{_.capitalize(_testimony._testimony_author)}</b>, {<Moment local fromNow>{_testimony._updatedAt}</Moment>}</p>
+                                                    <p className='text-muted author'>
+                                                        <b>{_.capitalize(_testimonial._testimonial_author)}</b>, {<Moment local fromNow>{_testimonial.updatedAt}</Moment>}
+                                                    </p>
                                                     <div className='interactions ms-auto d-flex'>
                                                         <div className='text-muted d-flex align-items-center replies'>
-                                                            <p>{_.size(_.filter(_testimonies, { '_parentId': _testimony._id }))}</p>
+                                                            <p>{_.size(_.filter(_testimonials, { 'Parent': _testimonial._id }))}</p>
                                                             <Button
                                                                 type='button'
                                                                 className='border border-0 rounded-0'
-                                                                onClick={() => _handleEdit(_testimony)}
+                                                                onClick={() => _handleEdit(_testimonial)}
                                                             >
                                                                 <FontAwesomeIcon icon={faReplyAll} />
                                                             </Button>
                                                         </div>
-                                                        <div className={`text-muted d-flex align-items-center upvotes ${!_.some(_.get(_testimony, '_testimony_upvotes'), { _upvoter: _fingerprint }) ? '' : 'active'}`}>
-                                                            <p>{_.size(_.get(_testimony, '_testimony_upvotes'))}</p>
+                                                        <div className={`text-muted d-flex align-items-center upvotes ${!_.some(_.get(_testimonial, '_testimonial_upvotes'), { _upvoter: _fingerprint }) ? '' : 'active'}`}>
+                                                            <p>{_.size(_.get(_testimonial, '_testimonial_upvotes'))}</p>
                                                             <Button
                                                                 type='button'
                                                                 className='border border-0 rounded-0'
-                                                                onClick={() => _handleVotes(_testimony, 'up')}
+                                                                onClick={() => _handleVotes(_testimonial, 'up')}
                                                             >
                                                                 <FontAwesomeIcon icon={faThumbsUp} />
                                                             </Button>
                                                         </div>
-                                                        <div className={`text-muted d-flex align-items-center downvotes ${!_.some(_.get(_testimony, '_testimony_downvotes'), { _downvoter: _fingerprint }) ? '' : 'active'}`}>
-                                                            <p>{_.size(_.get(_testimony, '_testimony_downvotes'))}</p>
+                                                        <div className={`text-muted d-flex align-items-center downvotes ${!_.some(_.get(_testimonial, '_testimonial_downvotes'), { _downvoter: _fingerprint }) ? '' : 'active'}`}>
+                                                            <p>{_.size(_.get(_testimonial, '_testimonial_downvotes'))}</p>
                                                             <Button
                                                                 type='button'
                                                                 className='border border-0 rounded-0'
-                                                                onClick={() => _handleVotes(_testimony, 'down')}
+                                                                onClick={() => _handleVotes(_testimonial, 'down')}
                                                             >
                                                                 <FontAwesomeIcon icon={faThumbsDown} />
                                                             </Button>
@@ -615,14 +643,14 @@ const Feedback = (props) => {
                                                     </div>
                                                 </div>
                                                 <div className='_middleRow'>
-                                                    <h4>{_.capitalize(_testimony._testimony_body)}</h4>
+                                                    <h4>{_.capitalize(_testimonial._testimonial_body)}</h4>
                                                 </div>
                                                 <div className='_bottomRow d-flex justify-content-end'>
                                                     <Dropdown
-                                                        key={_testimonyId}
-                                                        show={_showReplyDropdown[_testimonyId]}
-                                                        onMouseEnter={() => { _handleMouseEnter(_testimonyId); }}
-                                                        onMouseLeave={() => { _handleMouseLeave(_testimonyId); }}
+                                                        key={_testimonialId}
+                                                        show={_showReplyDropdown[_testimonialId]}
+                                                        onMouseEnter={() => { _handleMouseEnter(_testimonialId); }}
+                                                        onMouseLeave={() => { _handleMouseLeave(_testimonialId); }}
                                                     >
                                                         <Dropdown.Toggle as='span'>
                                                             <span className='d-flex align-items-center justify-content-center'>
@@ -632,21 +660,21 @@ const Feedback = (props) => {
                                                         <Dropdown.Menu className='border rounded-0'>
                                                             <Form className='d-flex flex-column'>
                                                                 <Dropdown.Item
-                                                                    onClick={() => _handleReply(_testimony._id)}
+                                                                    onClick={() => _handleReply(_testimonial._id)}
                                                                 >
                                                                     Reply<b className='pink_dot'>.</b>
                                                                 </Dropdown.Item>
                                                                 {
-                                                                    _testimony._testimony_fingerprint === _fingerprint && (
+                                                                    _testimonial._testimonial_fingerprint === _fingerprint && (
                                                                         <>
                                                                             <Dropdown.Item
-                                                                                onClick={() => _handleEdit(_testimony)}
+                                                                                onClick={() => _handleEdit(_testimonial)}
                                                                             >
                                                                                 Edit<b className='pink_dot'>.</b>
                                                                             </Dropdown.Item>
                                                                             <Dropdown.Divider />
                                                                             <Dropdown.Item
-                                                                                onClick={() => _handleDelete(_testimony._id)}
+                                                                                onClick={() => _handleDelete(_testimonial._id)}
                                                                             >
                                                                                 Delete<b className='pink_dot'>.</b>
                                                                             </Dropdown.Item>
@@ -658,11 +686,11 @@ const Feedback = (props) => {
                                                     </Dropdown>
                                                 </div>
                                                 {
-                                                    _.map(_.chain(_.filter(_testimonies, (_t) => { return !_t._testimony_isPrivate && _t._parentId === _testimony._id }))
+                                                    _.map(_.chain(_.filter(_testimonials, (_t) => { return !_t._testimonial_isPrivate && _t.Parent === _testimonial._id }))
                                                         .sortBy([
                                                             // Sort by upvotes count in descending order
-                                                            // This fires an error upon creating a new testimony
-                                                            (_t) => -_.size(_t._testimony_upvotes),
+                                                            // This fires an error upon creating a new testimonial
+                                                            (_t) => -_.size(_t._testimonial_upvotes),
                                                             // Sort by creation date in descending order
                                                             '_createdAt',
                                                             // Sort by update date in descending order
@@ -675,24 +703,26 @@ const Feedback = (props) => {
                                                                 <Card className={`border border-0 rounded-0 card_${_replyId}`} key={_replyId}>
                                                                     <Card.Body className='d-flex flex-column'>
                                                                         <div className='_topRow d-flex'>
-                                                                            <p className='text-muted author'><b>{_.capitalize(_reply._testimony_author)}</b>, {<Moment local fromNow>{_reply._updatedAt}</Moment>}</p>
+                                                                            <p className='text-muted author'>
+                                                                                <b>{_.capitalize(_reply._testimonial_author)}</b>, {<Moment local fromNow>{_reply.updatedAt}</Moment>}
+                                                                            </p>
                                                                             <div className='interactions ms-auto d-flex'>
-                                                                                <div className={`text-muted d-flex align-items-center upvotes ${!_.some(_.get(_reply, '_testimony_upvotes'), { _upvoter: _fingerprint }) ? '' : 'active'}`}>
-                                                                                    <p>{_.size(_.get(_reply, '_testimony_upvotes'))}</p>
+                                                                                <div className={`text-muted d-flex align-items-center upvotes ${!_.some(_.get(_reply, '_testimonial_upvotes'), { _upvoter: _fingerprint }) ? '' : 'active'}`}>
+                                                                                    <p>{_.size(_.get(_reply, '_testimonial_upvotes'))}</p>
                                                                                     <Button
                                                                                         type='button'
                                                                                         className='border border-0 rounded-0'
-                                                                                        onClick={() => _handleVotes(_testimony, 'up')}
+                                                                                        onClick={() => _handleVotes(_testimonial, 'up')}
                                                                                     >
                                                                                         <FontAwesomeIcon icon={faThumbsUp} />
                                                                                     </Button>
                                                                                 </div>
-                                                                                <div className={`text-muted d-flex align-items-center downvotes ${!_.some(_.get(_reply, '_testimony_downvotes'), { _downvoter: _fingerprint }) ? '' : 'active'}`}>
-                                                                                    <p>{_.size(_.get(_reply, '_testimony_downvotes'))}</p>
+                                                                                <div className={`text-muted d-flex align-items-center downvotes ${!_.some(_.get(_reply, '_testimonial_downvotes'), { _downvoter: _fingerprint }) ? '' : 'active'}`}>
+                                                                                    <p>{_.size(_.get(_reply, '_testimonial_downvotes'))}</p>
                                                                                     <Button
                                                                                         type='button'
                                                                                         className='border border-0 rounded-0'
-                                                                                        onClick={() => _handleVotes(_testimony, 'down')}
+                                                                                        onClick={() => _handleVotes(_testimonial, 'down')}
                                                                                     >
                                                                                         <FontAwesomeIcon icon={faThumbsDown} />
                                                                                     </Button>
@@ -700,11 +730,11 @@ const Feedback = (props) => {
                                                                             </div>
                                                                         </div>
                                                                         <div className='_middleRow'>
-                                                                            <h4>{_.capitalize(_reply._testimony_body)}</h4>
+                                                                            <h4>{_.capitalize(_reply._testimonial_body)}</h4>
                                                                         </div>
                                                                         <div className='_bottomRow d-flex justify-content-end'>
                                                                             {
-                                                                                _reply._testimony_fingerprint === _fingerprint && (
+                                                                                _reply._testimonial_fingerprint === _fingerprint && (
                                                                                     <Dropdown
                                                                                         key={_replyId}
                                                                                         show={_showReplyDropdown[_replyId]}
@@ -746,35 +776,35 @@ const Feedback = (props) => {
                         }
                     </SimpleBar>
                 </div>
-
-                <Modal show={_showModal} onHide={() => setShowModal(false)} centered>
-                    <Form>
-                        <Modal.Header closeButton>
-                            <Modal.Title>{_modalHeader}</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body className='text-muted'><pre>{_modalBody}</pre></Modal.Body>
-                        <Modal.Footer>
-                            {_modalIcon}
-                            <Button
-                                type='button'
-                                className='border border-0 rounded-0 inverse w-25'
-                                variant='outline-light'
-                                onClick={() => setShowModal(false)}
-                            >
-                                <div className='buttonBorders'>
-                                    <div className='borderTop'></div>
-                                    <div className='borderRight'></div>
-                                    <div className='borderBottom'></div>
-                                    <div className='borderLeft'></div>
-                                </div>
-                                <span>
-                                    Close<b className='pink_dot'>.</b>
-                                </span>
-                            </Button>
-                        </Modal.Footer>
-                    </Form>
-                </Modal>
             </section>
+
+            <Modal show={_showModal} onHide={() => setShowModal(false)} centered>
+                <Form>
+                    <Modal.Header closeButton>
+                        <Modal.Title>{_modalHeader}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body className='text-muted'><pre>{_modalBody}</pre></Modal.Body>
+                    <Modal.Footer>
+                        {_modalIcon}
+                        <Button
+                            type='button'
+                            className='border border-0 rounded-0 inverse w-25'
+                            variant='outline-light'
+                            onClick={() => setShowModal(false)}
+                        >
+                            <div className='buttonBorders'>
+                                <div className='borderTop'></div>
+                                <div className='borderRight'></div>
+                                <div className='borderBottom'></div>
+                                <div className='borderLeft'></div>
+                            </div>
+                            <span>
+                                Close<b className='pink_dot'>.</b>
+                            </span>
+                        </Button>
+                    </Modal.Footer>
+                </Form>
+            </Modal>
         </main>
     );
 }

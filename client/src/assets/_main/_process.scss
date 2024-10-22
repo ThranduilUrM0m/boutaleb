@@ -2,118 +2,52 @@ section {
     position: relative;
     overflow: hidden;
 
-    ._step {
-        position: relative;
-        padding: 2.5vh;
-        overflow: hidden;
-        @include _dimensions($width: 50vh, $height: 60vh);
-
-        .number {
-            font-size: 8vh;
-            font-weight: bold;
-            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
-        }
-
-        .title {
-            font-size: 4vh;
-            font-weight: bold;
-            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
-        }
-
-        .description {
-            position: relative;
-            font-size: 2vh;
-            color: $white;
-            @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: calc(100% + 10vh), $r_deg: 0, $s_x: 1, $s_y: 1);
-            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
-
-            &::before {
-                position: absolute;
-                content: '';
-                opacity: 0;
-                @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
-                @include _dimensions($width: 100%, $height: 30vh);
-                @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
-            }
-        }
-
-        .foot {
-            position: relative;
-            font-size: 2.5vh;
-            color: $black;
-            @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
-        }
-
-        &::before {
-            content: '';
+    &._s1 {
+        .card {
             position: absolute;
-            clip-path: circle(0 at 0 100%);
-            @include _transitions($property: 'all', $duration: .5s, $timing: 'ease', $delay: '');
-            @include _dimensions($width: 100%, $height: 100%);
-            @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
-        }
+            background: rgba($color: $fWhite, $alpha: .75);
+            @include _transform($top: 10vh, $left: calc(10vh + .75rem), $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+            @include _dimensions($width: calc(calc(100% - 20vh) - 1.5rem), $height: calc(100% - 20vh));
 
-        &::after {
-            position: absolute;
-            content: '';
-            background: $black;
-            @include _transform($top: 100%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -100%, $r_deg: 0, $s_x: 1, $s_y: 1);
-            @include _dimensions($width: 100%, $height: .5vh);
-            @include _transitions($property: 'all', $duration: .5s, $timing: 'ease', $delay: '');
-        }
+            &-body {
+                position: relative;
+                @include _dimensions($width: 100%, $height: 100%);
 
-        &:hover {
-            .number {
-                font-size: 6vh;
-                @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: -2.5vh, $r_deg: 0, $s_x: 1, $s_y: 1);
-            }
+                svg {
+                    position: absolute;
+                    fill: rgba($white, .25);
+                    stroke: rgba($white, .25);
+                    color: rgba($white, .25);
+                    z-index: -1;
+                    @include _dimensions($width: 50%, $height: 75%);
+                    @include _transform($top: 50%, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -60%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                }
 
-            .title {
-                font-size: 5vh;
-                @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: -3vh, $r_deg: 0, $s_x: 1, $s_y: 1);
-            }
+                h1 {
+                    font-size: 18vh;
+                    line-height: 1.05;
+                    font-weight: 600;
+                    margin: 0 5vh;
 
-            .description {
-                @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
-                color: $black;
+                    span {
+                        color: $pink;
+                    }
+                }
 
                 &::before {
-                    opacity: 1;
-                    @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -100%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                    position: absolute;
+                    content: '';
+                    background: url('../_images/undraw_prototyping_process_re_7a6p.svg') no-repeat;
+                    background-size: contain;
+                    background-position: right;
+                    @include _dimensions($width: 30%, $height: 60%);
+                    @include _transform($top: 5vh, $left: '', $bottom: '', $right: 5vh, $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
                 }
-            }
-
-            .foot {
-                display: none;
-            }
-
-            &::before {
-                clip-path: circle(100%);
-            }
-
-            &::after {
-                @include _transform($top: 0, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
-                @include _dimensions($width: 100%, $height: 1vh);
-            }
-        }
-    }
-
-    &._s1 {
-        h1 {
-            font-size: 24vh;
-            line-height: 1.05;
-            font-weight: 600;
-            margin: 0 10vh;
-
-            span {
-                color: $pink;
             }
         }
     }
 
     &._s2 {
-        background: rgba($color: $black, $alpha: .25);
-
         h1 {
             text-align: center;
             font-size: 10vh;
@@ -132,46 +66,259 @@ section {
     }
 
     &._s3 {
-        background: rgba($color: $black, $alpha: .25);
+        position: relative;
 
-        .g-col-4 {
-            ._step {
-                &[data-step='1'] {
-                    .description::before {
-                        background: url('../_images/Discuss\ product\ requirements.svg');
-                        background-position: center;
-                        background-repeat: no-repeat;
+        &>svg {
+            position: absolute;
+            fill: rgba($black, .1);
+            stroke: rgba($black, .1);
+            color: rgba($black, .1);
+            opacity: .5;
+            @include _dimensions($width: 50%, $height: 100vh);
+            @include _transform($top: 10vh, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+        }
+
+        .row {
+            position: relative;
+            padding: 0 12vh;
+
+            ._shadowIndex {
+                position: absolute;
+                font-weight: bold;
+                font-family: 'Abril Fatface', cursive;
+                font-size: 20vh;
+                color: $blue;
+                @include _transform($top: 50%, $left: 25vh, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+
+                &::before {
+                    position: absolute;
+                    content: '';
+                    opacity: .5;
+                    @include _dimensions($width: 30vh, $height: 20vh);
+                }
+
+                &[data-shadow='1'] {
+                    &::after {
+                        position: absolute;
+                        content: '';
+                        background: url('../_images/undraw_scrum_board_re_wk7v.svg') no-repeat;
                         background-size: contain;
+                        @include _dimensions($width: 50vh, $height: 50vh);
+                        @include _transform($top: 50%, $left: 50%, $bottom: '', $right: '', $t_x: -15%, $t_y: -75%, $r_deg: 0, $s_x: 1, $s_y: 1);
                     }
-    
+
                     &::before {
                         background: rgba($blue, .5);
+                        @include _transform($top: calc(50% + 10vh), $left: 25%, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
                     }
                 }
 
-                &[data-step='2'] {
-                    .description::before {
-                        background: url('../_images/Detailed\ product\ specs.svg');
-                        background-position: center;
-                        background-repeat: no-repeat;
+                &[data-shadow='2'] {
+                    &::after {
+                        position: absolute;
+                        content: '';
+                        background: url('../_images/undraw_work_together_re_5yhn.svg') no-repeat;
                         background-size: contain;
+                        @include _dimensions($width: 50vh, $height: 50vh);
+                        @include _transform($top: 50%, $left: 50%, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
                     }
-    
+
                     &::before {
-                        background: rgba(#E03B8B, .4);
+                        background: rgba($black, .5);
+                        @include _transform($top: calc(50% + 5vh), $left: -25%, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
                     }
                 }
 
-                &[data-step='3'] {
-                    .description::before {
-                        background: url('../_images/Work\ risk-free.svg');
-                        background-position: center;
-                        background-repeat: no-repeat;
+                &[data-shadow='3'] {
+                    &::after {
+                        position: absolute;
+                        content: '';
+                        background: url('../_images/undraw_design_thinking_re_644h.svg') no-repeat;
                         background-size: contain;
+                        @include _dimensions($width: 50vh, $height: 50vh);
+                        @include _transform($top: 50%, $left: 50%, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
                     }
-    
+
                     &::before {
-                        background: rgba(#758283, .4);
+                        background: rgba($pink, .5);
+                        @include _transform($top: calc(50% - 10vh), $left: 10%, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                    }
+                }
+            }
+
+            &:nth-of-type(1) {
+                .col {
+                    position: relative;
+
+                    .card {
+                        background: $sectionBackground;
+                        box-shadow: 0 0 4.5vh -2.5vh rgba($black, .5);
+                        margin: .75vh;
+
+                        &-body {
+                            margin: 2.5vh;
+
+                            svg {
+                                fill: rgba($blue, .75);
+                                stroke: rgba($blue, .75);
+                                color: rgba($blue, .75);
+                                margin: 0 0 2.5vh 0;
+                                @include _dimensions($width: 7.5vh, $height: 7.5vh);
+                            }
+
+                            span {
+                                margin: 2.5vh 0 0 0;
+
+                                &:last-of-type {
+                                    color: rgba($black, .5);
+                                    font-size: 1.95vh;
+                                }
+                            }
+
+                            .btn {
+                                margin: 2.5vh 0 0 0;
+                                padding: 0;
+                                @include _dimensions($width: fit-content, $height: fit-content);
+                            }
+                        }
+
+                        &:hover {
+                            box-shadow: 0 0 7.5vh -2.5vh rgba($black, .5);
+                        }
+                    }
+                }
+            }
+
+            &:nth-of-type(2) {
+                padding: 10vh 12vh;
+                
+                h1 {
+                    text-align: center;
+                    font-size: 10vh;
+                    line-height: 1.05;
+                    font-weight: 600;
+                    margin: 0;
+                }
+        
+                p {
+                    font-size: 2.5vh;
+                    line-height: 1.05;
+                    font-weight: 600;
+                    margin: 2.5vh 0;
+                    color: rgba($color: $black, $alpha: .8);
+                }
+            }
+
+            &:nth-of-type(3), &:nth-of-type(4), &:nth-of-type(5) {
+                @include _dimensions($width: '', $height: calc((100vw - 45vh) / 2));
+
+                .col {
+                    position: relative;
+
+                    .card {
+                        background: $sectionBackground;
+                        box-shadow: 0 0 4.5vh -2.5vh rgba($black, .5);
+                        margin: 2vh;
+
+                        &-body {
+                            margin: 2.5vh;
+
+                            .description {
+                                position: relative;
+                                font-size: 2vh;
+                                color: $black;
+
+                                &::before {
+                                    position: absolute;
+                                    content: '';
+                                    opacity: 0;
+                                    @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                    @include _dimensions($width: 100%, $height: 30vh);
+                                    @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+                                }
+                            }
+
+                            .foot {
+                                position: relative;
+                                font-size: 2.75vh;
+                                color: $black;
+                                @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+                            }
+
+                            &::before {
+                                content: '';
+                                position: absolute;
+                                clip-path: circle(0 at 0 100%);
+                                @include _transitions($property: 'all', $duration: .5s, $timing: 'ease', $delay: '');
+                                @include _dimensions($width: 100%, $height: 100%);
+                                @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                            }
+
+                            &::after {
+                                position: absolute;
+                                content: '';
+                                background: $black;
+                                @include _transform($top: 100%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -100%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                @include _dimensions($width: 100%, $height: .5vh);
+                                @include _transitions($property: 'all', $duration: .5s, $timing: 'ease', $delay: '');
+                            }
+
+                            &[data-step='1'], &[data-step='2'], &[data-step='3'] {
+                                &::before {
+                                    background: rgba($blue, .5);
+                                }
+                            }
+
+                            &[data-step='4'], &[data-step='5'], &[data-step='6'] {
+                                &::before {
+                                    background: rgba($black, .5);
+                                }
+                            }
+
+                            &[data-step='7'], &[data-step='8'], &[data-step='9'] {
+                                &::before {
+                                    background: rgba($pink, .4);
+                                }
+                            }
+
+                            &:hover {
+                                &::before {
+                                    clip-path: circle(100%);
+                                }
+                    
+                                &::after {
+                                    @include _transform($top: 0, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                    @include _dimensions($width: 100%, $height: 1vh);
+                                }
+                            }
+                        }
+
+                        &:hover {
+                            box-shadow: 0 0 7.5vh -2.5vh rgba($black, .5);
+                        }
+
+                        &._shapes {
+                            background: transparent;
+                            box-shadow: unset;
+
+                            &-f {
+                                background: url('../_images/shapes-solid-svgrepo-com.svg') no-repeat;
+                                background-size: 50%;
+                                background-position: center;
+                            }
+
+                            &-s {
+                                background: url('../_images/geometric-svgrepo-com.svg') no-repeat;
+                                background-size: 50%;
+                                background-position: center;
+                            }
+
+                            &-t {
+                                background: url('../_images/shapes-svgrepo-com.svg') no-repeat;
+                                background-size: 50%;
+                                background-position: center;
+                            }
+                        }
                     }
                 }
             }
@@ -179,94 +326,102 @@ section {
     }
 
     &._s4 {
-        background: rgba($color: $black, $alpha: .25);
+        position: relative;
+        grid-template-rows: 45% calc(55% - 1vh);
+        background: radial-gradient(circle at top left, $blue 0, $blue 50%);
 
-        .g-col-4 {
-            ._step {
-                &[data-step='4'] {
-                    .description::before {
-                        background: url('../_images/Bug\ tracking.svg');
-                        background-position: center;
-                        background-repeat: no-repeat;
-                        background-size: contain;
-                    }
-    
-                    &::before {
-                        background: rgba(#E07C24, .4);
-                    }
+        .letter-grid {
+            position: absolute;
+            overflow: hidden;
+            opacity: .4;
+            @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+            @include _dimensions($width: 100%, $height: 100%);
+
+            span {
+                font-size: 10px;
+                padding: 5px;
+                background: transparent;
+                color: rgba($black, .25);
+                display: table;
+                float: left;
+                opacity: 0;
+                text-transform: uppercase;
+                user-select: none;
+                visibility: hidden;
+                @include _dimensions($width: 30px, $height: 30px);
+
+                &:nth-child(3n+1) {
+                    color: darken($color: $blue, $amount: 20);
+                    font-weight: bold;
+                    @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 45deg, $s_x: 1, $s_y: 1);
                 }
 
-                &[data-step='5'] {
-                    .description::before {
-                        background: url('../_images/Bug\ tracking.svg');
-                        background-position: center;
-                        background-repeat: no-repeat;
-                        background-size: contain;
-                    }
-    
-                    &::before {
-                        background: rgba(#E07C24, .4);
-                    }
+                &:nth-child(6n+1) {
+                    @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: -45deg, $s_x: 1, $s_y: 1);
                 }
+            }
 
-                &[data-step='6'] {
-                    .description::before {
-                        background: url('../_images/Bug\ tracking.svg');
-                        background-position: center;
-                        background-repeat: no-repeat;
-                        background-size: contain;
-                    }
-    
-                    &::before {
-                        background: rgba(#E07C24, .4);
-                    }
+            &.js-show-letters {
+                span {
+                    opacity: 1;
+                    visibility: visible;
                 }
             }
         }
-    }
 
-    &._s5 {
-        background: rgba($color: $black, $alpha: .25);
+        .g-col-12 {
 
-        .g-col-4 {
-            ._step {
-                &[data-step='7'] {
-                    .description::before {
-                        background: url('../_images/Bug\ tracking.svg');
-                        background-position: center;
-                        background-repeat: no-repeat;
-                        background-size: contain;
+            .before {
+                background: url('../_images/b_white..svg') no-repeat center;
+                position: absolute;
+                @include _transform($top: 0, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 1, $s_y: 1);
+                @include _dimensions($width: 50%, $height: 50%);
+            }
+
+            .g-col-4,
+            .g-col-8 {
+                position: relative;
+                box-shadow: 0 .35vh 3.25vh rgba($black, .25);
+                padding: 0;
+                margin: 0 2.5vh;
+                background: $white;
+            }
+
+            .g-col-4 {
+                div {
+                    position: relative;
+                    margin: 0 0 1.5vh 0;
+
+                    &:first-of-type {
+                        font-weight: 600;
+                        margin: 0 0 4vh 0;
                     }
-    
-                    &::before {
-                        background: rgba(#E07C24, .4);
+
+                    &:not(:first-of-type) {
+                        @include _dimensions($width: 80%, $height: '');
+                    }
+
+                    svg {
+                        margin: 0 2.5vh;
+                        color: $blue;
+                        @include _dimensions($width: 2.5vh, $height: 3vh);
+                    }
+
+                    span {
+                        p {
+                            margin: 0;
+                            font-size: 2.25vh;
+                            line-height: 3vh;
+                        }
                     }
                 }
+            }
 
-                &[data-step='8'] {
-                    .description::before {
-                        background: url('../_images/Bug\ tracking.svg');
-                        background-position: center;
-                        background-repeat: no-repeat;
-                        background-size: contain;
-                    }
-    
-                    &::before {
-                        background: rgba(#E07C24, .4);
-                    }
-                }
-
-                &[data-step='9'] {
-                    .description::before {
-                        background: url('../_images/Bug\ tracking.svg');
-                        background-position: center;
-                        background-repeat: no-repeat;
-                        background-size: contain;
-                    }
-    
-                    &::before {
-                        background: rgba(#E07C24, .4);
-                    }
+            .g-col-8 {
+                form {
+                    grid-template-rows: auto auto 1fr auto;
+                    margin: 2.5vh;
+                    @include _dimensions($width: calc(100% - 5vh), $height: calc(100% - 5vh));
                 }
             }
         }

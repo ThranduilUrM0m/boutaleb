@@ -16,64 +16,62 @@ const Project = new Schema({
         unique: true,
         required: [true, 'Please provide a link']
     },
-    _project_author: {
-        type: String,
-        required: [true, 'Please provide an author']
+    _project_toDisplay: {
+        type: Boolean,
+        default: false
     },
-    _project_hide: {
-        type: Boolean
-    },
-    _project_tag: {
+    _project_tags: {
         type: [String]
     },
-    _project_comment: [{
-        _parent_id: {
-            type: mongoose.Types.ObjectId,
-            required: [true, 'Please provide a parent id']
-        },
-        _author: {
+    _project_description: {
+        type: String
+    },
+    _project_startDate: {
+        type: Date
+    },
+    _project_deadline: {
+        type: Date
+    },
+    _project_milestones: [{
+        __title: {
             type: String,
-            required: [true, 'Please provide a title']
+            required: [true, 'Please provide a __title']
         },
-        _body: {
-            type: String,
-            required: [true, 'Please provide a title']
+        __description: {
+            type: String
         },
-        _fingerprint: {
-            type: String,
-            required: [true, 'Please provide a fingerprint']
+        __completed: {
+            type: Boolean
         },
-        _createdAt: {
-            type: Date
+    }],
+    _project_teams: [{
+        Team: {
+            type: Schema.Types.ObjectId,
+            required: true,
+            ref: 'Team'
         },
-        _upvotes: [{
-            upvoter: {
+        assignedTasks: [{
+            __title: {
+                type: String,
+                required: [true, 'Please provide a __title']
+            },
+            __description: {
                 type: String
             },
+            __deadline: {
+                type: Date,
+                required: [true, 'Please provide a start __deadline'],
+            },
+            __status: {
+                type: String,
+                required: [true, 'Please provide a __status']
+            },
+            __assignedTo: {
+                type: Schema.Types.ObjectId,
+                required: true,
+                ref: 'User'
+            }
         }],
-        _downvotes: [{
-            downvoter: {
-                type: String
-            },
-        }]
-    }],
-    _project_upvotes: [{
-        _upvoter: {
-            type: String
-        }
-    }],
-    _project_downvotes: [{
-        _downvoter: {
-            type: String
-        }
-    }],
-    _project_view: [{
-        _viewer: {
-            type: String
-        },
-        _createdAt: {
-            type: Date
-        }
     }],
 }, { timestamps: true });
 

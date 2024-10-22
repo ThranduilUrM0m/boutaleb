@@ -36,6 +36,12 @@ const uploadImage = (req, res, next) => {
             return res.status(400).json({ message: err.message });
         }
 
+        // Skip further execution if no file is uploaded (no picture provided)
+        if (!req.file) {
+            return next();
+        }
+
+        // Proceed to the next middleware after image upload
         next();
     });
 };
@@ -43,7 +49,8 @@ const uploadImage = (req, res, next) => {
 // Function to upload image to Firebase Storage
 const uploadToStorage = async (req, res, next) => {
     if (!req.file) {
-        return res.status(400).json({ message: 'No file uploaded' });
+        // Skip further execution if no file is uploaded (no picture provided)
+        return next();
     }
 
     const file = req.file;

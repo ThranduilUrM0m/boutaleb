@@ -1,17 +1,31 @@
 {
   "files": {
-    "main.css": "/static/css/main.a667b416.css",
-    "main.js": "/static/js/main.ff36d206.js",
-    "static/js/496.7202eab9.chunk.js": "/static/js/496.7202eab9.chunk.js",
-    "static/media/b..svg": "/static/media/b..4684618a49f832105e46.svg",
-    "static/media/logo.svg": "/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
+    "main.css": "/static/css/main.532e3a63.css",
+    "main.js": "/static/js/main.da7a4e4a.js",
+    "static/js/488.b68881ba.chunk.js": "/static/js/488.b68881ba.chunk.js",
+    "static/media/DOTS.png": "/static/media/DOTS.71c5debc5c24a8d8e784.png",
+    "static/media/FOUR.png": "/static/media/FOUR.002a1bbb5a0a391664b3.png",
+    "static/media/b_white..svg": "/static/media/b_white..8b4b7dc34b232c163c60.svg",
+    "static/media/b..svg": "/static/media/b..4684618a49f832105e4691242044fa22.svg",
+    "static/media/undraw_prototyping_process_re_7a6p.svg": "/static/media/undraw_prototyping_process_re_7a6p.c2f880fdea4a23b8b2cf.svg",
+    "static/media/undraw_work_together_re_5yhn.svg": "/static/media/undraw_work_together_re_5yhn.0ceaedc88d4a88105747.svg",
+    "static/media/undraw_scrum_board_re_wk7v.svg": "/static/media/undraw_scrum_board_re_wk7v.c4625bca08a36635dd70.svg",
+    "static/media/logo.svg": "/static/media/logo.25008829e617babb0607ef74ede2e551.svg",
+    "static/media/undraw_design_thinking_re_644h.svg": "/static/media/undraw_design_thinking_re_644h.318b095c20fc48173d4f.svg",
+    "static/media/geometric-svgrepo-com.svg": "/static/media/geometric-svgrepo-com.cbe98285e4e378048c90.svg",
+    "static/media/slick.svg": "/static/media/slick.2630a3e3eab21c607e21.svg",
+    "static/media/slick.eot": "/static/media/slick.a4e97f5a2a64f0ab1323.eot",
+    "static/media/slick.ttf": "/static/media/slick.c94f7671dcc99dce43e2.ttf",
     "index.html": "/index.html",
-    "main.a667b416.css.map": "/static/css/main.a667b416.css.map",
-    "main.ff36d206.js.map": "/static/js/main.ff36d206.js.map",
-    "496.7202eab9.chunk.js.map": "/static/js/496.7202eab9.chunk.js.map"
+    "static/media/shapes-svgrepo-com.svg": "/static/media/shapes-svgrepo-com.1a730e96fbbbc235cc19.svg",
+    "static/media/slick.woff": "/static/media/slick.295183786cd8a1389865.woff",
+    "static/media/shapes-solid-svgrepo-com.svg": "/static/media/shapes-solid-svgrepo-com.cf0f1627b3d1e3bf967b.svg",
+    "main.532e3a63.css.map": "/static/css/main.532e3a63.css.map",
+    "main.da7a4e4a.js.map": "/static/js/main.da7a4e4a.js.map",
+    "488.b68881ba.chunk.js.map": "/static/js/488.b68881ba.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.a667b416.css",
-    "static/js/main.ff36d206.js"
+    "static/css/main.532e3a63.css",
+    "static/js/main.da7a4e4a.js"
   ]
 }

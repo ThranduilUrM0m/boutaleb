@@ -15,7 +15,7 @@ import { io } from 'socket.io-client';
 
 const _socketURL = _.isEqual(process.env.NODE_ENV, 'production')
     ? window.location.hostname
-    : 'localhost:8800';
+    : 'localhost:5000';
 const _socket = io(_socketURL, { 'transports': ['websocket', 'polling'] });
 
 const Confirmation = (props) => {

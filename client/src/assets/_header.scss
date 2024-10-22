@@ -91,7 +91,7 @@ header {
                                 position: absolute;
                                 content: '';
                                 display: inline-block;
-                                background: $black;
+                                background: $pink;
                                 @include _dimensions($width: 100%, $height: .25vh);
                                 @include _transform($top: 100%, $left: '', $bottom: '', $right: 0, $t_x: 0, $t_y: -100%, $r_deg: 0, $s_x: 1, $s_y: 1);
                                 @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
@@ -105,17 +105,17 @@ header {
 
                                 ._formLabel {
                                     @include _transform($top: '', $left: '', $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 0, $s_x: 0, $s_y: 0);
-                                    color: $white;
+                                    color: $black;
 
                                     ._formControl {
                                         position: absolute;
-                                        background: $black;
-                                        color: $whiteLite;
+                                        border: .5vh solid $blackFaded;
+                                        color: $black;
                                         padding: 0 10vh 0 .75rem;
                                         margin: 0;
                                         transform-origin: right center;
                                         @include _transform($top: 50%, $left: 0, $bottom: '', $right: '', $t_x: 0, $t_y: -50%, $r_deg: 0, $s_x: 0, $s_y: 0);
-                                        
+
                                         &._typing {
                                             color: transparent;
                                         }
@@ -132,13 +132,13 @@ header {
 
                                         p {
                                             margin: 0;
-                                            
+
                                             &._searchSuggestion {
-                                                color: rgba($white, .25);
+                                                color: rgba($black, .25);
                                             }
 
                                             &._typedCharacters {
-                                                color: $white;
+                                                color: $black;
                                             }
                                         }
                                     }
@@ -160,7 +160,7 @@ header {
                                     border-radius: 100%;
                                     cursor: pointer;
                                     border: .5vh solid $black;
-                                    @include _dimensions($width: 2.5vh, $height: 2.5vh);
+                                    @include _dimensions($width: 3.5vh, $height: 3.5vh);
                                     @include _transform($top: 50%, $left: '', $bottom: '', $right: 5vh, $t_x: 50%, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
                                     @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
 
@@ -171,8 +171,8 @@ header {
                                         display: block;
                                         transform-origin: left;
                                         background: $black;
-                                        @include _dimensions($width: 100%, $height: .5vh);
-                                        @include _transform($top: 100%, $left: 100%, $bottom: '', $right: '', $t_x: 25%, $t_y: 25%, $r_deg: 45deg, $s_x: 1, $s_y: 1);
+                                        @include _dimensions($width: 35%, $height: .5vh);
+                                        @include _transform($top: 100%, $left: 100%, $bottom: '', $right: '', $t_x: 0, $t_y: 0, $r_deg: 45deg, $s_x: 1, $s_y: 1);
                                         @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
                                     }
 
@@ -186,7 +186,7 @@ header {
                                             position: absolute;
                                             display: block;
                                             transform-origin: center;
-                                            background: $whiteLite;
+                                            background: $blackFaded;
                                             @include _dimensions($width: 100%, $height: .5vh);
                                             @include _transform($top: 50%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: 45deg, $s_x: 1, $s_y: 1);
                                             @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
@@ -198,7 +198,7 @@ header {
                                             position: absolute;
                                             display: block;
                                             transform-origin: center;
-                                            background: $whiteLite;
+                                            background: $blackFaded;
                                             @include _dimensions($width: 100%, $height: .5vh);
                                             @include _transform($top: 50%, $left: 50%, $bottom: '', $right: '', $t_x: -50%, $t_y: -50%, $r_deg: -45deg, $s_x: 1, $s_y: 1);
                                             @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
@@ -206,30 +206,38 @@ header {
                                     }
                                 }
 
-                                .list-group {
-                                    background: $white;
-                                    margin: 0;
-                                    padding: 0;
-                                    box-shadow: 1.25vh 1.25vh 4.5vh -2.5vh rgba($black, .5);
+                                ._SimpleBar {
+                                    position: absolute;
+                                    max-height: 40vh;
+                                    z-index: 10;
                                     @include _dimensions($width: 100%, $height: '');
 
-                                    &-item {
-                                        position: relative;
+                                    .list-group {
+                                        max-height: 40vh;
+                                        background: $white;
                                         margin: 0;
-                                        padding: 1vh 2vh;
-                                        font-size: .9rem;
-                                        font-weight: 400;
-                                        line-height: 1.25;
-                                        cursor: pointer;
-                                        @include _dimensions($width: 100%, $height: 5.75vh);
+                                        padding: 0;
+                                        box-shadow: 1.25vh 1.25vh 4.5vh -2.5vh rgba($black, .5);
+                                        @include _dimensions($width: 100%, $height: '');
 
-                                        svg {
-                                            font-size: 2vh;
-                                            color: rgba($black, .25);
-                                        }
+                                        &-item {
+                                            position: relative;
+                                            margin: 0;
+                                            padding: 1vh 2vh;
+                                            font-size: .9rem;
+                                            font-weight: 400;
+                                            line-height: 1.25;
+                                            cursor: pointer;
+                                            @include _dimensions($width: 100%, $height: 5.75vh);
 
-                                        &:hover {
-                                            background: $hoverGray;
+                                            svg {
+                                                font-size: 2vh;
+                                                color: rgba($black, .25);
+                                            }
+
+                                            &:hover {
+                                                background: $hoverGray;
+                                            }
                                         }
                                     }
                                 }
@@ -251,16 +259,11 @@ header {
                                     }
 
                                     ._searchButton {
-                                        border: .5vh solid $whiteLite;
+                                        border: .5vh solid $blackFaded;
 
                                         &::after {
-                                            background: $whiteLite;
+                                            background: $blackFaded;
                                         }
-                                    }
-
-                                    .list-group {
-                                        overflow-y: auto;
-                                        max-height: 46vh;
                                     }
                                 }
                             }
@@ -285,7 +288,7 @@ header {
 
                                     svg {
                                         cursor: pointer;
-                                        font-size: 2.5vh;
+                                        font-size: 2.75vh;
                                         @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
                                     }
 

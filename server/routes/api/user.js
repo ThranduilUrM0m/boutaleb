@@ -3,7 +3,6 @@ import express from 'express';
 import SibApiV3Sdk from 'sib-api-v3-sdk';
 import crypto from 'crypto';
 import passwordHash from 'password-hash';
-import passport from 'passport';
 import jwt from 'jsonwebtoken';
 import uploadMiddleware from '../../multer/index.js';
 import _ from 'lodash';
@@ -13,7 +12,6 @@ const Token = mongoose.model('Token');
 const router = express.Router();
 
 const _sendMessage = async (_emailSender, _name, _phone, _newsletter, _subject, _message, _emailReceiver, _callback) => {
-
     //send a verification mail to the user's email
     SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey = process.env.API_KEY;
     new SibApiV3Sdk.TransactionalEmailsApi().sendTransacEmail({
@@ -131,6 +129,14 @@ router.post('/', async (req, res, next) => {
 
 router.get('/', (req, res, next) => {
     return User.find()
+        .populate({
+            path: '_user_teams.Team',
+            model: 'Team'
+        })
+        .populate('Role')
+        .populate('Expertise')
+        .populate('Department')
+        .populate('Mentor')
         .sort({ createdAt: 'descending' })
         .then((_users) => res.json({ _users: _users.map(_user => _user.toJSON()) }))
         .catch(next);
@@ -161,15 +167,27 @@ router.post('/_confirm', async (req, res, next) => {
     }
 });
 
-router.get('/_checkToken', (req, res) => {
+router.get('/_checkToken', async (req, res) => {
     const token = req.headers.authorization.split(' ')[1]; // Extract the token from the Authorization header
 
     try {
         // Verify the token
         const decodedToken = jwt.verify(token, '_boutaleb');
 
-        // If the token is valid, send a 200 response
-        res.sendStatus(200);
+        // If the token is valid, the decoded token will contain user data
+        const __id = decodedToken.sub;
+
+        // Find the user using the __id (or any other identifier, depending on your database schema)
+        const __user = await User.findById(__id)
+            .populate({
+                path: '_user_teams.Team',
+                model: 'Team'
+            })
+            .populate('Role')
+            .populate('Expertise')
+            .populate('Department')
+            .populate('Mentor');
+        return __user ? res.status(200).json({ _user: __user }) : res.sendStatus(401);
     } catch (error) {
         // If the token is invalid or has expired, send a 401 response
         res.sendStatus(401);
@@ -218,7 +236,15 @@ router.post('/_login', async (req, res, next) => {
                 { _user_email: body._user_identification },
                 { _user_username: body._user_identification }
             ]
-        });
+        })
+        .populate({
+            path: '_user_teams.Team',
+            model: 'Team'
+        })
+        .populate('Role')
+        .populate('Expertise')
+        .populate('Department')
+        .populate('Mentor');
 
         if (!findUser)
             return res.status(401).json({
@@ -250,10 +276,18 @@ router.post('/_login', async (req, res, next) => {
                 },
             },
             { upsert: true }
-        );
+        )
+        .populate({
+            path: '_user_teams.Team',
+            model: 'Team'
+        })
+        .populate('Role')
+        .populate('Expertise')
+        .populate('Department')
+        .populate('Mentor');
 
         // Once the user is created or updated, generate a JWT token
-        const token = jwt.sign({ _user_email: body._user_email }, '_boutaleb');
+        const token = findUserUpdated.getToken();
 
         return res.status(200).json({
             _user: findUserUpdated,
@@ -285,6 +319,14 @@ router.post('/_logout/:id', async (req, res, next) => {
 
 router.param('id', (req, res, next, id) => {
     return User.findById(id)
+        .populate({
+            path: '_user_teams.Team',
+            model: 'Team'
+        })
+        .populate('Role')
+        .populate('Expertise')
+        .populate('Department')
+        .populate('Mentor')
         .then(_user => {
             if (!_user) {
                 return res.sendStatus(404);
@@ -296,9 +338,19 @@ router.param('id', (req, res, next, id) => {
 });
 
 router.get('/:id', (req, res, next) => {
-    return res.json({
-        _user: req._user.toJSON()
-    })
+    // Access the user object from req._user
+    const _user = req._user;
+
+    // Populate the 'Role' and 'Expertise' fields
+    _user
+        .populate('Role')
+        .populate('Expertise')
+        .then(() => {
+            return res.json({
+                _user: _user.toJSON()
+            });
+        })
+        .catch(next);
 });
 
 router.patch('/:id', uploadMiddleware, async (req, res, next) => {
@@ -356,8 +408,8 @@ router.patch('/:id', uploadMiddleware, async (req, res, next) => {
         }
 
         if (!_.isEmpty(body._user_country) && !_.isUndefined(body._user_country)) {
-            if (typeof body._user_country !== 'undefined') {
-                req._user._user_country = body._user_country;
+            if (typeof JSON.parse(body._user_country) !== 'undefined') {
+                req._user._user_country = JSON.parse(body._user_country);
             }
         }
 
@@ -391,9 +443,33 @@ router.patch('/:id', uploadMiddleware, async (req, res, next) => {
             }
         }
 
-        if (!_.isEmpty(body.Permission) && !_.isUndefined(body.Permission)) {
-            if (typeof body.Permission !== 'undefined') {
-                req._user.Permission = body.Permission;
+        if (!_.isEmpty(body._user_teams) && !_.isUndefined(body._user_teams)) {
+            if (typeof body._user_teams !== 'undefined') {
+                req._user._user_teams = body._user_teams;
+            }
+        }
+
+        if (!_.isEmpty(body.Role) && !_.isUndefined(body.Role)) {
+            if (typeof body.Role !== 'undefined') {
+                req._user.Role = body.Role;
+            }
+        }
+
+        if (!_.isEmpty(body.Expertise) && !_.isUndefined(body.Expertise)) {
+            if (typeof body.Expertise !== 'undefined') {
+                req._user.Expertise = body.Expertise;
+            }
+        }
+
+        if (!_.isEmpty(body.Department) && !_.isUndefined(body.Department)) {
+            if (typeof body.Department !== 'undefined') {
+                req._user.Department = body.Department;
+            }
+        }
+
+        if (!_.isEmpty(body.Mentor) && !_.isUndefined(body.Mentor)) {
+            if (typeof body.Mentor !== 'undefined') {
+                req._user.Mentor = body.Mentor;
             }
         }
 

@@ -2,6 +2,11 @@ import mongoose from 'mongoose';
 import express from 'express';
 
 const Article = mongoose.model('Article');
+const User = mongoose.model('User');
+const Comment = mongoose.model('Comment');
+const View = mongoose.model('View');
+const Upvote = mongoose.model('Upvote');
+const Downvote = mongoose.model('Downvote');
 const router = express.Router();
 
 router.post('/', (req, res, next) => {
@@ -49,6 +54,26 @@ router.post('/', (req, res, next) => {
 
 router.get('/', (req, res, next) => {
     return Article.find()
+        .populate({
+            path: '_article_author',
+            model: 'User'
+        })
+        .populate({
+            path: '_article_comments',
+            model: 'Comment'
+        })
+        .populate({
+            path: '_article_views',
+            model: 'View'
+        })
+        .populate({
+            path: '_article_upvotes',
+            model: 'Upvote'
+        })
+        .populate({
+            path: '_article_downvotes',
+            model: 'Downvote'
+        })
         .sort({ createdAt: 'descending' })
         .then((_articles) => res.json({ _articles: _articles.map(_article => _article.toJSON()) }))
         .catch(next);
@@ -56,6 +81,26 @@ router.get('/', (req, res, next) => {
 
 router.param('id', (req, res, next, id) => {
     return Article.findById(id)
+        .populate({
+            path: '_article_author',
+            model: 'User'
+        })
+        .populate({
+            path: '_article_comments',
+            model: 'Comment'
+        })
+        .populate({
+            path: '_article_views',
+            model: 'View'
+        })
+        .populate({
+            path: '_article_upvotes',
+            model: 'Upvote'
+        })
+        .populate({
+            path: '_article_downvotes',
+            model: 'Downvote'
+        })
         .then(_article => {
             if (!_article) {
                 return res.sendStatus(404);
@@ -72,7 +117,7 @@ router.get('/:id', (req, res, next) => {
     })
 });
 
-router.patch('/:id', (req, res, next) => {
+router.patch('/:id', async (req, res, next) => {
     const { body } = req;
 
     if (typeof body._article_title !== 'undefined') {
@@ -104,44 +149,211 @@ router.patch('/:id', (req, res, next) => {
         .catch(next);
 });
 
-router.patch('/:id/_vote', (req, res, next) => {
-    const { body } = req;
+router.patch('/:id/_downvote', async (req, res, next) => {
+    const { _fingerprint } = req.body;
 
-    if (typeof body._article_upvotes !== 'undefined') {
-        req._article._article_upvotes = body._article_upvotes;
+    try {
+        let __type = '';
+        const __upvoteFind = await Upvote.findOne({ _upvoter: _fingerprint });
+        const __downvoteFind = await Downvote.findOne({ _downvoter: _fingerprint });
+
+        if (!__downvoteFind) {
+            const __downvote = await Downvote.create({ _downvoter: _fingerprint });
+            req._article._article_downvotes.push(__downvote._id);
+            __type = '_articleDownvoted';
+
+            if (__upvoteFind) {
+                await Upvote.findByIdAndDelete(__upvoteFind._id);
+                req._article._article_upvotes.pull(__upvoteFind._id);
+                __type = '_articleDownvotedRUpvote';
+            }
+        } else {
+            await Downvote.findByIdAndDelete(__downvoteFind._id);
+            req._article._article_downvotes.pull(__downvoteFind._id);
+            __type = '_articleDownvoteRemoved';
+        }
+
+        return await req._article.save({ timestamps: false })
+            .then(() => res.json({
+                _article: req._article.toJSON(),
+                _type: __type
+            }))
+            .catch(next);
+    } catch (err) {
+        next(err);
     }
-
-    if (typeof body._article_downvotes !== 'undefined') {
-        req._article._article_downvotes = body._article_downvotes;
-    }
-
-    return req._article.save({ timestamps: false })
-        .then(() => res.json({ _article: req._article.toJSON() }))
-        .catch(next);
 });
 
-router.patch('/:id/_view', (req, res, next) => {
-    const { body } = req;
+router.patch('/:id/_upvote', async (req, res, next) => {
+    const { _fingerprint } = req.body;
 
-    if (typeof body._article_views !== 'undefined') {
-        req._article._article_views = body._article_views;
+    try {
+        let __type = '';
+        const __upvoteFind = await Upvote.findOne({ _upvoter: _fingerprint });
+        const __downvoteFind = await Downvote.findOne({ _downvoter: _fingerprint });
+
+        if (!__upvoteFind) {
+            const __upvote = await Upvote.create({ _upvoter: _fingerprint });
+            req._article._article_upvotes.push(__upvote._id);
+            __type = '_articleUpvoted';
+            if (__downvoteFind) {
+                await Downvote.findByIdAndDelete(__downvoteFind._id);
+                req._article._article_downvotes.pull(__downvoteFind._id);
+                __type = '_articleUpvotedRDownvote';
+            }
+        } else {
+            await Upvote.findByIdAndDelete(__upvoteFind._id);
+            req._article._article_upvotes.pull(__upvoteFind._id);
+            __type = '_articleUpvoteRemoved';
+        }
+
+        return await req._article.save({ timestamps: false })
+            .then(() => res.json({
+                _article: req._article.toJSON(),
+                _type: __type
+            }))
+            .catch(next);
+    } catch (err) {
+        next(err);
     }
-
-    return req._article.save({ timestamps: false })
-        .then(() => res.json({ _article: req._article.toJSON() }))
-        .catch(next);
 });
 
-router.patch('/:id/_comment', (req, res, next) => {
+router.patch('/:id/_view', async (req, res, next) => {
     const { body } = req;
 
-    if (typeof body._article_comments !== 'undefined') {
-        req._article._article_comments = body._article_comments;
-    }
+    try {
+        await View.findOneAndUpdate(
+            { _viewer: body.__fingerprint },
+            {},
+            { new: true }
+        ).then(async __viewUpdated => {
+            if (__viewUpdated === null) {
+                // Create a new view
+                const __view = await View.create({ _viewer: body.__fingerprint });
+                // Link the view to the article using the foreign key
+                req._article._article_views.push(__view._id);
+            }
+        });
 
-    return req._article.save({ timestamps: false })
-        .then(() => res.json({ _article: req._article.toJSON() }))
-        .catch(next);
+        return await req._article.save({ timestamps: false })
+            .then(() => res.json({ _article: req._article.toJSON() }))
+            .catch(next);
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.patch('/:id/_comment', async (req, res, next) => {
+    const { _id, ...values } = req.body;
+
+    try {
+        if (_id) {
+            await Comment.findOneAndUpdate(
+                { _id },
+                { $set: values },
+                { new: true }
+            );
+        } else {
+            // Create a new comment
+            const __comment = await Comment.create(values);
+            // Link the comment to the article using the foreign key
+            req._article._article_comments.push(__comment._id);
+        }
+
+        return await req._article.save({ timestamps: false })
+            .then(() => res.json({ _article: req._article.toJSON() }))
+            .catch(next);
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.patch('/:id/_commentDownvote', async (req, res, next) => {
+    const { _id, _fingerprint } = req.body;
+
+    try {
+        let __type = '';
+        const __upvoteFind = await Upvote.findOne({ _upvoter: _fingerprint });
+        const __downvoteFind = await Downvote.findOne({ _downvoter: _fingerprint });
+
+        if (!__downvoteFind) {
+            const __downvote = await Downvote.create({ _downvoter: _fingerprint });
+            await Comment.findOneAndUpdate(
+                { _id },
+                { $push: { _downvotes: __downvote._id } },
+                { new: true }
+            );
+            __type = '__commentDownvoted';
+
+            if (__upvoteFind) {
+                await Upvote.findByIdAndDelete(__upvoteFind._id);
+                await Comment.findOneAndUpdate(
+                    { _id },
+                    { $pull: { _upvotes: __upvoteFind._id } },
+                    { new: true }
+                );
+                __type = '_commentDownvotedRUpvote';
+            }
+        } else {
+            await Downvote.findByIdAndDelete(__downvoteFind._id);
+            await Comment.findOneAndUpdate(
+                { _id },
+                { $pull: { _downvotes: __downvoteFind._id } },
+                { new: true }
+            );
+            __type = '_commentDownvoteRemoved';
+        }
+
+        return await req._article.save({ timestamps: false })
+            .then(() => res.json({ _article: req._article.toJSON() }))
+            .catch(next);
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.patch('/:id/_commentUpvote', async (req, res, next) => {
+    const { _id, _fingerprint } = req.body;
+
+    try {
+        let __type = '';
+        const __downvoteFind = await Downvote.findOne({ _downvoter: _fingerprint });
+        const __upvoteFind = await Upvote.findOne({ _upvoter: _fingerprint });
+
+        if (!__upvoteFind) {
+            const __upvote = await Upvote.create({ _upvoter: _fingerprint });
+            await Comment.findOneAndDowndate(
+                { _id },
+                { $push: { _upvotes: __upvote._id } },
+                { new: true }
+            );
+            __type = '__commentUpvoted';
+
+            if (__downvoteFind) {
+                await Downvote.findByIdAndDelete(__downvoteFind._id);
+                await Comment.findOneAndDowndate(
+                    { _id },
+                    { $pull: { _downvotes: __downvoteFind._id } },
+                    { new: true }
+                );
+                __type = '_commentUpvotedRDownvote';
+            }
+        } else {
+            await Upvote.findByIdAndDelete(__upvoteFind._id);
+            await Comment.findOneAndDowndate(
+                { _id },
+                { $pull: { _upvotes: __upvoteFind._id } },
+                { new: true }
+            );
+            __type = '_commentUpvoteRemoved';
+        }
+
+        return await req._article.save({ timestamps: false })
+            .then(() => res.json({ _article: req._article.toJSON() }))
+            .catch(next);
+    } catch (err) {
+        next(err);
+    }
 });
 
 router.delete('/:id', (req, res, next) => {

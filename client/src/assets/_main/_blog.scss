@@ -3,6 +3,8 @@ section {
     overflow: hidden;
 
     &._s1 {
+        padding: 10vh 0 10vh 1.75vh;
+        
         .g-col-7 {
             position: relative;
             box-shadow: 0 0 1rem rgba($color: $liteGray, $alpha: .75);
@@ -164,12 +166,22 @@ section {
                     cursor: grab;
 
                     .slick-arrow {
-                        color: $black;
                         z-index: 1061;
 
                         &.slick-prev,
                         &.slick-next {
                             @include _dimensions($width: '', $height: 2.5vh);
+
+                            svg {
+                                @include _dimensions($width: '', $height: 2.5vh);
+                                fill: $black;
+                                stroke: $black;
+                                color: $black;
+                            }
+
+                            &::before {
+                                display: none;
+                            }
                         }
 
                         &.slick-prev {
@@ -181,8 +193,13 @@ section {
                         }
 
                         &.slick-disabled {
-                            color: rgba($color: $black, $alpha: .25);
                             cursor: default;
+
+                            svg {
+                                fill: rgba($color: $black, $alpha: .25);
+                                stroke: rgba($color: $black, $alpha: .25);
+                                color: rgba($color: $black, $alpha: .25);
+                            }
                         }
                     }
 
@@ -198,7 +215,7 @@ section {
 
                                         &-body {
                                             position: relative;
-                                            border: 2vh solid lighten($color: $purple, $amount: 20);
+                                            border: 2vh solid lighten($color: $pink, $amount: 20);
                                             background-image: linear-gradient(120deg, #a1c4fd 0, #c2e9fb 100%);
                                             backdrop-filter: blur(2vh);
                                             padding: 2vh;
