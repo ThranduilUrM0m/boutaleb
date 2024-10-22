@@ -1,0 +1,11 @@
+{
+    "extends": ["config:base"],
+    "packageRules": [
+      {
+        "packagePatterns": ["*"],
+        "enabled": true,
+        "groupName": "all-deps",
+        "rangeStrategy": "bump"
+      }
+    ]
+  }
