@@ -13,7 +13,7 @@
       "rangeStrategy": "increase",
       "automergeMinor": true,
       "automergePatch": true,
-      "updateTypes": [
+      "matchUpdateTypes": [
         "minor",
         "patch"
       ]
@@ -25,18 +25,9 @@
       "enabled": true,
       "groupName": "major-deps",
       "rangeStrategy": "bump",
-      "updateTypes": [
+      "matchUpdateTypes": [
         "major"
       ]
-    },
-    {
-      "matchManagers": [
-        "nvm",
-        "node"
-      ],
-      "groupName": "node version updates",
-      "rangeStrategy": "bump",
-      "automerge": true
     }
   ],
   "automerge": true,
