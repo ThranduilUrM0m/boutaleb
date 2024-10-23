@@ -1,11 +1,47 @@
 {
-    "extends": ["config:base"],
-    "packageRules": [
-      {
-        "packagePatterns": ["*"],
-        "enabled": true,
-        "groupName": "all-deps",
-        "rangeStrategy": "bump"
-      }
-    ]
-  }
+  "extends": [
+    "config:base",
+    ":semanticCommits"
+  ],
+  "packageRules": [
+    {
+      "matchPackagePatterns": [
+        "*"
+      ],
+      "enabled": true,
+      "groupName": "all-deps",
+      "rangeStrategy": "increase",
+      "automergeMinor": true,
+      "automergePatch": true,
+      "updateTypes": [
+        "minor",
+        "patch"
+      ]
+    },
+    {
+      "matchPackagePatterns": [
+        "*"
+      ],
+      "enabled": true,
+      "groupName": "major-deps",
+      "rangeStrategy": "bump",
+      "updateTypes": [
+        "major"
+      ]
+    },
+    {
+      "matchManagers": [
+        "nvm",
+        "node"
+      ],
+      "groupName": "node version updates",
+      "rangeStrategy": "bump",
+      "automerge": true
+    }
+  ],
+  "automerge": true,
+  "major": {
+    "automerge": false
+  },
+  "dependencyDashboard": true
+}
