@@ -25,8 +25,7 @@
       "groupName": "major-deps",
       "matchUpdateTypes": [
         "major"
-      ],
-      "rangeStrategy": "bump"
+      ]
     }
   ],
   "automerge": true,
