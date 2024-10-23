@@ -10,7 +10,6 @@
       ],
       "enabled": true,
       "groupName": "all-deps",
-      "rangeStrategy": "increase",
       "automergeMinor": true,
       "automergePatch": true,
       "matchUpdateTypes": [
@@ -24,10 +23,10 @@
       ],
       "enabled": true,
       "groupName": "major-deps",
-      "rangeStrategy": "bump",
       "matchUpdateTypes": [
         "major"
-      ]
+      ],
+      "rangeStrategy": "bump"
     }
   ],
   "automerge": true,
