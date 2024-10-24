@@ -6,6 +6,10 @@ import passwordHash from 'password-hash';
 import jwt from 'jsonwebtoken';
 import uploadMiddleware from '../../multer/index.js';
 import _ from 'lodash';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const User = mongoose.model('User');
 const Token = mongoose.model('Token');
@@ -46,7 +50,7 @@ const checkForDuplicates = async (email, username) => {
     return { emailExists, usernameExists };
 };
 
-router.post('/', async (req, res) => {
+router.post('/', uploadMiddleware, async (req, res, next) => {
     const { body } = req;
     const errors = validateUserInput(body);
 
@@ -134,7 +138,7 @@ router.get('/_checkToken', async (req, res) => {
     const token = req.headers.authorization.split(' ')[1];
 
     try {
-        const decoded = jwt.verify(token, '_boutaleb');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.sub)
             .populate({ path: '_user_teams.Team', model: 'Team' })
             .populate('Role')

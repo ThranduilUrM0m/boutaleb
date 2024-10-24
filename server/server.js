@@ -1,5 +1,8 @@
 import express from 'express';
-import http from 'http';
+import helmet from 'helmet';
+import csurf from 'csurf';
+import https from 'https';
+import rateLimit from 'express-rate-limit';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 import path from 'path';
@@ -26,6 +29,16 @@ const setUpExpress = async () => {
     // Define express app
     const app = express();
 
+    // Use Helmet middleware
+    app.use(helmet());
+
+    // Use csurf
+    app.use(csurf());
+    app.use((req, res, next) => {
+        res.cookie("__token", req.csrfToken());
+        next();
+    });
+
     // Setup middleware
     setupMiddleware(app);
 
@@ -46,16 +59,22 @@ const setUpExpress = async () => {
     app.use(router);
 
     // Serve React production build
+    const limiter = rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 100, // limit each IP to 100 requests per windowMs
+        message: 'Too many requests, please try again later.',
+    });
+
     if (process.env.NODE_ENV === 'production') {
         app.use(express.static('client/build'));
-        app.get('*', (req, res) => {
+        app.get('*', limiter, (req, res) => {
             res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
         });
     }
 
     // Start server
     const port = process.env.PORT || 5000;
-    const server = http.createServer(app);
+    const server = https.createServer(app);
 
     // Setup Socket.io with MongoDB connection
     const io = new Server(server);

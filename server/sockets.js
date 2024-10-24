@@ -8,7 +8,8 @@ export const socketHandler = (io, db) => {
 
         // Join a room for the connected user
         socket.on('joinRoom', (userId) => {
-            socket.join(userId);
+            // Join a room for the connected user
+            socket.join(userId); // Call join without capturing the return value
             console.log(`User ${userId} joined their room`);
         });
 
@@ -22,6 +23,13 @@ export const socketHandler = (io, db) => {
         // Handle actions with a generic notification system
         socket.on('action', async (action) => {
             const { type, recipientId, payload } = action;
+
+            // Validate the notification type
+            if (!Object.values(NOTIFICATION_TYPES).includes(type)) {
+                console.error('Invalid notification type:', type);
+                return; // Optionally, you could emit an error back to the client
+            }
+
             const message = createNotificationMessage(type, payload);
 
             if (recipientId) {

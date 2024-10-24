@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
 import passwordHash from 'password-hash';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const { Schema } = mongoose;
 const User = new Schema({
@@ -156,7 +160,7 @@ User.methods = {
     },
     /* In JavaScript, arrow functions do not have their own this context, and they inherit the this context from the surrounding code. In this case, when using an arrow function for getToken, the this inside the function does not refer to the User model, but rather to the global context */
     getToken: function () {
-        return jwt.sign({ sub: this._id }, '_boutaleb'); // Replace with your actual secret key
+        return jwt.sign({ sub: this._id }, process.env.JWT_SECRET); // Replace with your actual secret key
     },
 }
 

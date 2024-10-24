@@ -37,11 +37,11 @@ On selecting a Tag that has been selected before you shold stop it from re selec
 */
 const Header = (props) => {
     const { article, project } = _useStore();
-    
+
     // Access your states and actions like this:
     const _articles = article._articles;
     const setArticles = article['_articles_SET_STATE'];
-    
+
     const _projects = project._projects;
     const setProjects = project['_projects_SET_STATE'];
 
@@ -104,17 +104,13 @@ const Header = (props) => {
 
     const _getArticles = useCallback(
         async () => {
-            try {
-                axios('/api/article')
-                    .then((response) => {
-                        setArticles(response.data._articles);
-                    })
-                    .catch((error) => {
-                        console.log(error);
-                    });
-            } catch (error) {
-                console.log(error);
-            }
+            axios('/api/article')
+                .then((response) => {
+                    setArticles(response.data._articles);
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
         },
         [setArticles]
     );
@@ -495,14 +491,14 @@ const Header = (props) => {
                                                 <p className='text-muted author'>
                                                     {
                                                         (!_.isEmpty(_object._project_teams) || !_.isEmpty(_object._article_author))
-                                                        ?
-                                                        <>
-                                                            by <b>{_object._article_author ? (_.isEmpty(_object._article_author._user_lastname) && _.isEmpty(_object._article_author._user_firstname) ? _object._article_author._user_username : (!_.isEmpty(_object._article_author._user_lastname) ? _object._article_author._user_lastname + ' ' + _object._article_author._user_firstname : _object._article_author._user_firstname)) : _.join(_.map(_object._project_teams, 'Team._team_title'), ', ')}</b>, <Moment local fromNow>{_object.updatedAt}</Moment>
-                                                        </>
-                                                        :
-                                                        <>
-                                                            &nbsp;
-                                                        </>
+                                                            ?
+                                                            <>
+                                                                by <b>{_object._article_author ? (_.isEmpty(_object._article_author._user_lastname) && _.isEmpty(_object._article_author._user_firstname) ? _object._article_author._user_username : (!_.isEmpty(_object._article_author._user_lastname) ? _object._article_author._user_lastname + ' ' + _object._article_author._user_firstname : _object._article_author._user_firstname)) : _.join(_.map(_object._project_teams, 'Team._team_title'), ', ')}</b>, <Moment local fromNow>{_object.updatedAt}</Moment>
+                                                            </>
+                                                            :
+                                                            <>
+                                                                &nbsp;
+                                                            </>
                                                     }
                                                 </p>
                                                 <h4>{_object._article_title ? _object._article_title : _object._project_title}</h4>
@@ -565,10 +561,10 @@ const Header = (props) => {
                                                     <div className='line line-2'></div>
                                                 </Button>
                                                 <div className='_footerInformation d-flex'>
-                                                    { !_.isEmpty(_object._article_title) && <><p className='d-flex align-items-center text-muted _views'><b>{_.size(_object._article_views)}</b><FontAwesomeIcon icon={faEye} /></p></> }
-                                                    { !_.isEmpty(_object._article_title) && <><p className='d-flex align-items-center text-muted _comments'><b>{_.size(_object._article_comments)}</b><FontAwesomeIcon icon={faCommentAlt} /></p></> }
-                                                    { !_.isEmpty(_object._article_title) && <><p className='d-flex align-items-center text-muted _upvotes'><b>{_.size(_object._article_upvotes)}</b><FontAwesomeIcon icon={faThumbsUp} /></p></> }
-                                                    { !_.isEmpty(_object._article_title) && <><p className='d-flex align-items-center text-muted _downvotes'><b>{_.size(_object._article_downvotes)}</b><FontAwesomeIcon icon={faThumbsDown} /></p></> }
+                                                    {!_.isEmpty(_object._article_title) && <><p className='d-flex align-items-center text-muted _views'><b>{_.size(_object._article_views)}</b><FontAwesomeIcon icon={faEye} /></p></>}
+                                                    {!_.isEmpty(_object._article_title) && <><p className='d-flex align-items-center text-muted _comments'><b>{_.size(_object._article_comments)}</b><FontAwesomeIcon icon={faCommentAlt} /></p></>}
+                                                    {!_.isEmpty(_object._article_title) && <><p className='d-flex align-items-center text-muted _upvotes'><b>{_.size(_object._article_upvotes)}</b><FontAwesomeIcon icon={faThumbsUp} /></p></>}
+                                                    {!_.isEmpty(_object._article_title) && <><p className='d-flex align-items-center text-muted _downvotes'><b>{_.size(_object._article_downvotes)}</b><FontAwesomeIcon icon={faThumbsDown} /></p></>}
                                                 </div>
                                             </Card.Body>
                                         </Card>

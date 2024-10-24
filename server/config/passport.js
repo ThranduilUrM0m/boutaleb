@@ -2,15 +2,18 @@ import passport from 'passport';
 import passwordHash from 'password-hash';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-
+import dotenv from 'dotenv';
 import User from '../models/User.js'; // Adjust the path based on your file structure
+
+// Load environment variables
+dotenv.config();
 
 // Local Strategy for username/password login
 passport.use(
     new LocalStrategy(
         {
-            usernameField: 'boutaleb', // Replace with your actual field name for username
-            passwordField: 'Thr@nduilUrM0m', // Replace with your actual field name for password
+            usernameField: process.env.usernameField, // Replace with your actual field name for username
+            passwordField: process.env.passwordField, // Replace with your actual field name for password
         },
         async (username, password, done) => {
             try {
@@ -37,7 +40,7 @@ passport.use(
     new JwtStrategy(
         {
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            secretOrKey: '_boutaleb', // Replace with your actual secret key
+            secretOrKey: process.env.JWT_SECRET, // Replace with your actual secret key
         },
         async (payload, done) => {
             try {

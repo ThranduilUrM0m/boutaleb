@@ -8,5 +8,5 @@ export const setupMiddleware = (app) => {
   app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(morgan('dev'));
-  app.use(session({ secret: '_secret', cookie: { maxAge: 60000 }, resave: false, saveUninitialized: false }));
+  app.use(session({ secret: '_secret', cookie: { maxAge: 60000, httpOnly: true, secure: process.env.NODE_ENV === 'production' }, resave: false, saveUninitialized: false }));
 };

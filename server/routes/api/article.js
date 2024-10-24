@@ -222,23 +222,26 @@ router.patch('/:id/_view', async (req, res, next) => {
     const { body } = req;
 
     try {
-        await View.findOneAndUpdate(
+        // Attempt to find and update the view
+        const __viewUpdated = await View.findOneAndUpdate(
             { _viewer: body.__fingerprint },
             {},
             { new: true }
-        ).then(async __viewUpdated => {
-            if (__viewUpdated === null) {
-                // Create a new view
-                const __view = await View.create({ _viewer: body.__fingerprint });
-                // Link the view to the article using the foreign key
-                req._article._article_views.push(__view._id);
-            }
-        });
+        );
 
-        return await req._article.save({ timestamps: false })
-            .then(() => res.json({ _article: req._article.toJSON() }))
-            .catch(next);
+        // If no view is found, create a new one
+        if (__viewUpdated === null) {
+            const __view = await View.create({ _viewer: body.__fingerprint });
+            // Link the new view to the article
+            req._article._article_views.push(__view._id);
+        }
+
+        // Save the article and send the response
+        await req._article.save({ timestamps: false });
+        return res.json({ _article: req._article.toJSON() });
+
     } catch (err) {
+        // Handle any errors that occur during the process
         next(err);
     }
 });
