@@ -36,10 +36,14 @@ If i write something in the search box and then not delete it and just close the
 On selecting a Tag that has been selected before you shold stop it from re selecting
 */
 const Header = (props) => {
-    const _articles = _useStore.useArticleStore(state => state._articles);
-    const setArticles = _useStore.useArticleStore(state => state['_articles_SET_STATE']);
-    const _projects = _useStore.useProjectStore(state => state._projects);
-    const setProjects = _useStore.useProjectStore(state => state['_projects_SET_STATE']);
+    const { article, project } = _useStore();
+    
+    // Access your states and actions like this:
+    const _articles = article._articles;
+    const setArticles = article['_articles_SET_STATE'];
+    
+    const _projects = project._projects;
+    const setProjects = project['_projects_SET_STATE'];
 
     let location = useLocation();
 

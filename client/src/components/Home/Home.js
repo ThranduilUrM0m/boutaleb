@@ -18,10 +18,14 @@ import _ from 'lodash';
 import $ from 'jquery';
 
 const Home = (props) => {
-    const _articles = _useStore.useArticleStore(state => state._articles);
-    const setArticles = _useStore.useArticleStore(state => state['_articles_SET_STATE']);
-    const _projects = _useStore.useProjectStore(state => state._projects);
-    const setProjects = _useStore.useProjectStore(state => state['_projects_SET_STATE']);
+    const { article, project } = _useStore();
+    
+    // Access your states and actions like this:
+    const _articles = article._articles;
+    const setArticles = article['_articles_SET_STATE'];
+    
+    const _projects = project._projects;
+    const setProjects = project['_projects_SET_STATE'];
 
     const _sliderProjectsSettings = {
         dots: true,
@@ -123,7 +127,7 @@ const Home = (props) => {
 
     const _handleArticleJSONTOHTML = (__articles, __index) => {
         const __article = _.orderBy(_.filter(__articles, (_a) => !_a._article_isPrivate), ['_article_views'], ['desc'])[__index];
-        
+
         if (__article && __article._article_body) {
             const _i = __index + 1;
             const html = $.parseHTML(__article._article_body);
@@ -382,7 +386,7 @@ const Home = (props) => {
                 </Card>
                 <div className='_shadowIndex'><p>skills<b className='pink_dot'>.</b></p></div>
             </section>
-            <Inquiry className={'_s4 grid'}/>
+            <Inquiry className={'_s4 grid'} />
         </main>
     );
 }

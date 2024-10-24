@@ -50,7 +50,7 @@ router.get('/:id', (req, res, next) => {
 
 router.patch('/:id', (req, res, next) => {
     const { body } = req;
-    
+
     if (typeof body._upvoter !== 'undefined') {
         req._upvote._upvoter = body._upvoter;
     }

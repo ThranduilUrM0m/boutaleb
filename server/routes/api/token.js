@@ -68,7 +68,7 @@ router.get('/:id', (req, res, next) => {
 
 router.patch('/:id', (req, res, next) => {
     const { body } = req;
-    
+
     if (typeof body.User !== 'undefined') {
         req._token.User = body.User;
     }
