@@ -1,16 +1,19 @@
+import express from 'express'; // Import express
 import { Storage } from '@google-cloud/storage';
 import multer from 'multer';
-import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import rateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
+
+// Initialize Express app
+const app = express();
 
 // Initialize Firebase Storage
 const storage = new Storage({
     projectId: 'boutaleb-82980',
     credentials: {
         client_email: 'firebase-adminsdk-voyst@boutaleb-82980.iam.gserviceaccount.com',
-        private_key: process.env.PRIVATE_KEY
+        private_key: process.env.PRIVATE_KEY,
     },
 });
 
@@ -109,4 +112,5 @@ const uploadToStorage = async (req, res, next) => {
 // Apply the rate limiter and the upload image middleware to the upload endpoint
 app.post('/upload', uploadLimiter, uploadImage, uploadToStorage);
 
+// Export the middleware for use in other parts of your application if needed
 export default [uploadImage, uploadToStorage];
