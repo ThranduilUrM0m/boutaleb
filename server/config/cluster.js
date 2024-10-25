@@ -12,9 +12,13 @@ export const setupWorkerProcesses = () => {
         workers[i].on('message', (message) => console.log(message));
     }
 
-    cluster.on('online', (worker) => console.log(`Worker ${worker.process.pid} is listening`));
+    cluster.on('online', (worker) =>
+        console.log(`Worker ${worker.process.pid} is listening`),
+    );
     cluster.on('exit', (worker, code, signal) => {
-        console.log(`Worker ${worker.process.pid} died with code: ${code}, signal: ${signal}. Restarting...`);
+        console.log(
+            `Worker ${worker.process.pid} died with code: ${code}, signal: ${signal}. Restarting...`,
+        );
         let newWorker = cluster.fork();
         workers.push(newWorker);
         newWorker.on('message', (message) => console.log(message));

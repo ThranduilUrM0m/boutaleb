@@ -12,7 +12,8 @@ const app = express();
 const storage = new Storage({
     projectId: 'boutaleb-82980',
     credentials: {
-        client_email: 'firebase-adminsdk-voyst@boutaleb-82980.iam.gserviceaccount.com',
+        client_email:
+            'firebase-adminsdk-voyst@boutaleb-82980.iam.gserviceaccount.com',
         private_key: process.env.PRIVATE_KEY,
     },
 });
@@ -88,7 +89,9 @@ const uploadToStorage = async (req, res, next) => {
 
     const blobStream = blob.createWriteStream({
         contentType: file.mimetype,
-        metadata: { /* Your metadata */ },
+        metadata: {
+            /* Your metadata */
+        },
     });
 
     blobStream.on('error', (err) => {
@@ -99,7 +102,7 @@ const uploadToStorage = async (req, res, next) => {
     blobStream.on('finish', () => {
         // Construct the public URL for the uploaded image
         req.imageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURI(
-            blob.name
+            blob.name,
         )}?alt=media`;
 
         next();

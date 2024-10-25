@@ -40,7 +40,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalInsurance = new Insurance(body);
-    return finalInsurance.save()
+    return finalInsurance
+        .save()
         .then(() => {
             res.json({ _insurance: finalInsurance.toJSON() });
         })
@@ -50,13 +51,19 @@ router.post('/', (req, res, next) => {
 router.get('/', (req, res, next) => {
     return Insurance.find()
         .sort({ createdAt: 'descending' })
-        .then((_insurances) => res.json({ _insurances: _insurances.map(_insurance => _insurance.toJSON()) }))
+        .then((_insurances) =>
+            res.json({
+                _insurances: _insurances.map((_insurance) =>
+                    _insurance.toJSON(),
+                ),
+            }),
+        )
         .catch(next);
 });
 
 router.param('id', (req, res, next, id) => {
     return Insurance.findById(id)
-        .then(_insurance => {
+        .then((_insurance) => {
             if (!_insurance) {
                 return res.sendStatus(404);
             }
@@ -68,8 +75,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _insurance: req._insurance.toJSON()
-    })
+        _insurance: req._insurance.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -103,7 +110,8 @@ router.patch('/:id', (req, res, next) => {
         req._insurance._isPersonal = body._isPersonal;
     }
 
-    return req._insurance.save()
+    return req._insurance
+        .save()
         .then(() => res.json({ _insurance: req._insurance.toJSON() }))
         .catch(next);
 });

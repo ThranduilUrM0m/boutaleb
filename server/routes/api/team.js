@@ -32,7 +32,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalTeam = new Team(body);
-    return finalTeam.save()
+    return finalTeam
+        .save()
         .then(() => {
             res.json({ _team: finalTeam.toJSON() });
         })
@@ -44,7 +45,9 @@ router.get('/', (req, res, next) => {
         .populate('Department')
         .populate('Project')
         .sort({ createdAt: 'descending' })
-        .then((_teams) => res.json({ _teams: _teams.map(_team => _team.toJSON()) }))
+        .then((_teams) =>
+            res.json({ _teams: _teams.map((_team) => _team.toJSON()) }),
+        )
         .catch(next);
 });
 
@@ -52,7 +55,7 @@ router.param('id', (req, res, next, id) => {
     return Team.findById(id)
         .populate('Department')
         .populate('Project')
-        .then(_team => {
+        .then((_team) => {
             if (!_team) {
                 return res.sendStatus(404);
             }
@@ -64,8 +67,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _team: req._team.toJSON()
-    })
+        _team: req._team.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -87,7 +90,8 @@ router.patch('/:id', (req, res, next) => {
         req._team.Project = body.Project;
     }
 
-    return req._team.save()
+    return req._team
+        .save()
         .then(() => res.json({ _team: req._team.toJSON() }))
         .catch(next);
 });

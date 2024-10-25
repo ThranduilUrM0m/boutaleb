@@ -112,7 +112,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalPayment = new Payment(body);
-    return finalPayment.save()
+    return finalPayment
+        .save()
         .then(() => {
             res.json({ _payment: finalPayment.toJSON() });
         })
@@ -124,7 +125,11 @@ router.get('/', (req, res, next) => {
         .populate('Client')
         .populate('Invoice')
         .sort({ createdAt: 'descending' })
-        .then((_payments) => res.json({ _payments: _payments.map(_payment => _payment.toJSON()) }))
+        .then((_payments) =>
+            res.json({
+                _payments: _payments.map((_payment) => _payment.toJSON()),
+            }),
+        )
         .catch(next);
 });
 
@@ -132,7 +137,7 @@ router.param('id', (req, res, next, id) => {
     return Payment.findById(id)
         .populate('Client')
         .populate('Invoice')
-        .then(_payment => {
+        .then((_payment) => {
             if (!_payment) {
                 return res.sendStatus(404);
             }
@@ -144,8 +149,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _payment: req._payment.toJSON()
-    })
+        _payment: req._payment.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -203,7 +208,8 @@ router.patch('/:id', (req, res, next) => {
         req._payment.Invoice = body.Invoice;
     }
 
-    return req._payment.save()
+    return req._payment
+        .save()
         .then(() => res.json({ _payment: req._payment.toJSON() }))
         .catch(next);
 });

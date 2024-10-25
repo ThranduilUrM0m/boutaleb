@@ -16,7 +16,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalDepartment = new Department(body);
-    return finalDepartment.save()
+    return finalDepartment
+        .save()
         .then(() => {
             res.json({ _department: finalDepartment.toJSON() });
         })
@@ -26,13 +27,19 @@ router.post('/', (req, res, next) => {
 router.get('/', (req, res, next) => {
     return Department.find()
         .sort({ createdAt: 'descending' })
-        .then((_departments) => res.json({ _departments: _departments.map(_department => _department.toJSON()) }))
+        .then((_departments) =>
+            res.json({
+                _departments: _departments.map((_department) =>
+                    _department.toJSON(),
+                ),
+            }),
+        )
         .catch(next);
 });
 
 router.param('id', (req, res, next, id) => {
     return Department.findById(id)
-        .then(_department => {
+        .then((_department) => {
             if (!_department) {
                 return res.sendStatus(404);
             }
@@ -44,8 +51,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _department: req._department.toJSON()
-    })
+        _department: req._department.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -59,7 +66,8 @@ router.patch('/:id', (req, res, next) => {
         req._department._department_description = body._department_description;
     }
 
-    return req._department.save()
+    return req._department
+        .save()
         .then(() => res.json({ _department: req._department.toJSON() }))
         .catch(next);
 });

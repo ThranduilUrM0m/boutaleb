@@ -32,7 +32,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalToken = new Token(body);
-    return finalToken.save()
+    return finalToken
+        .save()
         .then(() => {
             res.json({ _token: finalToken.toJSON() });
         })
@@ -43,14 +44,18 @@ router.get('/', (req, res, next) => {
     return Token.find()
         .populate('Token')
         .sort({ createdAt: 'descending' })
-        .then((_testimonies) => res.json({ _testimonies: _testimonies.map(_token => _token.toJSON()) }))
+        .then((_testimonies) =>
+            res.json({
+                _testimonies: _testimonies.map((_token) => _token.toJSON()),
+            }),
+        )
         .catch(next);
 });
 
 router.param('id', (req, res, next, id) => {
     return Token.findById(id)
         .populate('Token')
-        .then(_token => {
+        .then((_token) => {
             if (!_token) {
                 return res.sendStatus(404);
             }
@@ -62,8 +67,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _token: req._token.toJSON()
-    })
+        _token: req._token.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -81,7 +86,8 @@ router.patch('/:id', (req, res, next) => {
         req._token._token_body = body._token_body;
     }
 
-    return req._token.save()
+    return req._token
+        .save()
         .then(() => res.json({ _token: req._token.toJSON() }))
         .catch(next);
 });

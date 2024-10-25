@@ -16,7 +16,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalPermission = new Permission(body);
-    return finalPermission.save()
+    return finalPermission
+        .save()
         .then(() => {
             res.json({ _permission: finalPermission.toJSON() });
         })
@@ -26,13 +27,19 @@ router.post('/', (req, res, next) => {
 router.get('/', (req, res, next) => {
     return Permission.find()
         .sort({ createdAt: 'descending' })
-        .then((_permissions) => res.json({ _permissions: _permissions.map(_permission => _permission.toJSON()) }))
+        .then((_permissions) =>
+            res.json({
+                _permissions: _permissions.map((_permission) =>
+                    _permission.toJSON(),
+                ),
+            }),
+        )
         .catch(next);
 });
 
 router.param('id', (req, res, next, id) => {
     return Permission.findById(id)
-        .then(_permission => {
+        .then((_permission) => {
             if (!_permission) {
                 return res.sendStatus(404);
             }
@@ -44,8 +51,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _permission: req._permission.toJSON()
-    })
+        _permission: req._permission.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -59,7 +66,8 @@ router.patch('/:id', (req, res, next) => {
         req._permission._permission_description = body._permission_description;
     }
 
-    return req._permission.save()
+    return req._permission
+        .save()
         .then(() => res.json({ _permission: req._permission.toJSON() }))
         .catch(next);
 });

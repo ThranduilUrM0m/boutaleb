@@ -24,7 +24,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalRevenue = new Revenue(body);
-    return finalRevenue.save()
+    return finalRevenue
+        .save()
         .then(() => {
             res.json({ _revenue: finalRevenue.toJSON() });
         })
@@ -35,14 +36,18 @@ router.get('/', (req, res, next) => {
     return Revenue.find()
         .populate('Investment')
         .sort({ createdAt: 'descending' })
-        .then((_revenues) => res.json({ _revenues: _revenues.map(_revenue => _revenue.toJSON()) }))
+        .then((_revenues) =>
+            res.json({
+                _revenues: _revenues.map((_revenue) => _revenue.toJSON()),
+            }),
+        )
         .catch(next);
 });
 
 router.param('id', (req, res, next, id) => {
     return Revenue.findById(id)
         .populate('Investment')
-        .then(_revenue => {
+        .then((_revenue) => {
             if (!_revenue) {
                 return res.sendStatus(404);
             }
@@ -54,8 +59,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _revenue: req._revenue.toJSON()
-    })
+        _revenue: req._revenue.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -73,7 +78,8 @@ router.patch('/:id', (req, res, next) => {
         req._revenue.Investment = body.Investment;
     }
 
-    return req._revenue.save()
+    return req._revenue
+        .save()
         .then(() => res.json({ _revenue: req._revenue.toJSON() }))
         .catch(next);
 });

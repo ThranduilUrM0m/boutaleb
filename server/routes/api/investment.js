@@ -32,7 +32,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalInvestment = new Investment(body);
-    return finalInvestment.save()
+    return finalInvestment
+        .save()
         .then(() => {
             res.json({ _investment: finalInvestment.toJSON() });
         })
@@ -43,10 +44,16 @@ router.get('/', (req, res, next) => {
     return Investment.find()
         .populate({
             path: '_investment_revenu.Revenu',
-            model: 'Revenu'
+            model: 'Revenu',
         })
         .sort({ createdAt: 'descending' })
-        .then((_investments) => res.json({ _investments: _investments.map(_investment => _investment.toJSON()) }))
+        .then((_investments) =>
+            res.json({
+                _investments: _investments.map((_investment) =>
+                    _investment.toJSON(),
+                ),
+            }),
+        )
         .catch(next);
 });
 
@@ -54,9 +61,9 @@ router.param('id', (req, res, next, id) => {
     return Investment.findById(id)
         .populate({
             path: '_investment_revenu.Revenu',
-            model: 'Revenu'
+            model: 'Revenu',
         })
-        .then(_investment => {
+        .then((_investment) => {
             if (!_investment) {
                 return res.sendStatus(404);
             }
@@ -68,8 +75,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _investment: req._investment.toJSON()
-    })
+        _investment: req._investment.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -80,7 +87,8 @@ router.patch('/:id', (req, res, next) => {
     }
 
     if (typeof body._investment_currentAmount !== 'undefined') {
-        req._investment._investment_currentAmount = body._investment_currentAmount;
+        req._investment._investment_currentAmount =
+            body._investment_currentAmount;
     }
 
     if (typeof body._investment_goalDate !== 'undefined') {
@@ -107,7 +115,8 @@ router.patch('/:id', (req, res, next) => {
         req._investment._isPersonal = body._isPersonal;
     }
 
-    return req._investment.save()
+    return req._investment
+        .save()
         .then(() => res.json({ _investment: req._investment.toJSON() }))
         .catch(next);
 });

@@ -8,64 +8,88 @@ const ACTION_TYPES = {
     UPDATE_STATE_ITEM: 'UPDATE_STATE_ITEM',
     SET_STATE: 'SET_STATE',
     CLEAR_STATE: 'CLEAR_STATE',
-    RESET_ALL: 'RESET_ALL'
+    RESET_ALL: 'RESET_ALL',
 };
 
 const generateStateActions = (key, actionTypes, set, initialState) => ({
-    [`${key}_${actionTypes.ADD_STATE}`]: (payload) => set(
-        produce((state) => {
-            if (Array.isArray(state[key])) {
-                state[key].push(payload);
-            } else {
-                state[key] = { ...state[key], ...payload };
-            }
-        })
-    ),
-    [`${key}_${actionTypes.DELETE_STATE}`]: (id) => set(
-        produce((state) => {
-            if (Array.isArray(state[key])) {
-                state[key] = state[key].filter(item => item._id !== id);
-            } else {
-                state[key] = {};
-            }
-        })
-    ),
-    [`${key}_${actionTypes.UPDATE_STATE_ITEM}`]: (payload) => set(
-        produce((state) => {
-            const itemIndex = state[key].findIndex(item => item._id === payload._id);
-            if (itemIndex !== -1) {
-                state[key][itemIndex] = payload;
-            }
-        })
-    ),
-    [`${key}_${actionTypes.SET_STATE}`]: (payload) => set(
-        produce((state) => {
-            state[key] = payload;
-        })
-    ),
-    [`${key}_${actionTypes.CLEAR_STATE}`]: () => set(
-        produce((state) => {
-            state[key] = Array.isArray(state[key]) ? [] : {};
-        })
-    ),
+    [`${key}_${actionTypes.ADD_STATE}`]: (payload) =>
+        set(
+            produce((state) => {
+                if (Array.isArray(state[key])) {
+                    state[key].push(payload);
+                } else {
+                    state[key] = { ...state[key], ...payload };
+                }
+            }),
+        ),
+    [`${key}_${actionTypes.DELETE_STATE}`]: (id) =>
+        set(
+            produce((state) => {
+                if (Array.isArray(state[key])) {
+                    state[key] = state[key].filter((item) => item._id !== id);
+                } else {
+                    state[key] = {};
+                }
+            }),
+        ),
+    [`${key}_${actionTypes.UPDATE_STATE_ITEM}`]: (payload) =>
+        set(
+            produce((state) => {
+                const itemIndex = state[key].findIndex(
+                    (item) => item._id === payload._id,
+                );
+                if (itemIndex !== -1) {
+                    state[key][itemIndex] = payload;
+                }
+            }),
+        ),
+    [`${key}_${actionTypes.SET_STATE}`]: (payload) =>
+        set(
+            produce((state) => {
+                state[key] = payload;
+            }),
+        ),
+    [`${key}_${actionTypes.CLEAR_STATE}`]: () =>
+        set(
+            produce((state) => {
+                state[key] = Array.isArray(state[key]) ? [] : {};
+            }),
+        ),
     [`${key}_${actionTypes.RESET_ALL}`]: () => set({ ...initialState }),
 });
 
 const initialState = {
     _comments: [],
     _comment: {},
-    _commentToEdit: {}
-}
+    _commentToEdit: {},
+};
 
-export const useCommentStore = create(persist(
-    (set, get) => ({
-        ...initialState,
-        ...generateStateActions('_comments', ACTION_TYPES, set, initialState),
-        ...generateStateActions('_comment', ACTION_TYPES, set, initialState),
-        ...generateStateActions('_commentToEdit', ACTION_TYPES, set, initialState),
-    }),
-    {
-        name: '_commentStorage',
-        storage: sessionStorage,
-    }
-));
+export const useCommentStore = create(
+    persist(
+        (set, get) => ({
+            ...initialState,
+            ...generateStateActions(
+                '_comments',
+                ACTION_TYPES,
+                set,
+                initialState,
+            ),
+            ...generateStateActions(
+                '_comment',
+                ACTION_TYPES,
+                set,
+                initialState,
+            ),
+            ...generateStateActions(
+                '_commentToEdit',
+                ACTION_TYPES,
+                set,
+                initialState,
+            ),
+        }),
+        {
+            name: '_commentStorage',
+            storage: sessionStorage,
+        },
+    ),
+);

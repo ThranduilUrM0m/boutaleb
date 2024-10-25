@@ -24,7 +24,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalBenefit = new Benefit(body);
-    return finalBenefit.save()
+    return finalBenefit
+        .save()
         .then(() => {
             res.json({ _benefit: finalBenefit.toJSON() });
         })
@@ -35,14 +36,18 @@ router.get('/', (req, res, next) => {
     return Benefit.find()
         .populate('User')
         .sort({ createdAt: 'descending' })
-        .then((_benefits) => res.json({ _benefits: _benefits.map(_benefit => _benefit.toJSON()) }))
+        .then((_benefits) =>
+            res.json({
+                _benefits: _benefits.map((_benefit) => _benefit.toJSON()),
+            }),
+        )
         .catch(next);
 });
 
 router.param('id', (req, res, next, id) => {
     return Benefit.findById(id)
         .populate('User')
-        .then(_benefit => {
+        .then((_benefit) => {
             if (!_benefit) {
                 return res.sendStatus(404);
             }
@@ -54,8 +59,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _benefit: req._benefit.toJSON()
-    })
+        _benefit: req._benefit.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -73,7 +78,8 @@ router.patch('/:id', (req, res, next) => {
         req._benefit.User = body.User;
     }
 
-    return req._benefit.save()
+    return req._benefit
+        .save()
         .then(() => res.json({ _benefit: req._benefit.toJSON() }))
         .catch(next);
 });

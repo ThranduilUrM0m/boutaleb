@@ -32,7 +32,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalTestimonial = new Testimonial(body);
-    return finalTestimonial.save()
+    return finalTestimonial
+        .save()
         .then(() => {
             res.json({ _testimonial: finalTestimonial.toJSON() });
         })
@@ -43,18 +44,24 @@ router.get('/', (req, res, next) => {
     return Testimonial.find()
         .populate({
             path: 'Parent',
-            model: 'User'
+            model: 'User',
         })
         .populate({
             path: '_testimonial_upvotes',
-            model: 'Upvote'
+            model: 'Upvote',
         })
         .populate({
             path: '_testimonial_downvotes',
-            model: 'Downvote'
+            model: 'Downvote',
         })
         .sort({ createdAt: 'descending' })
-        .then((_testimonials) => res.json({ _testimonials: _testimonials.map(_testimonial => _testimonial.toJSON()) }))
+        .then((_testimonials) =>
+            res.json({
+                _testimonials: _testimonials.map((_testimonial) =>
+                    _testimonial.toJSON(),
+                ),
+            }),
+        )
         .catch(next);
 });
 
@@ -62,17 +69,17 @@ router.param('id', (req, res, next, id) => {
     return Testimonial.findById(id)
         .populate({
             path: 'Parent',
-            model: 'User'
+            model: 'User',
         })
         .populate({
             path: '_testimonial_upvotes',
-            model: 'Upvote'
+            model: 'Upvote',
         })
         .populate({
             path: '_testimonial_downvotes',
-            model: 'Downvote'
+            model: 'Downvote',
         })
-        .then(_testimonial => {
+        .then((_testimonial) => {
             if (!_testimonial) {
                 return res.sendStatus(404);
             }
@@ -84,8 +91,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _testimonial: req._testimonial.toJSON()
-    })
+        _testimonial: req._testimonial.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -112,7 +119,8 @@ router.patch('/:id', (req, res, next) => {
     }
 
     if (typeof body._testimonial_fingerprint !== 'undefined') {
-        req._testimonial._testimonial_fingerprint = body._testimonial_fingerprint;
+        req._testimonial._testimonial_fingerprint =
+            body._testimonial_fingerprint;
     }
 
     if (typeof body._testimonial_upvotes !== 'undefined') {
@@ -123,7 +131,8 @@ router.patch('/:id', (req, res, next) => {
         req._testimonial._testimonial_downvotes = body._testimonial_downvotes;
     }
 
-    return req._testimonial.save()
+    return req._testimonial
+        .save()
         .then(() => res.json({ _testimonial: req._testimonial.toJSON() }))
         .catch(next);
 });

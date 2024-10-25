@@ -32,7 +32,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalSalary = new Salary(body);
-    return finalSalary.save()
+    return finalSalary
+        .save()
         .then(() => {
             res.json({ _salary: finalSalary.toJSON() });
         })
@@ -42,13 +43,15 @@ router.post('/', (req, res, next) => {
 router.get('/', (req, res, next) => {
     return Salary.find()
         .sort({ createdAt: 'descending' })
-        .then((_salarys) => res.json({ _salarys: _salarys.map(_salary => _salary.toJSON()) }))
+        .then((_salarys) =>
+            res.json({ _salarys: _salarys.map((_salary) => _salary.toJSON()) }),
+        )
         .catch(next);
 });
 
 router.param('id', (req, res, next, id) => {
     return Salary.findById(id)
-        .then(_salary => {
+        .then((_salary) => {
             if (!_salary) {
                 return res.sendStatus(404);
             }
@@ -60,8 +63,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _salary: req._salary.toJSON()
-    })
+        _salary: req._salary.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -83,7 +86,8 @@ router.patch('/:id', (req, res, next) => {
         req._salary._isPersonal = body._isPersonal;
     }
 
-    return req._salary.save()
+    return req._salary
+        .save()
         .then(() => res.json({ _salary: req._salary.toJSON() }))
         .catch(next);
 });

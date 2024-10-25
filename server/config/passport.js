@@ -22,7 +22,10 @@ passport.use(
                     return done(null, false, { message: 'Invalid username' });
                 }
 
-                const isMatch = await passwordHash.verify(password, user._user_password);
+                const isMatch = await passwordHash.verify(
+                    password,
+                    user._user_password,
+                );
                 if (!isMatch) {
                     return done(null, false, { message: 'Invalid password' });
                 }
@@ -31,8 +34,8 @@ passport.use(
             } catch (error) {
                 return done(error);
             }
-        }
-    )
+        },
+    ),
 );
 
 // JWT Strategy for token authentication
@@ -53,6 +56,6 @@ passport.use(
             } catch (error) {
                 return done(error);
             }
-        }
-    )
+        },
+    ),
 );

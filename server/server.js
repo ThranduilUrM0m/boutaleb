@@ -1,7 +1,7 @@
 import express from 'express';
 import helmet from 'helmet';
 import csurf from 'csurf';
-import https from 'https';
+import http from 'http';
 import rateLimit from 'express-rate-limit';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
@@ -16,6 +16,7 @@ import { setupWorkerProcesses } from './config/cluster.js';
 import './config/passport.js';
 import { socketHandler } from './sockets.js';
 import router from './routes/index.js';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
@@ -23,60 +24,51 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const setUpExpress = async () => {
-    // Wait for MongoDB connection
-    await connectDB(); // Wait for MongoDB to fully connect before starting the server
+    await connectDB(); // Wait for MongoDB connection
 
-    // Define express app
     const app = express();
-
-    // Use Helmet middleware
     app.use(helmet());
+    app.use(cookieParser()); // Use cookie-parser middleware
+    app.use(express.json()); // Parse JSON requests
 
-    // Use csurf
-    app.use(csurf());
+    const csrfProtection = csurf({ cookie: true }); // CSRF middleware
+    app.use(csrfProtection); // Use CSRF protection middleware
+
+    // Set the CSRF token in a cookie
     app.use((req, res, next) => {
-        res.cookie("__token", req.csrfToken());
+        res.cookie('XSRF-TOKEN', req.csrfToken());
         next();
     });
 
-    // Setup middleware
     setupMiddleware(app);
 
-    // Passport initialization
     app.use(passport.initialize());
-
-    // Middleware for attaching user to request
     app.use((req, res, next) => {
         passport.authenticate('jwt', { session: false }, (err, user) => {
-            if (user) {
-                req.user = user;
-            }
+            if (user) req.user = user;
             next();
         })(req, res, next);
     });
 
-    // Setup routes
     app.use(router);
 
-    // Serve React production build
     const limiter = rateLimit({
-        windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 100, // limit each IP to 100 requests per windowMs
+        windowMs: 15 * 60 * 1000,
+        max: 100,
         message: 'Too many requests, please try again later.',
     });
 
     if (process.env.NODE_ENV === 'production') {
         app.use(express.static('client/build'));
         app.get('*', limiter, (req, res) => {
-            res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+            res.sendFile(
+                path.resolve(__dirname, 'client', 'build', 'index.html'),
+            );
         });
     }
 
-    // Start server
     const port = process.env.PORT || 5000;
-    const server = https.createServer(app);
-
-    // Setup Socket.io with MongoDB connection
+    const server = http.createServer(app);
     const io = new Server(server);
     socketHandler(io, db);
 
@@ -91,5 +83,4 @@ const setupServer = (isClusterRequired) => {
     }
 };
 
-// Start the server
 setupServer(true);

@@ -16,7 +16,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalRole = new Role(body);
-    return finalRole.save()
+    return finalRole
+        .save()
         .then(() => {
             res.json({ _role: finalRole.toJSON() });
         })
@@ -27,14 +28,16 @@ router.get('/', (req, res, next) => {
     return Role.find()
         .populate('Permission')
         .sort({ createdAt: 'descending' })
-        .then((_roles) => res.json({ _roles: _roles.map(_role => _role.toJSON()) }))
+        .then((_roles) =>
+            res.json({ _roles: _roles.map((_role) => _role.toJSON()) }),
+        )
         .catch(next);
 });
 
 router.param('id', (req, res, next, id) => {
     return Role.findById(id)
         .populate('Permission')
-        .then(_role => {
+        .then((_role) => {
             if (!_role) {
                 return res.sendStatus(404);
             }
@@ -46,8 +49,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _role: req._role.toJSON()
-    })
+        _role: req._role.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -65,7 +68,8 @@ router.patch('/:id', (req, res, next) => {
         req._role.Permission = body.Permission;
     }
 
-    return req._role.save()
+    return req._role
+        .save()
         .then(() => res.json({ _role: req._role.toJSON() }))
         .catch(next);
 });

@@ -96,7 +96,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalInvoice = new Invoice(body);
-    return finalInvoice.save()
+    return finalInvoice
+        .save()
         .then(() => {
             res.json({ _invoice: finalInvoice.toJSON() });
         })
@@ -107,14 +108,18 @@ router.get('/', (req, res, next) => {
     return Invoice.find()
         .populate('Client')
         .sort({ createdAt: 'descending' })
-        .then((_invoices) => res.json({ _invoices: _invoices.map(_invoice => _invoice.toJSON()) }))
+        .then((_invoices) =>
+            res.json({
+                _invoices: _invoices.map((_invoice) => _invoice.toJSON()),
+            }),
+        )
         .catch(next);
 });
 
 router.param('id', (req, res, next, id) => {
     return Invoice.findById(id)
         .populate('Client')
-        .then(_invoice => {
+        .then((_invoice) => {
             if (!_invoice) {
                 return res.sendStatus(404);
             }
@@ -126,8 +131,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _invoice: req._invoice.toJSON()
-    })
+        _invoice: req._invoice.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -177,7 +182,8 @@ router.patch('/:id', (req, res, next) => {
         req._invoice.Client = body.Client;
     }
 
-    return req._invoice.save()
+    return req._invoice
+        .save()
         .then(() => res.json({ _invoice: req._invoice.toJSON() }))
         .catch(next);
 });

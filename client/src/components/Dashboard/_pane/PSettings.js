@@ -1,32 +1,42 @@
+// React
 import React, { useCallback, useEffect, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+
+// State Management
 import _useStore from '../../../store';
-import Card from 'react-bootstrap/Card';
-import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import FloatingLabel from 'react-bootstrap/FloatingLabel';
-import ListGroup from 'react-bootstrap/ListGroup';
-import { useCombobox } from 'downshift';
+
+// Form Handling & Validation
+import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
-import { io } from 'socket.io-client';
+
+// Bootstrap Components
+import Button from 'react-bootstrap/Button';
+import Card from 'react-bootstrap/Card';
+import Col from 'react-bootstrap/Col';
+import FloatingLabel from 'react-bootstrap/FloatingLabel';
+import Form from 'react-bootstrap/Form';
+import ListGroup from 'react-bootstrap/ListGroup';
+import Row from 'react-bootstrap/Row';
+
+// Downshift for Combobox
+import { useCombobox } from 'downshift';
+
+// Utility Libraries
 import _ from 'lodash';
 import axios from 'axios';
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
+
+// FontAwesome Icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCamera, faPen } from '@fortawesome/free-solid-svg-icons';
 import { faRectangleXmark } from '@fortawesome/free-regular-svg-icons';
+
+// Virtual Scrolling with SimpleBar
 import SimpleBar from 'simplebar-react';
-
 import 'simplebar-react/dist/simplebar.min.css';
-import logo from '../../../assets/_images/b..svg';
 
-const _socketURL = _.isEqual(process.env.NODE_ENV, 'production')
-    ? window.location.hostname
-    : 'localhost:5000';
-const _socket = io(_socketURL, { 'transports': ['websocket', 'polling'] });
+// Assets
+import logo from '../../../assets/_images/b..svg';
 
 const usePersistentFingerprint = () => {
     const [_fingerprint, setFingerprint] = useState('');
@@ -57,86 +67,101 @@ const usePersistentFingerprint = () => {
 };
 
 const PSettings = (props) => {
-    const _user = _useStore.useUserStore(state => state._user);
-    const setUser = _useStore.useUserStore(state => state['_user_SET_STATE']);
-    const _userToEdit = _useStore.useUserStore(state => state._userToEdit);
-    const setUserToEdit = _useStore.useUserStore(state => state['_userToEdit_SET_STATE']);
-    const clearUserToEdit = _useStore.useUserStore(state => state['_userToEdit_CLEAR_STATE']);
+    const { user } = _useStore();
+
+    // Access your states and actions like this:
+    const _user = user._user;
+    const _userToEdit = user._userToEdit;
+
+    const setUser = user['_user_SET_STATE'];
+
+    const setUserToEdit = user['_userToEdit_SET_STATE'];
+    const clearUserToEdit = user['_userToEdit_CLEAR_STATE'];
+
     const _fingerprint = usePersistentFingerprint();
-    
-    const _validationSchemaSettings = Yup
-        .object()
-        .shape({
-            _user_email: Yup.string()
-                .default('')
-                .test(
-                    'empty-or-valid-email',
-                    'Email invalid.',
-                    __email => !__email || /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(__email)
-                ),
-            _user_username: Yup.string()
-                .default('')
-                .test(
-                    'empty-or-valid-username',
-                    'Must be 3 to 20 long.',
-                    __username => !__username || /^[a-zA-Z0-9_]{3,20}$/.test(__username)
-                ),
-            _user_password: Yup.string()
-                .default('')
-                .test(
-                    'empty-or-valid-password',
-                    'At least 1 upper and 1 lowercase letter, 1 number and 1 symbol.',
-                    __password => !__password || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[a-zA-Z\d!@#$%^&*()]{8,}$/.test(__password)
-                ),
-            _user_passwordNew: Yup.string()
-                .default('')
-                .test(
-                    'empty-or-valid-passwordNew',
-                    'At least 1 upper and 1 lowercase letter, 1 number and 1 symbol.',
-                    __passwordNew => !__passwordNew || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[a-zA-Z\d!@#$%^&*()]{8,}$/.test(__passwordNew)
-                ),
-            _user_passwordNewConfirm: Yup.string()
-                .default('')
-                .test(
-                    'empty-or-valid-passwordNewConfirm',
-                    'At least 1 upper and 1 lowercase letter, 1 number and 1 symbol.',
-                    __passwordNewConfirm => !__passwordNewConfirm || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[a-zA-Z\d!@#$%^&*()]{8,}$/.test(__passwordNewConfirm)
-                ),
-            _user_picture: Yup.string()
-                .default(''),
-            _user_firstname: Yup.string()
-                .default('')
-                .test(
-                    'empty-or-valid-firstname',
-                    'No numbers or symbols.',
-                    __firstname => !__firstname || /^[a-zA-Z\s]{2,}$/i.test(__firstname)
-                ),
-            _user_lastname: Yup.string()
-                .default('')
-                .test(
-                    'empty-or-valid-lastname',
-                    'No numbers or symbols.',
-                    __lastname => !__lastname || /^[a-zA-Z\s]{2,}$/i.test(__lastname)
-                ),
-            _user_city: Yup.string()
-                .default(''),
-            _user_country: Yup.object()
-                .shape({
-                    _code: Yup.string()
-                        .default(''),
-                    _country: Yup.string()
-                        .default('')
-                }),
-            user_phone: Yup.string()
-                .default('')
-                .test(
-                    'empty-or-valid-phone',
-                    'Phone number invalid.',
-                    __phone => !__phone || /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(__phone)
-                ),
-            _user_toDelete: Yup.boolean()
-                .default(false)
-        });
+
+    const _validationSchemaSettings = Yup.object().shape({
+        _user_email: Yup.string()
+            .default('')
+            .test(
+                'empty-or-valid-email',
+                'Email invalid.',
+                (__email) =>
+                    !__email || /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(__email)
+            ),
+        _user_username: Yup.string()
+            .default('')
+            .test(
+                'empty-or-valid-username',
+                'Must be 3 to 20 long.',
+                (__username) => !__username || /^[a-zA-Z0-9_]{3,20}$/.test(__username)
+            ),
+        _user_password: Yup.string()
+            .default('')
+            .test(
+                'empty-or-valid-password',
+                'At least 1 upper and 1 lowercase letter, 1 number and 1 symbol.',
+                (__password) =>
+                    !__password ||
+                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[a-zA-Z\d!@#$%^&*()]{8,}$/.test(
+                        __password
+                    )
+            ),
+        _user_passwordNew: Yup.string()
+            .default('')
+            .test(
+                'empty-or-valid-passwordNew',
+                'At least 1 upper and 1 lowercase letter, 1 number and 1 symbol.',
+                (__passwordNew) =>
+                    !__passwordNew ||
+                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[a-zA-Z\d!@#$%^&*()]{8,}$/.test(
+                        __passwordNew
+                    )
+            ),
+        _user_passwordNewConfirm: Yup.string()
+            .default('')
+            .test(
+                'empty-or-valid-passwordNewConfirm',
+                'At least 1 upper and 1 lowercase letter, 1 number and 1 symbol.',
+                (__passwordNewConfirm) =>
+                    !__passwordNewConfirm ||
+                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[a-zA-Z\d!@#$%^&*()]{8,}$/.test(
+                        __passwordNewConfirm
+                    )
+            ),
+        _user_picture: Yup.string().default(''),
+        _user_firstname: Yup.string()
+            .default('')
+            .test(
+                'empty-or-valid-firstname',
+                'No numbers or symbols.',
+                (__firstname) => !__firstname || /^[a-zA-Z\s]{2,}$/i.test(__firstname)
+            ),
+        _user_lastname: Yup.string()
+            .default('')
+            .test(
+                'empty-or-valid-lastname',
+                'No numbers or symbols.',
+                (__lastname) => !__lastname || /^[a-zA-Z\s]{2,}$/i.test(__lastname)
+            ),
+        _user_city: Yup.string().default(''),
+        _user_country: Yup.object().shape({
+            _code: Yup.string().default(''),
+            _country: Yup.string().default(''),
+        }),
+        user_phone: Yup.string()
+            .default('')
+            .test(
+                'empty-or-valid-phone',
+                'Phone number invalid.',
+                (__phone) =>
+                    !__phone ||
+                    /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(
+                        __phone
+                    )
+            ),
+        _user_toDelete: Yup.boolean().default(false),
+    });
     const {
         register: registerSettings,
         handleSubmit: handleSubmitSettings,
@@ -147,7 +172,7 @@ const PSettings = (props) => {
         reset: resetSettings,
         resetField: resetFieldSettings,
         trigger: triggerSettings,
-        formState: { errors: errorsSettings }
+        formState: { errors: errorsSettings },
     } = useForm({
         mode: 'onChange',
         reValidateMode: 'onSubmit',
@@ -164,8 +189,8 @@ const PSettings = (props) => {
             _user_city: _user._user_city || '',
             _user_country: _user._user_country || { _code: '', _country: '' },
             _user_phone: _user._user_phone || '',
-            _user_toDelete: _user._user_toDelete || false
-        }
+            _user_toDelete: _user._user_toDelete || false,
+        },
     });
 
     /* Modal State Variables */
@@ -184,12 +209,12 @@ const PSettings = (props) => {
     const [_userPhoneFocused, setUserphoneFocused] = useState(false);
     const [_userPasswordFocused, setUserpasswordFocused] = useState(false);
     const [_userPasswordNewFocused, setUserpasswordNewFocused] = useState(false);
-    const [_userPasswordNewConfirmFocused, setUserpasswordNewConfirmFocused] = useState(false);
+    const [_userPasswordNewConfirmFocused, setUserpasswordNewConfirmFocused] =
+        useState(false);
 
     /* Countries and Cities State Variables */
     const [_countries, setCountries] = useState([]);
     const [_cities, setCities] = useState([]);
-
 
     /* Downshift _user_country */
     const [_typedCharactersCountry, setTypedCharactersCountry] = useState('');
@@ -204,7 +229,7 @@ const PSettings = (props) => {
             });
             _handleChangeCountry(__selectedItem._country);
         }
-    }
+    };
     const _handleChangeCountry = (__inputValue) => {
         const firstSuggestions = _.orderBy(
             _.uniqBy(
@@ -212,10 +237,7 @@ const PSettings = (props) => {
                     _countries,
                     (item) =>
                         !__inputValue ||
-                        _.includes(
-                            _.lowerCase(item._country),
-                            _.lowerCase(__inputValue)
-                        )
+                        _.includes(_.lowerCase(item._country), _.lowerCase(__inputValue))
                 ),
                 '_country'
             ),
@@ -224,15 +246,25 @@ const PSettings = (props) => {
         );
 
         setTypedCharactersCountry(__inputValue);
-        setCountrySuggestion((!_.isEmpty(__inputValue) && !_.isEmpty(firstSuggestions)) ? (firstSuggestions[0]._country) : '');
+        setCountrySuggestion(
+            !_.isEmpty(__inputValue) && !_.isEmpty(firstSuggestions)
+                ? firstSuggestions[0]._country
+                : ''
+        );
         setCountryItems(firstSuggestions);
-        _getCities((!_.isEmpty(__inputValue) && !_.isEmpty(firstSuggestions)) ? (firstSuggestions[0]._code) : '');
-        if (!_.isEqual(_user?._user_country?._country, firstSuggestions[0]?._country)) {
+        _getCities(
+            !_.isEmpty(__inputValue) && !_.isEmpty(firstSuggestions)
+                ? firstSuggestions[0]._code
+                : ''
+        );
+        if (
+            !_.isEqual(_user?._user_country?._country, firstSuggestions[0]?._country)
+        ) {
             // If the suggestion picked is not the same as the _user's country
             setValueSettings('_user_city', '');
             _handleChangeCity('');
         }
-    }
+    };
     const _handleBlurCountry = (__event) => {
         const firstSuggestions = _.orderBy(
             _.uniqBy(
@@ -264,7 +296,7 @@ const PSettings = (props) => {
                 // If there is a no valid suggestion
                 setErrorSettings('_user_country', {
                     type: 'manual',
-                    message: 'Not a valid Country.'
+                    message: 'Not a valid Country.',
                 });
                 _getCities('');
             }
@@ -277,16 +309,20 @@ const PSettings = (props) => {
         setTypedCharactersCountry('');
         setCountrySuggestion('');
         setCountryItems(__countryItems);
-        if (!_.isEqual(_user?._user_country?._country, firstSuggestions[0]?._country)) {
+        if (
+            !_.isEqual(_user?._user_country?._country, firstSuggestions[0]?._country)
+        ) {
             // If the suggestion picked is not the same as the _user's country
             setValueSettings('_user_city', '');
             _handleChangeCity('');
         }
-        setUsercountryFocused(!_.isEmpty(watchSettings('_user_country._country')) ? true : false);
-    }
+        setUsercountryFocused(
+            !_.isEmpty(watchSettings('_user_country._country')) ? true : false
+        );
+    };
     const _handleFocusCountry = () => {
         setUsercountryFocused(true);
-    }
+    };
     const {
         getLabelProps: getLabelPropsCountry,
         getInputProps: getInputPropsCountry,
@@ -294,12 +330,15 @@ const PSettings = (props) => {
         getMenuProps: getMenuPropsCountry,
         highlightedIndex: highlightedIndexCountry,
         selectedItem: selectedItemCountry,
-        isOpen: isOpenCountry
+        isOpen: isOpenCountry,
     } = useCombobox({
         items: __countryItems,
-        onInputValueChange({ inputValue }) { _handleChangeCountry(inputValue) },
-        onSelectedItemChange: ({ selectedItem: __selectedItem }) => _handleSelectCountry(__selectedItem),
-        itemToString: item => (item ? item._country : ''),
+        onInputValueChange({ inputValue }) {
+            _handleChangeCountry(inputValue);
+        },
+        onSelectedItemChange: ({ selectedItem: __selectedItem }) =>
+            _handleSelectCountry(__selectedItem),
+        itemToString: (item) => (item ? item._country : ''),
         stateReducer: (state, actionAndChanges) => {
             const { type, changes } = actionAndChanges;
             switch (type) {
@@ -311,10 +350,9 @@ const PSettings = (props) => {
                 default:
                     return changes;
             }
-        }
+        },
     });
     /* Downshift _user_country */
-
 
     /* Downshift _user_city */
     const [_typedCharactersCity, setTypedCharactersCity] = useState('');
@@ -326,7 +364,7 @@ const PSettings = (props) => {
             setValueSettings('_user_city', __selectedItem._city);
             _handleChangeCity(__selectedItem._city);
         }
-    }
+    };
     const _handleChangeCity = (__inputValue) => {
         const firstSuggestions = _.orderBy(
             _.uniqBy(
@@ -334,10 +372,7 @@ const PSettings = (props) => {
                     _cities,
                     (item) =>
                         !__inputValue ||
-                        _.includes(
-                            _.lowerCase(item._city),
-                            _.lowerCase(__inputValue)
-                        )
+                        _.includes(_.lowerCase(item._city), _.lowerCase(__inputValue))
                 ),
                 '_city'
             ),
@@ -346,9 +381,13 @@ const PSettings = (props) => {
         );
 
         setTypedCharactersCity(__inputValue);
-        setCitySuggestion((!_.isEmpty(__inputValue) && !_.isEmpty(firstSuggestions)) ? (firstSuggestions[0]._city) : '');
+        setCitySuggestion(
+            !_.isEmpty(__inputValue) && !_.isEmpty(firstSuggestions)
+                ? firstSuggestions[0]._city
+                : ''
+        );
         setCityItems(firstSuggestions);
-    }
+    };
     const _handleBlurCity = (__event) => {
         const firstSuggestions = _.orderBy(
             _.uniqBy(
@@ -376,7 +415,7 @@ const PSettings = (props) => {
                 // If there is a no valid suggestion
                 setErrorSettings('_user_city', {
                     type: 'manual',
-                    message: 'Not a valid City.'
+                    message: 'Not a valid City.',
                 });
             }
         } else {
@@ -389,10 +428,10 @@ const PSettings = (props) => {
         setCityItems(__cityItems);
 
         setUsercityFocused(!_.isEmpty(watchSettings('_user_city')) ? true : false);
-    }
+    };
     const _handleFocusCity = () => {
         setUsercityFocused(true);
-    }
+    };
     const {
         getLabelProps: getLabelPropsCity,
         getInputProps: getInputPropsCity,
@@ -400,12 +439,15 @@ const PSettings = (props) => {
         getMenuProps: getMenuPropsCity,
         highlightedIndex: highlightedIndexCity,
         selectedItem: selectedItemCity,
-        isOpen: isOpenCity
+        isOpen: isOpenCity,
     } = useCombobox({
         items: __cityItems,
-        onInputValueChange({ inputValue }) { _handleChangeCity(inputValue) },
-        onSelectedItemChange: ({ selectedItem: __selectedItem }) => _handleSelectCity(__selectedItem),
-        itemToString: item => (item ? item._city : ''),
+        onInputValueChange({ inputValue }) {
+            _handleChangeCity(inputValue);
+        },
+        onSelectedItemChange: ({ selectedItem: __selectedItem }) =>
+            _handleSelectCity(__selectedItem),
+        itemToString: (item) => (item ? item._city : ''),
         stateReducer: (state, actionAndChanges) => {
             const { type, changes } = actionAndChanges;
             switch (type) {
@@ -417,21 +459,28 @@ const PSettings = (props) => {
                 default:
                     return changes;
             }
-        }
+        },
     });
     /* Downshift _user_city */
-
 
     const _getCities = useCallback(
         async (countryCode) => {
             try {
                 !_.isEmpty(countryCode) &&
-                    axios(`http://api.geonames.org/searchJSON?country=${countryCode}&username=thranduilurm0m`)
+                    axios(
+                        `http://api.geonames.org/searchJSON?country=${countryCode}&username=thranduilurm0m`
+                    )
                         .then((response) => {
                             const data = response.data;
                             const cityList = _.map(data.geonames, (city) => {
                                 // Check if the feature code corresponds to a city (you may need to adjust this condition based on the API response)
-                                if (city.fcode !== 'RGN' && city.fcode !== 'PCLI' && city.fcode !== 'ADM1' && city.fcode !== 'ADM1H' && city.fcode !== 'AIRP') {
+                                if (
+                                    city.fcode !== 'RGN' &&
+                                    city.fcode !== 'PCLI' &&
+                                    city.fcode !== 'ADM1' &&
+                                    city.fcode !== 'ADM1H' &&
+                                    city.fcode !== 'AIRP'
+                                ) {
                                     return {
                                         _city: city.name,
                                     };
@@ -469,53 +518,34 @@ const PSettings = (props) => {
         [setCities]
     );
 
-    const _getCountries = useCallback(
-        async () => {
-            try {
-                axios('https://restcountries.com/v3.1/all')
-                    .then((response) => {
-                        const data = response.data;
-                        const countryList = _.map(data, country => ({
-                            _country: country.name.common,
-                            _code: country.cca2,
-                            _flag: country.flags.svg
-                        }));
-                        setCountries(
-                            _.orderBy(
-                                _.uniqBy(
-                                    countryList,
-                                    '_country'
-                                ),
-                                ['_country'],
-                                ['asc']
-                            )
-                        );
-                        setCountryItems(
-                            _.orderBy(
-                                _.uniqBy(
-                                    countryList,
-                                    '_country'
-                                ),
-                                ['_country'],
-                                ['asc']
-                            )
-                        );
+    const _getCountries = useCallback(async () => {
+        try {
+            axios('https://restcountries.com/v3.1/all')
+                .then((response) => {
+                    const data = response.data;
+                    const countryList = _.map(data, (country) => ({
+                        _country: country.name.common,
+                        _code: country.cca2,
+                        _flag: country.flags.svg,
+                    }));
+                    setCountries(
+                        _.orderBy(_.uniqBy(countryList, '_country'), ['_country'], ['asc'])
+                    );
+                    setCountryItems(
+                        _.orderBy(_.uniqBy(countryList, '_country'), ['_country'], ['asc'])
+                    );
 
-                        !_.isEmpty(watchSettings('_user_country._country'))
-                            ?
-                            _getCities(watchSettings('_user_country._code'))
-                            :
-                            _getCities(countryList[0]?._code);
-                    })
-                    .catch((error) => {
-                        console.log(error);
-                    });
-            } catch (error) {
-                console.log(error);
-            }
-        },
-        [setCountries, watchSettings, _getCities]
-    );
+                    !_.isEmpty(watchSettings('_user_country._country'))
+                        ? _getCities(watchSettings('_user_country._code'))
+                        : _getCities(countryList[0]?._code);
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        } catch (error) {
+            console.log(error);
+        }
+    }, [setCountries, watchSettings, _getCities]);
 
     const _handleEdit = (_index) => {
         setUserToEdit(_user);
@@ -539,20 +569,24 @@ const PSettings = (props) => {
         try {
             // Check if any of the password fields is not empty
             if (
-                (values._user_password || values._user_passwordNew || values._user_passwordNewConfirm) &&
-                (!values._user_password || !values._user_passwordNew || !values._user_passwordNewConfirm)
+                (values._user_password ||
+                    values._user_passwordNew ||
+                    values._user_passwordNewConfirm) &&
+                (!values._user_password ||
+                    !values._user_passwordNew ||
+                    !values._user_passwordNewConfirm)
             ) {
                 setErrorSettings('_user_password', {
                     type: 'manual',
-                    message: 'This must be filled.'
+                    message: 'This must be filled.',
                 });
                 setErrorSettings('_user_passwordNew', {
                     type: 'manual',
-                    message: 'This must be filled.'
+                    message: 'This must be filled.',
                 });
                 setErrorSettings('_user_passwordNewConfirm', {
                     type: 'manual',
-                    message: 'This must be filled.'
+                    message: 'This must be filled.',
                 });
                 return;
             }
@@ -561,7 +595,7 @@ const PSettings = (props) => {
             if (values._user_passwordNew !== values._user_passwordNewConfirm) {
                 setErrorSettings('_user_passwordNewConfirm', {
                     type: 'manual',
-                    message: 'Confirmation doesn\'t match.'
+                    message: 'Confirmation doesn\'t match.',
                 });
                 return;
             }
@@ -578,26 +612,24 @@ const PSettings = (props) => {
                 }
             }
 
-            return axios.patch(`/api/user/${_userToEdit._id}`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data', // Important: set the content type to 'multipart/form-data'
-                },
-            })
+            return axios
+                .patch(`/api/user/${_userToEdit._id}`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data', // Important: set the content type to 'multipart/form-data'
+                    },
+                })
                 .then((res) => {
                     setUser(res.data._user);
-                    _socket.emit('action', { type: '_userUpdated', data: res.data._user });
-
-                    // Clear the _userToEdit state
                     clearUserToEdit();
                 })
                 .catch((error) => {
-                    setModalHeader('We\'re sorry !');
+                    setModalHeader('We\'re sorry!');
                     setModalBody(JSON.stringify(error));
                     setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
                     setShowModal(true);
                 });
         } catch (error) {
-            setModalHeader('We\'re sorry !');
+            setModalHeader('We\'re sorry!');
             setModalBody(JSON.stringify(error));
             setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
             setShowModal(true);
@@ -605,7 +637,7 @@ const PSettings = (props) => {
     };
 
     const onError = (error) => {
-        setModalHeader('We\'re sorry !');
+        setModalHeader('We\'re sorry!');
         setModalBody('Please check the fields for valid information.');
         setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
         setShowModal(true);
@@ -629,16 +661,26 @@ const PSettings = (props) => {
 
     return (
         <div className='_pane _settings d-flex flex-column'>
-            <SimpleBar style={{ maxHeight: '100%' }} forceVisible='y' autoHide={false}>
+            <SimpleBar
+                style={{ maxHeight: '100%' }}
+                forceVisible='y'
+                autoHide={false}
+            >
                 <Card className='rounded-0'>
                     <Card.Body className='border border-0 rounded-0 no-shadow'>
-                        <Form onSubmit={handleSubmitSettings(onSubmit, onError)} className='grid' autoComplete='off'>
+                        <Form
+                            onSubmit={handleSubmitSettings(onSubmit, onError)}
+                            className='grid'
+                            autoComplete='off'
+                        >
                             {/* Header */}
                             <Row className='g-col-12 grid'>
                                 <Col className='g-col-3'>
                                     <span>
                                         Account Settings.
-                                        <p className='text-muted'>Update your Profile photo and details Here.</p>
+                                        <p className='text-muted'>
+                                            Update your Profile photo and details Here.
+                                        </p>
                                     </span>
                                 </Col>
                                 <Col className='g-col-3'></Col>
@@ -653,13 +695,15 @@ const PSettings = (props) => {
                                                 variant='link'
                                                 onClick={() => _handleCancel('_first')}
                                             >
-                                                Cancel<b className='pink_dot'>.</b>
+                                                Cancel
+                                                <b className='pink_dot'>.</b>
                                             </Button>
                                         )
                                     }
                                     <Button
                                         type={`${_.isEmpty(_userToEdit) ? 'button' : 'submit'}`}
-                                        className={`border border-0 rounded-0 inverse ${_.isEmpty(_userToEdit) ? '' : '_edit'}`}
+                                        className={`border border-0 rounded-0 inverse ${_.isEmpty(_userToEdit) ? '' : '_edit'
+                                            }`}
                                         variant='outline-light'
                                         onClick={(ev) => {
                                             if (_.isEmpty(_userToEdit)) {
@@ -687,18 +731,18 @@ const PSettings = (props) => {
                                 <Col className='g-col-3'>
                                     <span>
                                         Public information.
-                                        <p className='text-muted'>This will be displayed on your profile.</p>
+                                        <p className='text-muted'>
+                                            This will be displayed on your profile.
+                                        </p>
                                     </span>
                                 </Col>
                                 <Col className='g-col-3'>
                                     <Form.Group
                                         controlId='_user_lastname'
-                                        className={`_formGroup ${_userLastnameFocused ? 'focused' : ''} ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
+                                        className={`_formGroup ${_userLastnameFocused ? 'focused' : ''
+                                            } ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
                                     >
-                                        <FloatingLabel
-                                            label='Last Name.'
-                                            className='_formLabel'
-                                        >
+                                        <FloatingLabel label='Last Name.' className='_formLabel'>
                                             <Form.Control
                                                 {...registerSettings('_user_lastname')}
                                                 onBlur={() => {
@@ -709,38 +753,40 @@ const PSettings = (props) => {
                                                 placeholder='Lastname.'
                                                 autoComplete='new-password'
                                                 type='text'
-                                                className={`_formControl border rounded-0 ${errorsSettings._user_lastname ? 'border-danger' : ''}`}
+                                                className={`_formControl border rounded-0 ${errorsSettings._user_lastname ? 'border-danger' : ''
+                                                    }`}
                                                 name='_user_lastname'
                                                 disabled={_.isEmpty(_userToEdit)}
                                             />
-                                            {
-                                                errorsSettings._user_lastname && (
-                                                    <Form.Text className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watchSettings('_user_lastname')) ? '_fieldNotEmpty' : ''}`}>
-                                                        {errorsSettings._user_lastname.message}
-                                                    </Form.Text>
-                                                )
-                                            }
-                                            {
-                                                (!_.isEmpty(watchSettings('_user_lastname')) && !_.isEmpty(_userToEdit)) && (
+                                            {errorsSettings._user_lastname && (
+                                                <Form.Text
+                                                    className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watchSettings('_user_lastname'))
+                                                        ? '_fieldNotEmpty'
+                                                        : ''
+                                                        }`}
+                                                >
+                                                    {errorsSettings._user_lastname.message}
+                                                </Form.Text>
+                                            )}
+                                            {!_.isEmpty(watchSettings('_user_lastname')) &&
+                                                !_.isEmpty(_userToEdit) && (
                                                     <div
                                                         className='__close'
-                                                        onClick={() => { resetFieldSettings('_user_lastname') }}
-                                                    >
-                                                    </div>
-                                                )
-                                            }
+                                                        onClick={() => {
+                                                            resetFieldSettings('_user_lastname');
+                                                        }}
+                                                    ></div>
+                                                )}
                                         </FloatingLabel>
                                     </Form.Group>
                                 </Col>
                                 <Col className='g-col-3'>
                                     <Form.Group
                                         controlId='_user_firstname'
-                                        className={`_formGroup ${_userFirstnameFocused ? 'focused' : ''} ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
+                                        className={`_formGroup ${_userFirstnameFocused ? 'focused' : ''
+                                            } ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
                                     >
-                                        <FloatingLabel
-                                            label='First Name.'
-                                            className='_formLabel'
-                                        >
+                                        <FloatingLabel label='First Name.' className='_formLabel'>
                                             <Form.Control
                                                 {...registerSettings('_user_firstname')}
                                                 onBlur={() => {
@@ -751,26 +797,30 @@ const PSettings = (props) => {
                                                 placeholder='Firstname.'
                                                 autoComplete='new-password'
                                                 type='text'
-                                                className={`_formControl border rounded-0 ${errorsSettings._user_firstname ? 'border-danger' : ''}`}
+                                                className={`_formControl border rounded-0 ${errorsSettings._user_firstname ? 'border-danger' : ''
+                                                    }`}
                                                 name='_user_firstname'
                                                 disabled={_.isEmpty(_userToEdit)}
                                             />
-                                            {
-                                                errorsSettings._user_firstname && (
-                                                    <Form.Text className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watchSettings('_user_firstname')) ? '_fieldNotEmpty' : ''}`}>
-                                                        {errorsSettings._user_firstname.message}
-                                                    </Form.Text>
-                                                )
-                                            }
-                                            {
-                                                (!_.isEmpty(watchSettings('_user_firstname')) && !_.isEmpty(_userToEdit)) && (
+                                            {errorsSettings._user_firstname && (
+                                                <Form.Text
+                                                    className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watchSettings('_user_firstname'))
+                                                        ? '_fieldNotEmpty'
+                                                        : ''
+                                                        }`}
+                                                >
+                                                    {errorsSettings._user_firstname.message}
+                                                </Form.Text>
+                                            )}
+                                            {!_.isEmpty(watchSettings('_user_firstname')) &&
+                                                !_.isEmpty(_userToEdit) && (
                                                     <div
-                                                    className='__close'
-                                                    onClick={() => { resetFieldSettings('_user_firstname') }}
-                                                    >
-                                                    </div>
-                                                )
-                                            }
+                                                        className='__close'
+                                                        onClick={() => {
+                                                            resetFieldSettings('_user_firstname');
+                                                        }}
+                                                    ></div>
+                                                )}
                                         </FloatingLabel>
                                     </Form.Group>
                                 </Col>
@@ -780,12 +830,10 @@ const PSettings = (props) => {
                                 <Col className='g-col-3'>
                                     <Form.Group
                                         controlId='_user_email'
-                                        className={`_formGroup ${_userEmailFocused ? 'focused' : ''} ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
+                                        className={`_formGroup ${_userEmailFocused ? 'focused' : ''
+                                            } ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
                                     >
-                                        <FloatingLabel
-                                            label='Email.'
-                                            className='_formLabel'
-                                        >
+                                        <FloatingLabel label='Email.' className='_formLabel'>
                                             <Form.Control
                                                 {...registerSettings('_user_email')}
                                                 onBlur={() => {
@@ -796,38 +844,40 @@ const PSettings = (props) => {
                                                 placeholder='Email.'
                                                 autoComplete='new-password'
                                                 type='text'
-                                                className={`_formControl border rounded-0 ${errorsSettings._user_email ? 'border-danger' : ''}`}
+                                                className={`_formControl border rounded-0 ${errorsSettings._user_email ? 'border-danger' : ''
+                                                    }`}
                                                 name='_user_email'
                                                 disabled={_.isEmpty(_userToEdit)}
                                             />
-                                            {
-                                                errorsSettings._user_email && (
-                                                    <Form.Text className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watchSettings('_user_email')) ? '_fieldNotEmpty' : ''}`}>
-                                                        {errorsSettings._user_email.message}
-                                                    </Form.Text>
-                                                )
-                                            }
-                                            {
-                                                (!_.isEmpty(watchSettings('_user_email')) && !_.isEmpty(_userToEdit)) && (
+                                            {errorsSettings._user_email && (
+                                                <Form.Text
+                                                    className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watchSettings('_user_email'))
+                                                        ? '_fieldNotEmpty'
+                                                        : ''
+                                                        }`}
+                                                >
+                                                    {errorsSettings._user_email.message}
+                                                </Form.Text>
+                                            )}
+                                            {!_.isEmpty(watchSettings('_user_email')) &&
+                                                !_.isEmpty(_userToEdit) && (
                                                     <div
                                                         className='__close'
-                                                        onClick={() => { resetFieldSettings('_user_email') }}
-                                                    >
-                                                    </div>
-                                                )
-                                            }
+                                                        onClick={() => {
+                                                            resetFieldSettings('_user_email');
+                                                        }}
+                                                    ></div>
+                                                )}
                                         </FloatingLabel>
                                     </Form.Group>
                                 </Col>
                                 <Col className='g-col-3'>
                                     <Form.Group
                                         controlId='_user_username'
-                                        className={`_formGroup ${_userUsernameFocused ? 'focused' : ''} ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
+                                        className={`_formGroup ${_userUsernameFocused ? 'focused' : ''
+                                            } ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
                                     >
-                                        <FloatingLabel
-                                            label='Username.'
-                                            className='_formLabel'
-                                        >
+                                        <FloatingLabel label='Username.' className='_formLabel'>
                                             <Form.Control
                                                 {...registerSettings('_user_username')}
                                                 onBlur={() => {
@@ -838,26 +888,31 @@ const PSettings = (props) => {
                                                 placeholder='Username.'
                                                 autoComplete='new-password'
                                                 type='text'
-                                                className={`_formControl border rounded-0 ${errorsSettings._user_username ? 'border-danger' : ''}`}
+                                                className={`_formControl border rounded-0 ${errorsSettings._user_username ? 'border-danger' : ''
+                                                    }`}
                                                 name='_user_username'
                                                 disabled={_.isEmpty(_userToEdit)}
                                             />
-                                            {
-                                                errorsSettings._user_username && (
-                                                    <Form.Text className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watchSettings('_user_username')) ? '_fieldNotEmpty' : ''}`}>
-                                                        {errorsSettings._user_username.message}
-                                                    </Form.Text>
-                                                )
-                                            }
-                                            {
-                                                (!_.isEmpty(watchSettings('_user_username')) && !_.isEmpty(_userToEdit)) && (
+                                            {errorsSettings._user_username && (
+                                                <Form.Text
+                                                    className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watchSettings('_user_username'))
+                                                        ? '_fieldNotEmpty'
+                                                        : ''
+                                                        }`}
+                                                >
+                                                    {errorsSettings._user_username.message}
+                                                </Form.Text>
+                                            )}
+                                            {!_.isEmpty(watchSettings('_user_username')) &&
+                                                !_.isEmpty(_userToEdit) && (
                                                     <div
-                                                    l    className='__close'
-                                                        onCick={() => { resetFieldSettings('_user_username') }}
-                                                    >
-                                                    </div>
-                                                )
-                                            }
+                                                        l
+                                                        className='__close'
+                                                        onCick={() => {
+                                                            resetFieldSettings('_user_username');
+                                                        }}
+                                                    ></div>
+                                                )}
                                         </FloatingLabel>
                                     </Form.Group>
                                 </Col>
@@ -874,15 +929,24 @@ const PSettings = (props) => {
                                 </Col>
                                 <Col className='g-col-3'>
                                     {/* Replace all one option terniary conditions with the && */}
-                                    <span className={`d-flex align-items-center justify-content-center ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}>
-                                        <img src={_.isEmpty(_user._user_picture) ? logo : _user._user_picture} alt='' />
+                                    <span
+                                        className={`d-flex align-items-center justify-content-center ${_.isEmpty(_userToEdit) ? '_disabled' : ''
+                                            }`}
+                                    >
+                                        <img
+                                            src={
+                                                _.isEmpty(_user._user_picture)
+                                                    ? logo
+                                                    : _user._user_picture
+                                            }
+                                            alt=''
+                                        />
                                         <Form.Group
                                             controlId='_user_picture'
-                                            className={`_formGroup ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
+                                            className={`_formGroup ${_.isEmpty(_userToEdit) ? '_disabled' : ''
+                                                }`}
                                         >
-                                            <FloatingLabel
-                                                className='_formLabel'
-                                            >
+                                            <FloatingLabel className='_formLabel'>
                                                 <Form.Control
                                                     {...registerSettings('_user_picture')}
                                                     type='file'
@@ -893,7 +957,11 @@ const PSettings = (props) => {
                                             </FloatingLabel>
                                         </Form.Group>
                                     </span>
-                                    {!_.isEmpty(_userToEdit) && (<span className='_editing d-flex justify-content-center align-items-center'><FontAwesomeIcon icon={faCamera} /></span>)}
+                                    {!_.isEmpty(_userToEdit) && (
+                                        <span className='_editing d-flex justify-content-center align-items-center'>
+                                            <FontAwesomeIcon icon={faCamera} />
+                                        </span>
+                                    )}
                                 </Col>
                             </Row>
 
@@ -912,7 +980,8 @@ const PSettings = (props) => {
                                         render={({ field }) => (
                                             <Form.Group
                                                 controlId='_user_country'
-                                                className={`_formGroup ${_userCountryFocused ? 'focused' : ''} ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
+                                                className={`_formGroup ${_userCountryFocused ? 'focused' : ''
+                                                    } ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
                                             >
                                                 <FloatingLabel
                                                     label='Country.'
@@ -923,91 +992,143 @@ const PSettings = (props) => {
                                                         {...getInputPropsCountry({
                                                             ...field,
                                                             onFocus: _handleFocusCountry,
-                                                            onBlur: _handleBlurCountry
+                                                            onBlur: _handleBlurCountry,
                                                         })}
                                                         placeholder='Country.'
-                                                        className={`_formControl border rounded-0 ${errorsSettings._user_country ? 'border-danger' : ''} ${!_.isEmpty(_typedCharactersCountry) ? '_typing' : ''}`}
+                                                        className={`_formControl border rounded-0 ${errorsSettings._user_country
+                                                            ? 'border-danger'
+                                                            : ''
+                                                            } ${!_.isEmpty(_typedCharactersCountry)
+                                                                ? '_typing'
+                                                                : ''
+                                                            }`}
                                                         disabled={_.isEmpty(_userToEdit)}
                                                     />
                                                     <span className='d-flex align-items-center _autocorrect'>
-                                                        {
-                                                            (() => {
-                                                                const __countrySuggestionSplit = _.split(_countrySuggestion, '');
-                                                                const __typedCharactersCountrySplit = _.split(_typedCharactersCountry, '');
-                                                                const __startIndex = _.indexOf(__countrySuggestionSplit, _.head(__typedCharactersCountrySplit));
+                                                        {(() => {
+                                                            const __countrySuggestionSplit = _.split(
+                                                                _countrySuggestion,
+                                                                ''
+                                                            );
+                                                            const __typedCharactersCountrySplit = _.split(
+                                                                _typedCharactersCountry,
+                                                                ''
+                                                            );
+                                                            const __startIndex = _.indexOf(
+                                                                __countrySuggestionSplit,
+                                                                _.head(__typedCharactersCountrySplit)
+                                                            );
 
-                                                                return (
-                                                                    <>
-                                                                        {__startIndex !== -1 && (
-                                                                            <>
-                                                                                <p className='_countrySuggestion'>
-                                                                                    {_.join(_.slice(__countrySuggestionSplit, 0, __startIndex), '')}
-                                                                                </p>
-                                                                            </>
-                                                                        )}
-                                                                        <p className='_typedCharacters'>
-                                                                            {_typedCharactersCountry}
-                                                                        </p>
-                                                                        {__startIndex !== -1 && (
-                                                                            <>
-                                                                                <p className='_countrySuggestion'>
-                                                                                    {_.join(_.slice(__countrySuggestionSplit, __startIndex + _.size(__typedCharactersCountrySplit)), '')}
-                                                                                </p>
-                                                                            </>
-                                                                        )}
-                                                                    </>
-                                                                );
-                                                            })()
-                                                        }
+                                                            return (
+                                                                <>
+                                                                    {__startIndex !== -1 && (
+                                                                        <>
+                                                                            <p className='_countrySuggestion'>
+                                                                                {_.join(
+                                                                                    _.slice(
+                                                                                        __countrySuggestionSplit,
+                                                                                        0,
+                                                                                        __startIndex
+                                                                                    ),
+                                                                                    ''
+                                                                                )}
+                                                                            </p>
+                                                                        </>
+                                                                    )}
+                                                                    <p className='_typedCharacters'>
+                                                                        {_typedCharactersCountry}
+                                                                    </p>
+                                                                    {__startIndex !== -1 && (
+                                                                        <>
+                                                                            <p className='_countrySuggestion'>
+                                                                                {_.join(
+                                                                                    _.slice(
+                                                                                        __countrySuggestionSplit,
+                                                                                        __startIndex +
+                                                                                        _.size(
+                                                                                            __typedCharactersCountrySplit
+                                                                                        )
+                                                                                    ),
+                                                                                    ''
+                                                                                )}
+                                                                            </p>
+                                                                        </>
+                                                                    )}
+                                                                </>
+                                                            );
+                                                        })()}
                                                     </span>
-                                                    {
-                                                        errorsSettings._user_country && (
-                                                            <Form.Text className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(_userToEdit) && (!_.isEmpty(_typedCharactersCountry) || !_.isEqual(field.value, { _code: '', _country: '' })) ? '_fieldNotEmpty' : ''}`}>
-                                                                {errorsSettings._user_country.message}
-                                                            </Form.Text>
-                                                        )
-                                                    }
-                                                    {
-                                                        !_.isEmpty(_userToEdit) && (!_.isEmpty(_typedCharactersCountry) || !_.isEmpty(watchSettings('_user_country._country')))
-                                                            ?
-                                                            <div className='__close'
-                                                                onClick={() => {
-                                                                    setValueSettings('_user_country', { _code: '', _country: '' });
-                                                                    _handleChangeCountry('');
-                                                                }}
-                                                            >
-                                                            </div>
-                                                            :
-                                                            null
-                                                    }
+                                                    {errorsSettings._user_country && (
+                                                        <Form.Text
+                                                            className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(_userToEdit) &&
+                                                                (!_.isEmpty(_typedCharactersCountry) ||
+                                                                    !_.isEqual(field.value, {
+                                                                        _code: '',
+                                                                        _country: '',
+                                                                    }))
+                                                                ? '_fieldNotEmpty'
+                                                                : ''
+                                                                }`}
+                                                        >
+                                                            {errorsSettings._user_country.message}
+                                                        </Form.Text>
+                                                    )}
+                                                    {!_.isEmpty(_userToEdit) &&
+                                                        (!_.isEmpty(_typedCharactersCountry) ||
+                                                            !_.isEmpty(
+                                                                watchSettings('_user_country._country')
+                                                            )) ? (
+                                                        <div
+                                                            className='__close'
+                                                            onClick={() => {
+                                                                setValueSettings('_user_country', {
+                                                                    _code: '',
+                                                                    _country: '',
+                                                                });
+                                                                _handleChangeCountry('');
+                                                            }}
+                                                        ></div>
+                                                    ) : null}
                                                 </FloatingLabel>
-                                                <SimpleBar className='_SimpleBar' style={{ maxHeight: '40vh' }} forceVisible='y' autoHide={false}>
+                                                <SimpleBar
+                                                    className='_SimpleBar'
+                                                    style={{
+                                                        maxHeight: '40vh',
+                                                    }}
+                                                    forceVisible='y'
+                                                    autoHide={false}
+                                                >
                                                     <ListGroup
-                                                        className={`border border-0 rounded-0 d-block ${!(isOpenCountry && __countryItems.length) && 'hidden'}`}
+                                                        className={`border border-0 rounded-0 d-block ${!(isOpenCountry && __countryItems.length) &&
+                                                            'hidden'
+                                                            }`}
                                                         {...getMenuPropsCountry()}
                                                     >
-                                                        {
-                                                            isOpenCountry &&
-                                                            _.map(
-                                                                __countryItems
-                                                                , (item, index) => {
-                                                                    return (
-                                                                        <ListGroup.Item
-                                                                            className={`border border-0 rounded-0 d-flex align-items-center ${highlightedIndexCountry === index && 'bg-blue-300'} ${selectedItemCountry === item && 'font-bold'}`}
-                                                                            key={`${item.value}${index}`}
-                                                                            {...getItemPropsCountry({ item, index })}
-                                                                        >
-                                                                            <span>
-                                                                                <img src={item._flag} alt={item._country} />
-                                                                            </span>
-                                                                            <span>
-                                                                                {item._country}
-                                                                            </span>
-                                                                        </ListGroup.Item>
-                                                                    )
-                                                                }
-                                                            )
-                                                        }
+                                                        {isOpenCountry &&
+                                                            _.map(__countryItems, (item, index) => {
+                                                                return (
+                                                                    <ListGroup.Item
+                                                                        className={`border border-0 rounded-0 d-flex align-items-center ${highlightedIndexCountry === index &&
+                                                                            'bg-blue-300'
+                                                                            } ${selectedItemCountry === item &&
+                                                                            'font-bold'
+                                                                            }`}
+                                                                        key={`${item.value}${index}`}
+                                                                        {...getItemPropsCountry({
+                                                                            item,
+                                                                            index,
+                                                                        })}
+                                                                    >
+                                                                        <span>
+                                                                            <img
+                                                                                src={item._flag}
+                                                                                alt={item._country}
+                                                                            />
+                                                                        </span>
+                                                                        <span>{item._country}</span>
+                                                                    </ListGroup.Item>
+                                                                );
+                                                            })}
                                                     </ListGroup>
                                                 </SimpleBar>
                                             </Form.Group>
@@ -1021,7 +1142,8 @@ const PSettings = (props) => {
                                         render={({ field }) => (
                                             <Form.Group
                                                 controlId='_user_city'
-                                                className={`_formGroup ${_userCityFocused ? 'focused' : ''} ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
+                                                className={`_formGroup ${_userCityFocused ? 'focused' : ''
+                                                    } ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
                                             >
                                                 <FloatingLabel
                                                     label='City.'
@@ -1032,87 +1154,127 @@ const PSettings = (props) => {
                                                         {...getInputPropsCity({
                                                             ...field,
                                                             onFocus: _handleFocusCity,
-                                                            onBlur: _handleBlurCity
+                                                            onBlur: _handleBlurCity,
                                                         })}
                                                         placeholder='City.'
-                                                        className={`_formControl border rounded-0 ${errorsSettings._user_city ? 'border-danger' : ''} ${!_.isEmpty(_typedCharactersCity) ? '_typing' : ''}`}
-                                                        disabled={_.isEmpty(_userToEdit) || _.isEmpty(watchSettings('_user_country._country'))}
+                                                        className={`_formControl border rounded-0 ${errorsSettings._user_city ? 'border-danger' : ''
+                                                            } ${!_.isEmpty(_typedCharactersCity) ? '_typing' : ''
+                                                            }`}
+                                                        disabled={
+                                                            _.isEmpty(_userToEdit) ||
+                                                            _.isEmpty(watchSettings('_user_country._country'))
+                                                        }
                                                     />
                                                     <span className='d-flex align-items-center _autocorrect'>
-                                                        {
-                                                            (() => {
-                                                                const __citySuggestionSplit = _.split(_citySuggestion, '');
-                                                                const __typedCharactersCitySplit = _.split(_typedCharactersCity, '');
-                                                                const __startIndex = _.indexOf(__citySuggestionSplit, _.head(__typedCharactersCitySplit));
+                                                        {(() => {
+                                                            const __citySuggestionSplit = _.split(
+                                                                _citySuggestion,
+                                                                ''
+                                                            );
+                                                            const __typedCharactersCitySplit = _.split(
+                                                                _typedCharactersCity,
+                                                                ''
+                                                            );
+                                                            const __startIndex = _.indexOf(
+                                                                __citySuggestionSplit,
+                                                                _.head(__typedCharactersCitySplit)
+                                                            );
 
-                                                                return (
-                                                                    <>
-                                                                        {__startIndex !== -1 && (
-                                                                            <>
-                                                                                <p className='_citySuggestion'>
-                                                                                    {_.join(_.slice(__citySuggestionSplit, 0, __startIndex), '')}
-                                                                                </p>
-                                                                            </>
-                                                                        )}
-                                                                        <p className='_typedCharacters'>
-                                                                            {_typedCharactersCity}
-                                                                        </p>
-                                                                        {__startIndex !== -1 && (
-                                                                            <>
-                                                                                <p className='_citySuggestion'>
-                                                                                    {_.join(_.slice(__citySuggestionSplit, __startIndex + _.size(__typedCharactersCitySplit)), '')}
-                                                                                </p>
-                                                                            </>
-                                                                        )}
-                                                                    </>
-                                                                );
-                                                            })()
-                                                        }
+                                                            return (
+                                                                <>
+                                                                    {__startIndex !== -1 && (
+                                                                        <>
+                                                                            <p className='_citySuggestion'>
+                                                                                {_.join(
+                                                                                    _.slice(
+                                                                                        __citySuggestionSplit,
+                                                                                        0,
+                                                                                        __startIndex
+                                                                                    ),
+                                                                                    ''
+                                                                                )}
+                                                                            </p>
+                                                                        </>
+                                                                    )}
+                                                                    <p className='_typedCharacters'>
+                                                                        {_typedCharactersCity}
+                                                                    </p>
+                                                                    {__startIndex !== -1 && (
+                                                                        <>
+                                                                            <p className='_citySuggestion'>
+                                                                                {_.join(
+                                                                                    _.slice(
+                                                                                        __citySuggestionSplit,
+                                                                                        __startIndex +
+                                                                                        _.size(__typedCharactersCitySplit)
+                                                                                    ),
+                                                                                    ''
+                                                                                )}
+                                                                            </p>
+                                                                        </>
+                                                                    )}
+                                                                </>
+                                                            );
+                                                        })()}
                                                     </span>
-                                                    {
-                                                        errorsSettings._user_city && (
-                                                            <Form.Text className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(_userToEdit) && (!_.isEmpty(_typedCharactersCity) || !_.isEqual(field.value, { _code: '', _city: '' })) ? '_fieldNotEmpty' : ''}`}>
-                                                                {errorsSettings._user_city.message}
-                                                            </Form.Text>
-                                                        )
-                                                    }
-                                                    {
-                                                        !_.isEmpty(_userToEdit) && (!_.isEmpty(_typedCharactersCity) || !_.isEmpty(watchSettings('_user_city')))
-                                                            ?
-                                                            <div className='__close'
-                                                                onClick={() => {
-                                                                    setValueSettings('_user_city', '');
-                                                                    _handleChangeCity('');
-                                                                }}
-                                                            ></div>
-                                                            :
-                                                            null
-                                                    }
+                                                    {errorsSettings._user_city && (
+                                                        <Form.Text
+                                                            className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(_userToEdit) &&
+                                                                (!_.isEmpty(_typedCharactersCity) ||
+                                                                    !_.isEqual(field.value, {
+                                                                        _code: '',
+                                                                        _city: '',
+                                                                    }))
+                                                                ? '_fieldNotEmpty'
+                                                                : ''
+                                                                }`}
+                                                        >
+                                                            {errorsSettings._user_city.message}
+                                                        </Form.Text>
+                                                    )}
+                                                    {!_.isEmpty(_userToEdit) &&
+                                                        (!_.isEmpty(_typedCharactersCity) ||
+                                                            !_.isEmpty(watchSettings('_user_city'))) ? (
+                                                        <div
+                                                            className='__close'
+                                                            onClick={() => {
+                                                                setValueSettings('_user_city', '');
+                                                                _handleChangeCity('');
+                                                            }}
+                                                        ></div>
+                                                    ) : null}
                                                 </FloatingLabel>
-                                                <SimpleBar className='_SimpleBar' style={{ maxHeight: '40vh' }} forceVisible='y' autoHide={false}>
+                                                <SimpleBar
+                                                    className='_SimpleBar'
+                                                    style={{
+                                                        maxHeight: '40vh',
+                                                    }}
+                                                    forceVisible='y'
+                                                    autoHide={false}
+                                                >
                                                     <ListGroup
-                                                        className={`border border-0 rounded-0 d-block ${!(isOpenCity && __cityItems.length) && 'hidden'}`}
+                                                        className={`border border-0 rounded-0 d-block ${!(isOpenCity && __cityItems.length) && 'hidden'
+                                                            }`}
                                                         {...getMenuPropsCity()}
                                                     >
-                                                        {
-                                                            isOpenCity &&
-                                                            _.map(
-                                                                __cityItems
-                                                                , (item, index) => {
-                                                                    return (
-                                                                        <ListGroup.Item
-                                                                            className={`border border-0 rounded-0 d-flex align-items-center ${highlightedIndexCity === index && 'bg-blue-300'} ${selectedItemCity === item && 'font-bold'}`}
-                                                                            key={`${item.value}${index}`}
-                                                                            {...getItemPropsCity({ item, index })}
-                                                                        >
-                                                                            <span>
-                                                                                {item._city}
-                                                                            </span>
-                                                                        </ListGroup.Item>
-                                                                    )
-                                                                }
-                                                            )
-                                                        }
+                                                        {isOpenCity &&
+                                                            _.map(__cityItems, (item, index) => {
+                                                                return (
+                                                                    <ListGroup.Item
+                                                                        className={`border border-0 rounded-0 d-flex align-items-center ${highlightedIndexCity === index &&
+                                                                            'bg-blue-300'
+                                                                            } ${selectedItemCity === item && 'font-bold'
+                                                                            }`}
+                                                                        key={`${item.value}${index}`}
+                                                                        {...getItemPropsCity({
+                                                                            item,
+                                                                            index,
+                                                                        })}
+                                                                    >
+                                                                        <span>{item._city}</span>
+                                                                    </ListGroup.Item>
+                                                                );
+                                                            })}
                                                     </ListGroup>
                                                 </SimpleBar>
                                             </Form.Group>
@@ -1125,12 +1287,10 @@ const PSettings = (props) => {
                                 <Col className='g-col-3'>
                                     <Form.Group
                                         controlId='_user_phone'
-                                        className={`_formGroup ${_userPhoneFocused ? 'focused' : ''} ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
+                                        className={`_formGroup ${_userPhoneFocused ? 'focused' : ''
+                                            } ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
                                     >
-                                        <FloatingLabel
-                                            label='Phone.'
-                                            className='_formLabel'
-                                        >
+                                        <FloatingLabel label='Phone.' className='_formLabel'>
                                             <Form.Control
                                                 {...registerSettings('_user_phone')}
                                                 onBlur={() => {
@@ -1141,26 +1301,30 @@ const PSettings = (props) => {
                                                 placeholder='Phone.'
                                                 autoComplete='new-password'
                                                 type='text'
-                                                className={`_formControl border rounded-0 ${errorsSettings._user_phone ? 'border-danger' : ''}`}
+                                                className={`_formControl border rounded-0 ${errorsSettings._user_phone ? 'border-danger' : ''
+                                                    }`}
                                                 name='_user_phone'
                                                 disabled={_.isEmpty(_userToEdit)}
                                             />
-                                            {
-                                                errorsSettings._user_phone && (
-                                                    <Form.Text className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watchSettings('_user_phone')) ? '_fieldNotEmpty' : ''}`}>
-                                                        {errorsSettings._user_phone.message}
-                                                    </Form.Text>
-                                                )
-                                            }
-                                            {
-                                                (!_.isEmpty(watchSettings('_user_phone')) && !_.isEmpty(_userToEdit)) && (
+                                            {errorsSettings._user_phone && (
+                                                <Form.Text
+                                                    className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watchSettings('_user_phone'))
+                                                        ? '_fieldNotEmpty'
+                                                        : ''
+                                                        }`}
+                                                >
+                                                    {errorsSettings._user_phone.message}
+                                                </Form.Text>
+                                            )}
+                                            {!_.isEmpty(watchSettings('_user_phone')) &&
+                                                !_.isEmpty(_userToEdit) && (
                                                     <div
                                                         className='__close'
-                                                        onClick={() => { resetFieldSettings('_user_phone') }}
-                                                    >
-                                                    </div>
-                                                )
-                                            }
+                                                        onClick={() => {
+                                                            resetFieldSettings('_user_phone');
+                                                        }}
+                                                    ></div>
+                                                )}
                                         </FloatingLabel>
                                     </Form.Group>
                                 </Col>
@@ -1178,12 +1342,10 @@ const PSettings = (props) => {
                                 <Col className='g-col-3'>
                                     <Form.Group
                                         controlId='_user_password'
-                                        className={`_formGroup ${_userPasswordFocused ? 'focused' : ''} ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
+                                        className={`_formGroup ${_userPasswordFocused ? 'focused' : ''
+                                            } ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
                                     >
-                                        <FloatingLabel
-                                            label='Password.'
-                                            className='_formLabel'
-                                        >
+                                        <FloatingLabel label='Password.' className='_formLabel'>
                                             <Form.Control
                                                 {...registerSettings('_user_password')}
                                                 onBlur={() => {
@@ -1194,26 +1356,30 @@ const PSettings = (props) => {
                                                 placeholder='Password.'
                                                 autoComplete='new-password'
                                                 type='password'
-                                                className={`_formControl border rounded-0 ${errorsSettings._user_password ? 'border-danger' : ''}`}
+                                                className={`_formControl border rounded-0 ${errorsSettings._user_password ? 'border-danger' : ''
+                                                    }`}
                                                 name='_user_password'
                                                 disabled={_.isEmpty(_userToEdit)}
                                             />
-                                            {
-                                                errorsSettings._user_password && (
-                                                    <Form.Text className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watchSettings('_user_password')) ? '_fieldNotEmpty' : ''}`}>
-                                                        {errorsSettings._user_password.message}
-                                                    </Form.Text>
-                                                )
-                                            }
-                                            {
-                                                (!_.isEmpty(watchSettings('_user_password')) && !_.isEmpty(_userToEdit)) && (
+                                            {errorsSettings._user_password && (
+                                                <Form.Text
+                                                    className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watchSettings('_user_password'))
+                                                        ? '_fieldNotEmpty'
+                                                        : ''
+                                                        }`}
+                                                >
+                                                    {errorsSettings._user_password.message}
+                                                </Form.Text>
+                                            )}
+                                            {!_.isEmpty(watchSettings('_user_password')) &&
+                                                !_.isEmpty(_userToEdit) && (
                                                     <div
                                                         className='__close'
-                                                        onClick={() => { resetFieldSettings('_user_password') }}
-                                                    >
-                                                    </div>
-                                                )
-                                            }
+                                                        onClick={() => {
+                                                            resetFieldSettings('_user_password');
+                                                        }}
+                                                    ></div>
+                                                )}
                                         </FloatingLabel>
                                     </Form.Group>
                                 </Col>
@@ -1223,12 +1389,10 @@ const PSettings = (props) => {
                                 <Col className='g-col-3'>
                                     <Form.Group
                                         controlId='_user_passwordNew'
-                                        className={`_formGroup ${_userPasswordNewFocused ? 'focused' : ''} ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
+                                        className={`_formGroup ${_userPasswordNewFocused ? 'focused' : ''
+                                            } ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
                                     >
-                                        <FloatingLabel
-                                            label='New Password.'
-                                            className='_formLabel'
-                                        >
+                                        <FloatingLabel label='New Password.' className='_formLabel'>
                                             <Form.Control
                                                 {...registerSettings('_user_passwordNew')}
                                                 onBlur={() => {
@@ -1239,33 +1403,40 @@ const PSettings = (props) => {
                                                 placeholder='New Password.'
                                                 autoComplete='new-password'
                                                 type='password'
-                                                className={`_formControl border rounded-0 ${errorsSettings._user_passwordNew ? 'border-danger' : ''}`}
+                                                className={`_formControl border rounded-0 ${errorsSettings._user_passwordNew
+                                                    ? 'border-danger'
+                                                    : ''
+                                                    }`}
                                                 name='_user_passwordNew'
                                                 disabled={_.isEmpty(_userToEdit)}
                                             />
-                                            {
-                                                errorsSettings._user_passwordNew && (
-                                                    <Form.Text className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watchSettings('_user_lastname')) ? '_fieldNotEmpty' : ''}`}>
-                                                        {errorsSettings._user_passwordNew.message}
-                                                    </Form.Text>
-                                                )
-                                            }
-                                            {
-                                                (!_.isEmpty(watchSettings('_user_passwordNew')) && !_.isEmpty(_userToEdit)) && (
+                                            {errorsSettings._user_passwordNew && (
+                                                <Form.Text
+                                                    className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watchSettings('_user_lastname'))
+                                                        ? '_fieldNotEmpty'
+                                                        : ''
+                                                        }`}
+                                                >
+                                                    {errorsSettings._user_passwordNew.message}
+                                                </Form.Text>
+                                            )}
+                                            {!_.isEmpty(watchSettings('_user_passwordNew')) &&
+                                                !_.isEmpty(_userToEdit) && (
                                                     <div
                                                         className='__close'
-                                                        onClick={() => { resetFieldSettings('_user_passwordNew') }}
-                                                    >
-                                                    </div>
-                                                )
-                                            }
+                                                        onClick={() => {
+                                                            resetFieldSettings('_user_passwordNew');
+                                                        }}
+                                                    ></div>
+                                                )}
                                         </FloatingLabel>
                                     </Form.Group>
                                 </Col>
                                 <Col className='g-col-3'>
                                     <Form.Group
                                         controlId='_user_passwordNewConfirm'
-                                        className={`_formGroup ${_userPasswordNewConfirmFocused ? 'focused' : ''} ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
+                                        className={`_formGroup ${_userPasswordNewConfirmFocused ? 'focused' : ''
+                                            } ${_.isEmpty(_userToEdit) ? '_disabled' : ''}`}
                                     >
                                         <FloatingLabel
                                             label='Confirm Password.'
@@ -1281,26 +1452,34 @@ const PSettings = (props) => {
                                                 placeholder='Confirm Password.'
                                                 autoComplete='new-password'
                                                 type='password'
-                                                className={`_formControl border rounded-0 ${errorsSettings._user_passwordNewConfirm ? 'border-danger' : ''}`}
+                                                className={`_formControl border rounded-0 ${errorsSettings._user_passwordNewConfirm
+                                                    ? 'border-danger'
+                                                    : ''
+                                                    }`}
                                                 name='_user_passwordNewConfirm'
                                                 disabled={_.isEmpty(_userToEdit)}
                                             />
-                                            {
-                                                errorsSettings._user_passwordNewConfirm && (
-                                                    <Form.Text className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watchSettings('_user_passwordNewConfirm')) ? '_fieldNotEmpty' : ''}`}>
-                                                        {errorsSettings._user_passwordNewConfirm.message}
-                                                    </Form.Text>
-                                                )
-                                            }
-                                            {
-                                                (!_.isEmpty(watchSettings('_user_passwordNewConfirm')) && !_.isEmpty(_userToEdit)) && (
+                                            {errorsSettings._user_passwordNewConfirm && (
+                                                <Form.Text
+                                                    className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(
+                                                        watchSettings('_user_passwordNewConfirm')
+                                                    )
+                                                        ? '_fieldNotEmpty'
+                                                        : ''
+                                                        }`}
+                                                >
+                                                    {errorsSettings._user_passwordNewConfirm.message}
+                                                </Form.Text>
+                                            )}
+                                            {!_.isEmpty(watchSettings('_user_passwordNewConfirm')) &&
+                                                !_.isEmpty(_userToEdit) && (
                                                     <div
                                                         className='__close'
-                                                        onClick={() => { resetFieldSettings('_user_passwordNewConfirm') }}
-                                                    >
-                                                    </div>
-                                                )
-                                            }
+                                                        onClick={() => {
+                                                            resetFieldSettings('_user_passwordNewConfirm');
+                                                        }}
+                                                    ></div>
+                                                )}
                                         </FloatingLabel>
                                     </Form.Group>
                                 </Col>
@@ -1321,13 +1500,15 @@ const PSettings = (props) => {
                                                 variant='link'
                                                 onClick={() => _handleCancel('_first')}
                                             >
-                                                Cancel<b className='pink_dot'>.</b>
+                                                Cancel
+                                                <b className='pink_dot'>.</b>
                                             </Button>
                                         )
                                     }
                                     <Button
                                         type={`${_.isEmpty(_userToEdit) ? 'button' : 'submit'}`}
-                                        className={`border border-0 rounded-0 inverse ${_.isEmpty(_userToEdit) ? '' : '_edit'}`}
+                                        className={`border border-0 rounded-0 inverse ${_.isEmpty(_userToEdit) ? '' : '_edit'
+                                            }`}
                                         variant='outline-light'
                                         onClick={(ev) => {
                                             if (_.isEmpty(_userToEdit)) {
@@ -1355,6 +1536,6 @@ const PSettings = (props) => {
             </SimpleBar>
         </div>
     );
-}
+};
 
 export default PSettings;

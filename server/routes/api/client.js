@@ -48,7 +48,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalClient = new Client(body);
-    return finalClient.save()
+    return finalClient
+        .save()
         .then(() => {
             res.json({ _client: finalClient.toJSON() });
         })
@@ -61,7 +62,9 @@ router.get('/', (req, res, next) => {
         .populate('Invoice')
         .populate('Project')
         .sort({ createdAt: 'descending' })
-        .then((_clients) => res.json({ _clients: _clients.map(_client => _client.toJSON()) }))
+        .then((_clients) =>
+            res.json({ _clients: _clients.map((_client) => _client.toJSON()) }),
+        )
         .catch(next);
 });
 
@@ -70,7 +73,7 @@ router.param('id', (req, res, next, id) => {
         .populate('Payment')
         .populate('Invoice')
         .populate('Project')
-        .then(_client => {
+        .then((_client) => {
             if (!_client) {
                 return res.sendStatus(404);
             }
@@ -82,8 +85,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _client: req._client.toJSON()
-    })
+        _client: req._client.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -133,7 +136,8 @@ router.patch('/:id', (req, res, next) => {
         req._client.Project = body.Project;
     }
 
-    return req._client.save()
+    return req._client
+        .save()
         .then(() => res.json({ _client: req._client.toJSON() }))
         .catch(next);
 });

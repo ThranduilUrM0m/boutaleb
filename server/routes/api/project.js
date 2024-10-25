@@ -16,7 +16,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalProject = new Project(body);
-    return finalProject.save()
+    return finalProject
+        .save()
         .then(() => {
             res.json({ _project: finalProject.toJSON() });
         })
@@ -27,14 +28,18 @@ router.get('/', (req, res, next) => {
     return Project.find()
         .populate({
             path: '_project_teams.Team',
-            model: 'Team'
+            model: 'Team',
         })
         .populate({
             path: '_project_teams.assignedTasks.__assignedTo',
-            model: 'User'
+            model: 'User',
         })
         .sort({ createdAt: 'descending' })
-        .then((_projects) => res.json({ _projects: _projects.map(_project => _project.toJSON()) }))
+        .then((_projects) =>
+            res.json({
+                _projects: _projects.map((_project) => _project.toJSON()),
+            }),
+        )
         .catch(next);
 });
 
@@ -42,13 +47,13 @@ router.param('id', (req, res, next, id) => {
     return Project.findById(id)
         .populate({
             path: '_project_teams.Team',
-            model: 'Team'
+            model: 'Team',
         })
         .populate({
             path: '_project_teams.assignedTasks.__assignedTo',
-            model: 'User'
+            model: 'User',
         })
-        .then(_project => {
+        .then((_project) => {
             if (!_project) {
                 return res.sendStatus(404);
             }
@@ -60,8 +65,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _project: req._project.toJSON()
-    })
+        _project: req._project.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -107,7 +112,8 @@ router.patch('/:id', (req, res, next) => {
         req._project._project_teams = body._project_teams;
     }
 
-    return req._project.save()
+    return req._project
+        .save()
         .then(() => res.json({ _project: req._project.toJSON() }))
         .catch(next);
 });

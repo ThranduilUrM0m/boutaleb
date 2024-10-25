@@ -32,7 +32,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalSaving = new Saving(body);
-    return finalSaving.save()
+    return finalSaving
+        .save()
         .then(() => {
             res.json({ _saving: finalSaving.toJSON() });
         })
@@ -43,14 +44,16 @@ router.get('/', (req, res, next) => {
     return Saving.find()
         .populate('Priority')
         .sort({ createdAt: 'descending' })
-        .then((_savings) => res.json({ _savings: _savings.map(_saving => _saving.toJSON()) }))
+        .then((_savings) =>
+            res.json({ _savings: _savings.map((_saving) => _saving.toJSON()) }),
+        )
         .catch(next);
 });
 
 router.param('id', (req, res, next, id) => {
     return Saving.findById(id)
         .populate('Priority')
-        .then(_saving => {
+        .then((_saving) => {
             if (!_saving) {
                 return res.sendStatus(404);
             }
@@ -62,8 +65,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _saving: req._saving.toJSON()
-    })
+        _saving: req._saving.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -89,7 +92,8 @@ router.patch('/:id', (req, res, next) => {
         req._saving.Priority = body.Priority;
     }
 
-    return req._saving.save()
+    return req._saving
+        .save()
         .then(() => res.json({ _saving: req._saving.toJSON() }))
         .catch(next);
 });

@@ -16,7 +16,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalExpertise = new Expertise(body);
-    return finalExpertise.save()
+    return finalExpertise
+        .save()
         .then(() => {
             res.json({ _expertise: finalExpertise.toJSON() });
         })
@@ -26,13 +27,19 @@ router.post('/', (req, res, next) => {
 router.get('/', (req, res, next) => {
     return Expertise.find()
         .sort({ createdAt: 'descending' })
-        .then((_expertises) => res.json({ _expertises: _expertises.map(_expertise => _expertise.toJSON()) }))
+        .then((_expertises) =>
+            res.json({
+                _expertises: _expertises.map((_expertise) =>
+                    _expertise.toJSON(),
+                ),
+            }),
+        )
         .catch(next);
 });
 
 router.param('id', (req, res, next, id) => {
     return Expertise.findById(id)
-        .then(_expertise => {
+        .then((_expertise) => {
             if (!_expertise) {
                 return res.sendStatus(404);
             }
@@ -44,8 +51,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _expertise: req._expertise.toJSON()
-    })
+        _expertise: req._expertise.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -59,7 +66,8 @@ router.patch('/:id', (req, res, next) => {
         req._expertise._expertise_description = body._expertise_description;
     }
 
-    return req._expertise.save()
+    return req._expertise
+        .save()
         .then(() => res.json({ _expertise: req._expertise.toJSON() }))
         .catch(next);
 });

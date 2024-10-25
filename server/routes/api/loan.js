@@ -80,7 +80,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalLoan = new Loan(body);
-    return finalLoan.save()
+    return finalLoan
+        .save()
         .then(() => {
             res.json({ _loan: finalLoan.toJSON() });
         })
@@ -91,14 +92,16 @@ router.get('/', (req, res, next) => {
     return Loan.find()
         .populate('Priority')
         .sort({ createdAt: 'descending' })
-        .then((_loans) => res.json({ _loans: _loans.map(_loan => _loan.toJSON()) }))
+        .then((_loans) =>
+            res.json({ _loans: _loans.map((_loan) => _loan.toJSON()) }),
+        )
         .catch(next);
 });
 
 router.param('id', (req, res, next, id) => {
     return Loan.findById(id)
         .populate('Priority')
-        .then(_loan => {
+        .then((_loan) => {
             if (!_loan) {
                 return res.sendStatus(404);
             }
@@ -110,8 +113,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _loan: req._loan.toJSON()
-    })
+        _loan: req._loan.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -161,7 +164,8 @@ router.patch('/:id', (req, res, next) => {
         req._loan.Priority = body.Priority;
     }
 
-    return req._loan.save()
+    return req._loan
+        .save()
         .then(() => res.json({ _loan: req._loan.toJSON() }))
         .catch(next);
 });

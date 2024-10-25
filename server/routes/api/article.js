@@ -45,7 +45,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalArticle = new Article(body);
-    return finalArticle.save()
+    return finalArticle
+        .save()
         .then(() => {
             res.json({ _article: finalArticle.toJSON() });
         })
@@ -56,26 +57,30 @@ router.get('/', (req, res, next) => {
     return Article.find()
         .populate({
             path: '_article_author',
-            model: 'User'
+            model: 'User',
         })
         .populate({
             path: '_article_comments',
-            model: 'Comment'
+            model: 'Comment',
         })
         .populate({
             path: '_article_views',
-            model: 'View'
+            model: 'View',
         })
         .populate({
             path: '_article_upvotes',
-            model: 'Upvote'
+            model: 'Upvote',
         })
         .populate({
             path: '_article_downvotes',
-            model: 'Downvote'
+            model: 'Downvote',
         })
         .sort({ createdAt: 'descending' })
-        .then((_articles) => res.json({ _articles: _articles.map(_article => _article.toJSON()) }))
+        .then((_articles) =>
+            res.json({
+                _articles: _articles.map((_article) => _article.toJSON()),
+            }),
+        )
         .catch(next);
 });
 
@@ -83,25 +88,25 @@ router.param('id', (req, res, next, id) => {
     return Article.findById(id)
         .populate({
             path: '_article_author',
-            model: 'User'
+            model: 'User',
         })
         .populate({
             path: '_article_comments',
-            model: 'Comment'
+            model: 'Comment',
         })
         .populate({
             path: '_article_views',
-            model: 'View'
+            model: 'View',
         })
         .populate({
             path: '_article_upvotes',
-            model: 'Upvote'
+            model: 'Upvote',
         })
         .populate({
             path: '_article_downvotes',
-            model: 'Downvote'
+            model: 'Downvote',
         })
-        .then(_article => {
+        .then((_article) => {
             if (!_article) {
                 return res.sendStatus(404);
             }
@@ -113,8 +118,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _article: req._article.toJSON()
-    })
+        _article: req._article.toJSON(),
+    });
 });
 
 router.patch('/:id', async (req, res, next) => {
@@ -144,7 +149,8 @@ router.patch('/:id', async (req, res, next) => {
         req._article._article_tags = body._article_tags;
     }
 
-    return req._article.save()
+    return req._article
+        .save()
         .then(() => res.json({ _article: req._article.toJSON() }))
         .catch(next);
 });
@@ -155,10 +161,14 @@ router.patch('/:id/_downvote', async (req, res, next) => {
     try {
         let __type = '';
         const __upvoteFind = await Upvote.findOne({ _upvoter: _fingerprint });
-        const __downvoteFind = await Downvote.findOne({ _downvoter: _fingerprint });
+        const __downvoteFind = await Downvote.findOne({
+            _downvoter: _fingerprint,
+        });
 
         if (!__downvoteFind) {
-            const __downvote = await Downvote.create({ _downvoter: _fingerprint });
+            const __downvote = await Downvote.create({
+                _downvoter: _fingerprint,
+            });
             req._article._article_downvotes.push(__downvote._id);
             __type = '_articleDownvoted';
 
@@ -173,11 +183,14 @@ router.patch('/:id/_downvote', async (req, res, next) => {
             __type = '_articleDownvoteRemoved';
         }
 
-        return await req._article.save({ timestamps: false })
-            .then(() => res.json({
-                _article: req._article.toJSON(),
-                _type: __type
-            }))
+        return await req._article
+            .save({ timestamps: false })
+            .then(() =>
+                res.json({
+                    _article: req._article.toJSON(),
+                    _type: __type,
+                }),
+            )
             .catch(next);
     } catch (err) {
         next(err);
@@ -190,7 +203,9 @@ router.patch('/:id/_upvote', async (req, res, next) => {
     try {
         let __type = '';
         const __upvoteFind = await Upvote.findOne({ _upvoter: _fingerprint });
-        const __downvoteFind = await Downvote.findOne({ _downvoter: _fingerprint });
+        const __downvoteFind = await Downvote.findOne({
+            _downvoter: _fingerprint,
+        });
 
         if (!__upvoteFind) {
             const __upvote = await Upvote.create({ _upvoter: _fingerprint });
@@ -207,11 +222,14 @@ router.patch('/:id/_upvote', async (req, res, next) => {
             __type = '_articleUpvoteRemoved';
         }
 
-        return await req._article.save({ timestamps: false })
-            .then(() => res.json({
-                _article: req._article.toJSON(),
-                _type: __type
-            }))
+        return await req._article
+            .save({ timestamps: false })
+            .then(() =>
+                res.json({
+                    _article: req._article.toJSON(),
+                    _type: __type,
+                }),
+            )
             .catch(next);
     } catch (err) {
         next(err);
@@ -226,7 +244,7 @@ router.patch('/:id/_view', async (req, res, next) => {
         const __viewUpdated = await View.findOneAndUpdate(
             { _viewer: body.__fingerprint },
             {},
-            { new: true }
+            { new: true },
         );
 
         // If no view is found, create a new one
@@ -239,7 +257,6 @@ router.patch('/:id/_view', async (req, res, next) => {
         // Save the article and send the response
         await req._article.save({ timestamps: false });
         return res.json({ _article: req._article.toJSON() });
-
     } catch (err) {
         // Handle any errors that occur during the process
         next(err);
@@ -254,7 +271,7 @@ router.patch('/:id/_comment', async (req, res, next) => {
             await Comment.findOneAndUpdate(
                 { _id },
                 { $set: values },
-                { new: true }
+                { new: true },
             );
         } else {
             // Create a new comment
@@ -263,7 +280,8 @@ router.patch('/:id/_comment', async (req, res, next) => {
             req._article._article_comments.push(__comment._id);
         }
 
-        return await req._article.save({ timestamps: false })
+        return await req._article
+            .save({ timestamps: false })
             .then(() => res.json({ _article: req._article.toJSON() }))
             .catch(next);
     } catch (err) {
@@ -277,14 +295,18 @@ router.patch('/:id/_commentDownvote', async (req, res, next) => {
     try {
         let __type = '';
         const __upvoteFind = await Upvote.findOne({ _upvoter: _fingerprint });
-        const __downvoteFind = await Downvote.findOne({ _downvoter: _fingerprint });
+        const __downvoteFind = await Downvote.findOne({
+            _downvoter: _fingerprint,
+        });
 
         if (!__downvoteFind) {
-            const __downvote = await Downvote.create({ _downvoter: _fingerprint });
+            const __downvote = await Downvote.create({
+                _downvoter: _fingerprint,
+            });
             await Comment.findOneAndUpdate(
                 { _id },
                 { $push: { _downvotes: __downvote._id } },
-                { new: true }
+                { new: true },
             );
             __type = '__commentDownvoted';
 
@@ -293,7 +315,7 @@ router.patch('/:id/_commentDownvote', async (req, res, next) => {
                 await Comment.findOneAndUpdate(
                     { _id },
                     { $pull: { _upvotes: __upvoteFind._id } },
-                    { new: true }
+                    { new: true },
                 );
                 __type = '_commentDownvotedRUpvote';
             }
@@ -302,12 +324,13 @@ router.patch('/:id/_commentDownvote', async (req, res, next) => {
             await Comment.findOneAndUpdate(
                 { _id },
                 { $pull: { _downvotes: __downvoteFind._id } },
-                { new: true }
+                { new: true },
             );
             __type = '_commentDownvoteRemoved';
         }
 
-        return await req._article.save({ timestamps: false })
+        return await req._article
+            .save({ timestamps: false })
             .then(() => res.json({ _article: req._article.toJSON() }))
             .catch(next);
     } catch (err) {
@@ -320,7 +343,9 @@ router.patch('/:id/_commentUpvote', async (req, res, next) => {
 
     try {
         let __type = '';
-        const __downvoteFind = await Downvote.findOne({ _downvoter: _fingerprint });
+        const __downvoteFind = await Downvote.findOne({
+            _downvoter: _fingerprint,
+        });
         const __upvoteFind = await Upvote.findOne({ _upvoter: _fingerprint });
 
         if (!__upvoteFind) {
@@ -328,7 +353,7 @@ router.patch('/:id/_commentUpvote', async (req, res, next) => {
             await Comment.findOneAndDowndate(
                 { _id },
                 { $push: { _upvotes: __upvote._id } },
-                { new: true }
+                { new: true },
             );
             __type = '__commentUpvoted';
 
@@ -337,7 +362,7 @@ router.patch('/:id/_commentUpvote', async (req, res, next) => {
                 await Comment.findOneAndDowndate(
                     { _id },
                     { $pull: { _downvotes: __downvoteFind._id } },
-                    { new: true }
+                    { new: true },
                 );
                 __type = '_commentUpvotedRDownvote';
             }
@@ -346,12 +371,13 @@ router.patch('/:id/_commentUpvote', async (req, res, next) => {
             await Comment.findOneAndDowndate(
                 { _id },
                 { $pull: { _upvotes: __upvoteFind._id } },
-                { new: true }
+                { new: true },
             );
             __type = '_commentUpvoteRemoved';
         }
 
-        return await req._article.save({ timestamps: false })
+        return await req._article
+            .save({ timestamps: false })
             .then(() => res.json({ _article: req._article.toJSON() }))
             .catch(next);
     } catch (err) {

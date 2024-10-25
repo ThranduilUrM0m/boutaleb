@@ -1,56 +1,79 @@
+// React Hooks
 import { useCallback, useEffect, useState } from 'react';
+
+// Third-Party State Management
 import _useStore from '../../store';
+
+// HTTP Client
 import axios from 'axios';
+
+// Date Libraries
 import moment from 'moment';
 import Moment from 'react-moment';
-import Modal from 'react-bootstrap/Modal';
+
+// Bootstrap Components
+import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
+import Col from 'react-bootstrap/Col';
 import Dropdown from 'react-bootstrap/Dropdown';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
-import Badge from 'react-bootstrap/Badge';
+import Form from 'react-bootstrap/Form';
 import ListGroup from 'react-bootstrap/ListGroup';
+import Modal from 'react-bootstrap/Modal';
+import Row from 'react-bootstrap/Row';
+
+// Slider Component
 import Slider from 'react-slick';
+
+// Form Handling & Validation
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
+
+// Combobox (Dropdown Autocomplete)
 import { useCombobox } from 'downshift';
+
+// FontAwesome Icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleRight, faArrowDownLong, faArrowUpLong, faCommentAlt, faEllipsisV, faHashtag, faArrowLeftLong, faMagnifyingGlass, faArrowRightLong, faThumbsDown, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
+import {
+    faAngleRight,
+    faArrowDownLong,
+    faArrowLeftLong,
+    faArrowRightLong,
+    faArrowUpLong,
+    faCommentAlt,
+    faEllipsisV,
+    faHashtag,
+    faMagnifyingGlass,
+    faThumbsDown,
+    faThumbsUp,
+} from '@fortawesome/free-solid-svg-icons';
 import { faClock, faEye, faFolder } from '@fortawesome/free-regular-svg-icons';
+
+// Utility Libraries
 import _ from 'lodash';
 import $ from 'jquery';
-import SimpleBar from 'simplebar-react';
 
+// Virtual Scrolling
+import SimpleBar from 'simplebar-react';
 import 'simplebar-react/dist/simplebar.min.css';
 
 const Blog = (props) => {
-    const _articles = _useStore.useArticleStore(state => state._articles);
-    const setArticles = _useStore.useArticleStore(state => state['_articles_SET_STATE']);
+    const { article } = _useStore();
 
-    const _validationSchema = Yup
-        .object()
-        .shape({
-            _filterSort: Yup.string()
-                .default('Relevant'),
-            _filterTimeframe: Yup.string()
-                .default(''),
-            _filterCategory: Yup.string()
-                .default(''),
-            _tagInput: Yup.string()
-                .default(''),
-            _searchInput: Yup.string()
-                .default('')
-        });
-    const {
-        watch,
-        setValue,
-        trigger,
-        control
-    } = useForm({
+    // Access your states and actions like this:
+    const _articles = article._articles;
+    const setArticles = article['_articles_SET_STATE'];
+
+    const _validationSchema = Yup.object().shape({
+        _filterSort: Yup.string().default('Relevant'),
+        _filterTimeframe: Yup.string().default(''),
+        _filterCategory: Yup.string().default(''),
+        _tagInput: Yup.string().default(''),
+        _searchInput: Yup.string().default(''),
+    });
+    const { watch, setValue, trigger, control } = useForm({
         mode: 'onChange',
         reValidateMode: 'onSubmit',
         resolver: yupResolver(_validationSchema),
@@ -59,8 +82,8 @@ const Blog = (props) => {
             _filterTimeframe: '',
             _filterCategory: '',
             _tagInput: '',
-            _searchInput: ''
-        }
+            _searchInput: '',
+        },
     });
 
     /* Focus State Variables */
@@ -70,8 +93,10 @@ const Blog = (props) => {
     /* Dropdown State Variables */
     const [_showFilterDropdown, setShowFilterDropdown] = useState(false);
     const [_showFilterSortDropdown, setShowFilterSortDropdown] = useState(false);
-    const [_showFilterTimeframeDropdown, setShowFilterTimeframeDropdown] = useState(false);
-    const [_showFilterCategoryDropdown, setShowFilterCategoryDropdown] = useState(false);
+    const [_showFilterTimeframeDropdown, setShowFilterTimeframeDropdown] =
+        useState(false);
+    const [_showFilterCategoryDropdown, setShowFilterCategoryDropdown] =
+        useState(false);
 
     /* Modal State Variables */
     const [_currentPage, setCurrentPage] = useState(1);
@@ -79,36 +104,103 @@ const Blog = (props) => {
     const [_showModal, setShowModal] = useState(false);
 
     /* Form.Control data */
-    let _articleTags = _.map(_.uniq(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), ('_article_tags')))), (_tag, _index) => {
-        return {
-            value: _tag
+    let _articleTags = _.map(
+        _.uniq(
+            _.flattenDeep(
+                _.map(
+                    _.filter(_articles, (_article) => {
+                        return !_article._article_isPrivate;
+                    }),
+                    '_article_tags'
+                )
+            )
+        ),
+        (_tag, _index) => {
+            return {
+                value: _tag,
+            };
         }
-    });
-    let _articleItems = _.orderBy(_.uniqBy(_.map(_.union(_.flattenDeep(_.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_tags')), _.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_title'), _.compact(_.flatMap(_.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), (_article) => ({ username: _article._article_author.username, firstname: _article._article_author.firstname, lastname: _article._article_author.lastname, email: _article._article_author.email, teamTitle: _article._article_author.Team?._team_title })), (__u) => [__u.email, __u.firstname, __u.lastname, __u.teamTitle, __u.username])), _.map(_.filter(_articles, (_article) => { return !_article._article_isPrivate }), '_article_category')), (_search, _index) => {
-        return {
-            value: _.toLower(_search.replace(/\.$/, ''))
-        }
-    }), 'value'), ['value'], ['asc']);
-
-    const _getArticles = useCallback(
-        async () => {
-            try {
-                axios('/api/article')
-                    .then((response) => {
-                        setArticles(response.data._articles);
-                    })
-                    .catch((error) => {
-                        console.log(error);
-                    });
-            } catch (error) {
-                console.log(error);
-            }
-        },
-        [setArticles]
+    );
+    let _articleItems = _.orderBy(
+        _.uniqBy(
+            _.map(
+                _.union(
+                    _.flattenDeep(
+                        _.map(
+                            _.filter(_articles, (_article) => {
+                                return !_article._article_isPrivate;
+                            }),
+                            '_article_tags'
+                        )
+                    ),
+                    _.map(
+                        _.filter(_articles, (_article) => {
+                            return !_article._article_isPrivate;
+                        }),
+                        '_article_title'
+                    ),
+                    _.compact(
+                        _.flatMap(
+                            _.map(
+                                _.filter(_articles, (_article) => {
+                                    return !_article._article_isPrivate;
+                                }),
+                                (_article) => ({
+                                    username: _article._article_author.username,
+                                    firstname: _article._article_author.firstname,
+                                    lastname: _article._article_author.lastname,
+                                    email: _article._article_author.email,
+                                    teamTitle: _article._article_author.Team?._team_title,
+                                })
+                            ),
+                            (__u) => [
+                                __u.email,
+                                __u.firstname,
+                                __u.lastname,
+                                __u.teamTitle,
+                                __u.username,
+                            ]
+                        )
+                    ),
+                    _.map(
+                        _.filter(_articles, (_article) => {
+                            return !_article._article_isPrivate;
+                        }),
+                        '_article_category'
+                    )
+                ),
+                (_search, _index) => {
+                    return {
+                        value: _.toLower(_search.replace(/\.$/, '')),
+                    };
+                }
+            ),
+            'value'
+        ),
+        ['value'],
+        ['asc']
     );
 
+    const _getArticles = useCallback(async () => {
+        try {
+            axios('/api/article')
+                .then((response) => {
+                    setArticles(response.data._articles);
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        } catch (error) {
+            console.log(error);
+        }
+    }, [setArticles]);
+
     const _getTrendingArticles = () => {
-        return _.chain(_.filter(_articles, (_a) => { return !_a._hide }))
+        return _.chain(
+            _.filter(_articles, (_a) => {
+                return !_a._hide;
+            })
+        )
             .sortBy([
                 // Sort by view count in descending order
                 (_article) => -_article._article_views.length,
@@ -118,38 +210,55 @@ const Blog = (props) => {
                 (_article) => -_article._article_comments.length,
                 // Sort by categories with the most upvoted articles
                 (_article) => {
-                    const categoryArticles = _.filter(_.filter(_articles, (_a) => { return !_a._hide }), { _article_category: _article._article_category });
+                    const categoryArticles = _.filter(
+                        _.filter(_articles, (_a) => {
+                            return !_a._hide;
+                        }),
+                        { _article_category: _article._article_category }
+                    );
                     return -_.sumBy(categoryArticles, (a) => a._article_upvotes.length);
                 },
                 // Sort by tags with the most upvoted articles
                 (_article) => {
-                    const tagArticles = _.filter(_.filter(_articles, (_a) => { return !_a._hide }), (a) => _.includes(a._article_tags, _article._article_tags));
+                    const tagArticles = _.filter(
+                        _.filter(_articles, (_a) => {
+                            return !_a._hide;
+                        }),
+                        (a) => _.includes(a._article_tags, _article._article_tags)
+                    );
                     return -_.sumBy(tagArticles, (a) => a._article_upvotes.length);
                 },
                 // Sort by creation date in descending order
                 '_updatedAt',
                 // Sort by update date in descending order
-                '_updatedAt'
+                '_updatedAt',
             ])
             .value();
-    }
+    };
 
     const _handleJSONTOHTML = (_target, _input, index) => {
         const html = $.parseHTML(_input);
-        $('.' + _target + ' .card_' + index + ' figure').html($(html).find('img').first());
-    }
+        $('.' + _target + ' .card_' + index + ' figure').html(
+            $(html).find('img').first()
+        );
+    };
 
     const _handleArticleJSONTOHTML = () => {
-        const html = $.parseHTML(_.get(_.head(_getTrendingArticles()), '_article_body'));
+        const html = $.parseHTML(
+            _.get(_.head(_getTrendingArticles()), '_article_body')
+        );
         $('._blog ._s1 ._figure').html($(html).find('img').first());
-    }
+    };
 
     const _handleClickPage = (_number) => {
-        $([document.documentElement, document.body]).animate({
-            scrollTop: $('._blog').offset().top
-        }, 500);
+        $([document.documentElement, document.body]).animate(
+            {
+                scrollTop: $('._blog').offset().top,
+            },
+            500
+        );
         setCurrentPage(_.toNumber(_number));
-    }
+    };
 
     const _articlesToShow = (_articles) => {
         const filterSort = watch('_filterSort');
@@ -162,64 +271,88 @@ const Blog = (props) => {
             Relevant: ['_article_comments', 'desc'],
             Trending: ['_article_views', 'desc'],
             Upvotes: ['_article_upvotes', 'desc'],
-            Recent: ['updatedAt', 'desc']
+            Recent: ['updatedAt', 'desc'],
         };
 
         const timeframeOptions = {
             Today: 'day',
             PastWeek: 'week',
             PastMonth: 'month',
-            PastYear: 'year'
+            PastYear: 'year',
         };
 
-        let filteredArticles = _.filter(_articles, (article) => !article._article_isPrivate);
+        let filteredArticles = _.filter(
+            _articles,
+            (article) => !article._article_isPrivate
+        );
 
         if (sortOptions[filterSort]) {
-            filteredArticles = _.orderBy(filteredArticles, ...sortOptions[filterSort]);
+            filteredArticles = _.orderBy(
+                filteredArticles,
+                ...sortOptions[filterSort]
+            );
         }
 
         if (timeframeOptions[filterTimeframe]) {
             filteredArticles = _.filter(filteredArticles, (article) => (
-                <Moment local date={article.updatedAt} isSame={moment(new Date(), timeframeOptions[filterTimeframe])}>
-                    {same => same}
+                <Moment
+                    local
+                    date={article.updatedAt}
+                    isSame={moment(new Date(), timeframeOptions[filterTimeframe])}
+                >
+                    {(same) => same}
                 </Moment>
             ));
         }
 
         if (!_.isEmpty(filterCategory)) {
-            filteredArticles = _.filter(filteredArticles, (article) => _.includes(filterCategory, article._article_category));
+            filteredArticles = _.filter(filteredArticles, (article) =>
+                _.includes(filterCategory, article._article_category)
+            );
         }
 
         if (!_.isEmpty(searchInput)) {
             const filterSearch = _.map(
-                _.filter(_articleItems, (item) => _.includes(_.lowerCase(item.value), _.lowerCase(searchInput))),
+                _.filter(_articleItems, (item) =>
+                    _.includes(_.lowerCase(item.value), _.lowerCase(searchInput))
+                ),
                 (item) => item.value
             );
-            const lowerFilterSearch = _.map(filterSearch, (filter) => _.lowerCase(filter));
+            const lowerFilterSearch = _.map(filterSearch, (filter) =>
+                _.lowerCase(filter)
+            );
             filteredArticles = _.filter(filteredArticles, (article) => {
-                const lowerInformation = _.map(_.flattenDeep(_.values(article)), (information) => _.lowerCase(information));
-                return _.some(lowerFilterSearch, (filter) => _.includes(lowerInformation, filter));
+                const lowerInformation = _.map(
+                    _.flattenDeep(_.values(article)),
+                    (information) => _.lowerCase(information)
+                );
+                return _.some(lowerFilterSearch, (filter) =>
+                    _.includes(lowerInformation, filter)
+                );
             });
         }
 
         if (!_.isEmpty(tagInput)) {
-            filteredArticles = _.filter(filteredArticles, (article) => (
+            filteredArticles = _.filter(filteredArticles, (article) =>
                 _.some(article._article_tags, (tag) => tag.includes(tagInput))
-            ));
+            );
         }
 
         return filteredArticles;
-    }
+    };
 
     /* Slider for Articles */
     /*
-        Using a ReactSlickButton is because :
-        Warning: React does not recognize the `currentSlide` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `currentslide` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
-        but it needs special styling though
-    */
-    const ReactSlickButton = ({ currentSlide, slideCount, children, ...props }) => (
-        <span {...props}>{children}</span>
-    );
+          Using a ReactSlickButton is because :
+          Warning: React does not recognize the `currentSlide` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `currentslide` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+          but it needs special styling though
+      */
+    const ReactSlickButton = ({
+        currentSlide,
+        slideCount,
+        children,
+        ...props
+    }) => <span {...props}>{children}</span>;
     const _sliderArticlesSettings = {
         dots: true,
         dotsClass: 'slick-dots d-flex',
@@ -244,16 +377,15 @@ const Blog = (props) => {
             } else {
                 dots[dots.length - 1].classList.remove('slick-active');
             }
-        }
+        },
     };
-
 
     /* Form.Check _filterSort */
     const [_switchSort, setSwitchSort] = useState({
         Relevant: true,
         Recent: false,
         Upvotes: false,
-        Trending: false
+        Trending: false,
     });
     const handleSwitchSortChange = (event) => {
         const name = event.target.name;
@@ -265,7 +397,7 @@ const Blog = (props) => {
                 Recent: false,
                 Upvotes: false,
                 Trending: false,
-                [name]: true
+                [name]: true,
             });
         } else {
             setValue('_filterSort', '');
@@ -273,19 +405,18 @@ const Blog = (props) => {
                 Relevant: false,
                 Recent: false,
                 Upvotes: false,
-                Trending: false
+                Trending: false,
             });
         }
     };
     /* Form.Check _filterSort */
-
 
     /* Form.Check _filterTimeframe */
     const [_switchTimeframe, setSwitchTimeframe] = useState({
         Today: true,
         PastWeek: false,
         PastMonth: false,
-        PastYear: false
+        PastYear: false,
     });
     const handleSwitchTimeframeChange = (event) => {
         const name = event.target.name;
@@ -297,7 +428,7 @@ const Blog = (props) => {
                 PastWeek: false,
                 PastMonth: false,
                 PastYear: false,
-                [name]: true
+                [name]: true,
             });
         } else {
             setValue('_filterTimeframe', '');
@@ -305,33 +436,58 @@ const Blog = (props) => {
                 Today: false,
                 PastWeek: false,
                 PastMonth: false,
-                PastYear: false
+                PastYear: false,
             });
         }
     };
     /* Form.Check _filterTimeframe */
 
-
     /* Form.Check _filterCategory */
     const [_switchCategory, setSwitchCategory] = useState(
-        Object.fromEntries(_.map(_.uniq(_.map(_.filter(_articles, (_articleSort) => { return !_articleSort._article_isPrivate }), '_article_category')), __aCategory => [__aCategory, false]))
+        Object.fromEntries(
+            _.map(
+                _.uniq(
+                    _.map(
+                        _.filter(_articles, (_articleSort) => {
+                            return !_articleSort._article_isPrivate;
+                        }),
+                        '_article_category'
+                    )
+                ),
+                (__aCategory) => [__aCategory, false]
+            )
+        )
     );
     const handleSwitchCategoryChange = (event) => {
         const name = event.target.name;
         const checked = event.target.checked;
         if (checked) {
             setValue('_filterCategory', name);
-            setSwitchCategory(prevState => {
+            setSwitchCategory((prevState) => {
                 const newState = { ...prevState };
-                _.uniq(_.map(_.filter(_articles, (_articleSort) => { return !_articleSort._article_isPrivate }), '_article_category')).forEach(__aCategory => newState[__aCategory] = false);
+                _.uniq(
+                    _.map(
+                        _.filter(_articles, (_articleSort) => {
+                            return !_articleSort._article_isPrivate;
+                        }),
+                        '_article_category'
+                    )
+                ).forEach((__aCategory) => (newState[__aCategory] = false));
                 newState[name] = true;
                 return newState;
             });
         } else {
             setValue('_filterCategory', '');
-            setSwitchCategory(prevState => {
+            setSwitchCategory((prevState) => {
                 const newState = { ...prevState };
-                _.uniq(_.map(_.filter(_articles, (_articleSort) => { return !_articleSort._article_isPrivate }), '_article_category')).forEach(__aCategory => newState[__aCategory] = false);
+                _.uniq(
+                    _.map(
+                        _.filter(_articles, (_articleSort) => {
+                            return !_articleSort._article_isPrivate;
+                        }),
+                        '_article_category'
+                    )
+                ).forEach((__aCategory) => (newState[__aCategory] = false));
                 return newState;
             });
         }
@@ -348,7 +504,7 @@ const Blog = (props) => {
             setValue('_tagInput', __selectedItem.value);
             _handleChangeTag(__selectedItem.value);
         }
-    }
+    };
     const _handleChangeTag = (__inputValue) => {
         const firstSuggestions = _.orderBy(
             _.uniqBy(
@@ -356,10 +512,7 @@ const Blog = (props) => {
                     _articleTags,
                     (item) =>
                         !__inputValue ||
-                        _.includes(
-                            _.lowerCase(item.value),
-                            _.lowerCase(__inputValue)
-                        )
+                        _.includes(_.lowerCase(item.value), _.lowerCase(__inputValue))
                 ),
                 'value'
             ),
@@ -368,16 +521,20 @@ const Blog = (props) => {
         );
 
         setTypedCharactersTag(__inputValue);
-        setTagSuggestion((!_.isEmpty(__inputValue) && firstSuggestions[0]) ? (firstSuggestions[0].value) : '');
+        setTagSuggestion(
+            !_.isEmpty(__inputValue) && firstSuggestions[0]
+                ? firstSuggestions[0].value
+                : ''
+        );
         setItemsTags(firstSuggestions);
-    }
+    };
     const _handleBlurTag = () => {
         setTagFocused(!_.isEmpty(watch('_tagInput')) ? true : false);
         trigger('_tagInput');
-    }
+    };
     const _handleFocusTag = () => {
         setTagFocused(true);
-    }
+    };
     const {
         getLabelProps: getLabelPropsTag,
         getInputProps: getInputPropsTag,
@@ -385,12 +542,15 @@ const Blog = (props) => {
         getMenuProps: getMenuPropsTag,
         highlightedIndex: highlightedIndexTag,
         selectedItem: selectedItemTag,
-        isOpen: isOpenTag
+        isOpen: isOpenTag,
     } = useCombobox({
         items: __itemsTags,
-        onInputValueChange({ inputValue }) { _handleChangeTag(inputValue) },
-        onSelectedItemChange: ({ selectedItem: __selectedItem }) => _handleSelectTag(__selectedItem),
-        itemToString: item => (item ? item.value : ''),
+        onInputValueChange({ inputValue }) {
+            _handleChangeTag(inputValue);
+        },
+        onSelectedItemChange: ({ selectedItem: __selectedItem }) =>
+            _handleSelectTag(__selectedItem),
+        itemToString: (item) => (item ? item.value : ''),
         stateReducer: (state, actionAndChanges) => {
             const { type, changes } = actionAndChanges;
             switch (type) {
@@ -402,10 +562,10 @@ const Blog = (props) => {
                 default:
                     return changes;
             }
-        }
+        },
     });
-	getInputPropsTag({}, {suppressRefError: true});
-	getMenuPropsTag({}, {suppressRefError: true});
+    getInputPropsTag({}, { suppressRefError: true });
+    getMenuPropsTag({}, { suppressRefError: true });
     /* Downshift _tagInput */
 
     /* Downshift _searchInput */
@@ -418,7 +578,7 @@ const Blog = (props) => {
             setValue('_searchInput', __selectedItem.value);
             _handleChangeSearch(__selectedItem.value);
         }
-    }
+    };
     const _handleChangeSearch = (__inputValue) => {
         const firstSuggestions = _.orderBy(
             _.uniqBy(
@@ -426,10 +586,7 @@ const Blog = (props) => {
                     _articleItems,
                     (item) =>
                         !__inputValue ||
-                        _.includes(
-                            _.lowerCase(item.value),
-                            _.lowerCase(__inputValue)
-                        )
+                        _.includes(_.lowerCase(item.value), _.lowerCase(__inputValue))
                 ),
                 'value'
             ),
@@ -438,16 +595,20 @@ const Blog = (props) => {
         );
 
         setTypedCharactersSearch(__inputValue);
-        setSearchSuggestion((!_.isEmpty(__inputValue) && firstSuggestions[0]) ? (firstSuggestions[0].value) : '');
+        setSearchSuggestion(
+            !_.isEmpty(__inputValue) && firstSuggestions[0]
+                ? firstSuggestions[0].value
+                : ''
+        );
         setItemsSearch(firstSuggestions);
-    }
+    };
     const _handleBlurSearch = () => {
         setSearchFocused(!_.isEmpty(watch('_searchInput')) ? true : false);
         trigger('_searchInput');
-    }
+    };
     const _handleFocusSearch = () => {
         setSearchFocused(true);
-    }
+    };
     const {
         getLabelProps: getLabelPropsSearch,
         getInputProps: getInputPropsSearch,
@@ -455,12 +616,15 @@ const Blog = (props) => {
         getMenuProps: getMenuPropsSearch,
         highlightedIndex: highlightedIndexSearch,
         selectedItem: selectedItemSearch,
-        isOpen: isOpenSearch
+        isOpen: isOpenSearch,
     } = useCombobox({
         items: __itemsSearch,
-        onInputValueChange({ inputValue }) { _handleChangeSearch(inputValue) },
-        onSelectedItemChange: ({ selectedItem: __selectedItem }) => _handleSelectSearch(__selectedItem),
-        itemToString: item => (item ? item.value : ''),
+        onInputValueChange({ inputValue }) {
+            _handleChangeSearch(inputValue);
+        },
+        onSelectedItemChange: ({ selectedItem: __selectedItem }) =>
+            _handleSelectSearch(__selectedItem),
+        itemToString: (item) => (item ? item.value : ''),
         stateReducer: (state, actionAndChanges) => {
             const { type, changes } = actionAndChanges;
             switch (type) {
@@ -472,10 +636,10 @@ const Blog = (props) => {
                 default:
                     return changes;
             }
-        }
+        },
     });
-	getInputPropsSearch({}, {suppressRefError: true});
-	getMenuPropsSearch({}, {suppressRefError: true});
+    getInputPropsSearch({}, { suppressRefError: true });
+    getMenuPropsSearch({}, { suppressRefError: true });
     /* Downshift _searchInput */
 
     useEffect(() => {
@@ -483,8 +647,8 @@ const Blog = (props) => {
 
         $('._blog ._s1').on('mousemove', (event) => {
             let width = $('._blog ._s1').width() / 2;
-            let amountMovedX = ((width - event.pageX) * -1 / 12);
-            let amountMovedXN = ((width - event.pageX) * 1 / 12);
+            let amountMovedX = ((width - event.pageX) * -1) / 12;
+            let amountMovedXN = ((width - event.pageX) * 1) / 12;
 
             $('._blog ._s1 .l_name').css('left', amountMovedX);
             $('._blog ._s1 .f_name').css('left', amountMovedXN);
@@ -492,7 +656,7 @@ const Blog = (props) => {
 
         $('._blog ._s2').on('mousemove', (event) => {
             let width = $('._blog ._s2').width() / 2;
-            let amountMovedX = ((width - event.pageX) * 1 / 64);
+            let amountMovedX = ((width - event.pageX) * 1) / 64;
 
             $('._blog ._s2 .before').css('right', amountMovedX);
         });
@@ -508,9 +672,53 @@ const Blog = (props) => {
                     <Card className={`border border-0 rounded-0`}>
                         <Card.Body className='no-shadow'>
                             <Form className='d-flex flex-column'>
-                                <span className='text-muted category_author'>{_.get(_.head(_getTrendingArticles()), '_article_category')}</span>
-                                <h2 className='align-self-start mb-auto'>{_.get(_.head(_getTrendingArticles()), '_article_title')}<br />by <span>{(!_.get(_.head(_getTrendingArticles()), '_article_author._user_firstname') && !_.get(_.head(_getTrendingArticles()), '_article_author._user_lastname')) ? _.get(_.head(_getTrendingArticles()), '_article_author._user_username') : `${_.get(_.head(_getTrendingArticles()), '_article_author._user_firstname', '')} ${_.get(_.head(_getTrendingArticles()), '_article_author._user_lastname', '')}`}</span></h2>
-                                <span className='firstPhrase'>{_.slice(_.split(_.trim($(_.get(_.head(_getTrendingArticles()), '_article_body')).find('span').text()), /\./g), 0, 1)}</span>
+                                <span className='text-muted category_author'>
+                                    {_.get(_.head(_getTrendingArticles()), '_article_category')}
+                                </span>
+                                <h2 className='align-self-start mb-auto'>
+                                    {_.get(_.head(_getTrendingArticles()), '_article_title')}
+                                    <br />
+                                    by{' '}
+                                    <span>
+                                        {!_.get(
+                                            _.head(_getTrendingArticles()),
+                                            '_article_author._user_firstname'
+                                        ) &&
+                                            !_.get(
+                                                _.head(_getTrendingArticles()),
+                                                '_article_author._user_lastname'
+                                            )
+                                            ? _.get(
+                                                _.head(_getTrendingArticles()),
+                                                '_article_author._user_username'
+                                            )
+                                            : `${_.get(
+                                                _.head(_getTrendingArticles()),
+                                                '_article_author._user_firstname',
+                                                ''
+                                            )} ${_.get(
+                                                _.head(_getTrendingArticles()),
+                                                '_article_author._user_lastname',
+                                                ''
+                                            )}`}
+                                    </span>
+                                </h2>
+                                <span className='firstPhrase'>
+                                    {_.slice(
+                                        _.split(
+                                            _.trim(
+                                                $(
+                                                    _.get(_.head(_getTrendingArticles()), '_article_body')
+                                                )
+                                                    .find('span')
+                                                    .text()
+                                            ),
+                                            /\./g
+                                        ),
+                                        0,
+                                        1
+                                    )}
+                                </span>
                                 <Button
                                     type='button'
                                     className='border border-0 rounded-0 inverse w-25 align-self-start'
@@ -524,15 +732,24 @@ const Blog = (props) => {
                                         <div className='borderLeft'></div>
                                     </div>
                                     <span>
-                                        Read More About it<b className='pink_dot'>.</b>
+                                        Read More About it
+                                        <b className='pink_dot'>.</b>
                                     </span>
                                 </Button>
                                 {/* <div className='_shadowIndex'><p>{_.head(_.split(_.get(_.head(_getTrendingArticles()), '_article_title'), /[\s.]+/)).length <= 2 ? _.head(_.split(_.get(_.head(_getTrendingArticles()), '_article_title'), /[\s.]+/)) + ' ' + _.nth(_.split(_.get(_.head(_getTrendingArticles()), '_article_title'), /[\s.]+/), 1) : _.head(_.split(_.get(_.head(_getTrendingArticles()), '_article_title'), /[\s.]+/))}<b className='pink_dot'>.</b></p></div> */}
                             </Form>
                         </Card.Body>
                     </Card>
-                    <div className='_shadowIndex _trending'><p>Trending<b className='pink_dot'>.</b></p></div>
-                    <div className='_shadowIndex _trending _outlined'><p>Trending<b className='pink_dot'>.</b></p></div>
+                    <div className='_shadowIndex _trending'>
+                        <p>
+                            Trending<b className='pink_dot'>.</b>
+                        </p>
+                    </div>
+                    <div className='_shadowIndex _trending _outlined'>
+                        <p>
+                            Trending<b className='pink_dot'>.</b>
+                        </p>
+                    </div>
                 </div>
                 <div className='g-col-5'>
                     <figure className='_figure'>{_handleArticleJSONTOHTML()}</figure>
@@ -541,7 +758,12 @@ const Blog = (props) => {
             <section className='_s2 grid'>
                 <div className='g-col-6 _s1_1'>
                     <Form>
-                        <h2>blog <strong><b className='pink_dot'>.</b></strong></h2>
+                        <h2>
+                            blog{' '}
+                            <strong>
+                                <b className='pink_dot'>.</b>
+                            </strong>
+                        </h2>
                         <Button
                             type='button'
                             className='border border-0 rounded-0 inverse w-25'
@@ -563,19 +785,63 @@ const Blog = (props) => {
                 <div className='g-col-6 _s1_2'>
                     <div className='_sliderArticles'>
                         <Slider {..._sliderArticlesSettings}>
-                            {
-                                _.map(_.slice(_.orderBy(_.filter(_articles, (_a) => { return !_a._hide }), ['_article_views'], ['desc']), 0, 10), (_article, index) => {
+                            {_.map(
+                                _.slice(
+                                    _.orderBy(
+                                        _.filter(_articles, (_a) => {
+                                            return !_a._hide;
+                                        }),
+                                        ['_article_views'],
+                                        ['desc']
+                                    ),
+                                    0,
+                                    10
+                                ),
+                                (_article, index) => {
                                     return (
-                                        <Card className={`border border-0 rounded-0 card_${index}`} key={index}>
+                                        <Card
+                                            className={`border border-0 rounded-0 card_${index}`}
+                                            key={index}
+                                        >
                                             <div className='borderTop'></div>
                                             <div className='borderRight'></div>
                                             <div className='borderBottom'></div>
                                             <div className='borderLeft'></div>
                                             <Card.Body className='d-flex flex-column'>
-                                                <figure>{_handleJSONTOHTML('_sliderArticles', _article._article_body, index)}</figure>
-                                                <p className='text-muted author'>by <b>{(_.isEmpty(_article._article_author._user_lastname) && _.isEmpty(_article._article_author._user_firstname) ? _article._article_author._user_username : (!_.isEmpty(_article._article_author._user_lastname) ? _article._article_author._user_lastname + ' ' + _article._article_author._user_firstname : _article._article_author._user_firstname))}</b>, {<Moment local fromNow>{_article.updatedAt}</Moment>}</p>
+                                                <figure>
+                                                    {_handleJSONTOHTML(
+                                                        '_sliderArticles',
+                                                        _article._article_body,
+                                                        index
+                                                    )}
+                                                </figure>
+                                                <p className='text-muted author'>
+                                                    by{' '}
+                                                    <b>
+                                                        {_.isEmpty(
+                                                            _article._article_author._user_lastname
+                                                        ) &&
+                                                            _.isEmpty(_article._article_author._user_firstname)
+                                                            ? _article._article_author._user_username
+                                                            : !_.isEmpty(
+                                                                _article._article_author._user_lastname
+                                                            )
+                                                                ? _article._article_author._user_lastname +
+                                                                ' ' +
+                                                                _article._article_author._user_firstname
+                                                                : _article._article_author._user_firstname}
+                                                    </b>
+                                                    ,{' '}
+                                                    {
+                                                        <Moment local fromNow>
+                                                            {_article.updatedAt}
+                                                        </Moment>
+                                                    }
+                                                </p>
                                                 <h4>{_article._article_title}</h4>
-                                                <p className='category align-self-end'>{_article._article_category}</p>
+                                                <p className='category align-self-end'>
+                                                    {_article._article_category}
+                                                </p>
                                                 <Button
                                                     type='button'
                                                     className='border border-0 rounded-0 inverse mt-auto align-self-end'
@@ -588,22 +854,39 @@ const Blog = (props) => {
                                                     <div className='line line-2'></div>
                                                 </Button>
                                                 <div className='_footerInformation d-flex'>
-                                                    <p className='d-flex align-items-center text-muted _views'><b>{_.size(_article._article_views)}</b><FontAwesomeIcon icon={faEye} /></p>
-                                                    <p className='d-flex align-items-center text-muted _comments'><b>{_.size(_article._article_comments)}</b><FontAwesomeIcon icon={faCommentAlt} /></p>
-                                                    <p className='d-flex align-items-center text-muted _upvotes'><b>{_.size(_article._article_upvotes)}</b><FontAwesomeIcon icon={faThumbsUp} /></p>
-                                                    <p className='d-flex align-items-center text-muted _downvotes'><b>{_.size(_article._article_downvotes)}</b><FontAwesomeIcon icon={faThumbsDown} /></p>
+                                                    <p className='d-flex align-items-center text-muted _views'>
+                                                        <b>{_.size(_article._article_views)}</b>
+                                                        <FontAwesomeIcon icon={faEye} />
+                                                    </p>
+                                                    <p className='d-flex align-items-center text-muted _comments'>
+                                                        <b>{_.size(_article._article_comments)}</b>
+                                                        <FontAwesomeIcon icon={faCommentAlt} />
+                                                    </p>
+                                                    <p className='d-flex align-items-center text-muted _upvotes'>
+                                                        <b>{_.size(_article._article_upvotes)}</b>
+                                                        <FontAwesomeIcon icon={faThumbsUp} />
+                                                    </p>
+                                                    <p className='d-flex align-items-center text-muted _downvotes'>
+                                                        <b>{_.size(_article._article_downvotes)}</b>
+                                                        <FontAwesomeIcon icon={faThumbsDown} />
+                                                    </p>
                                                 </div>
                                             </Card.Body>
                                         </Card>
-                                    )
-                                })
-                            }
+                                    );
+                                }
+                            )}
                         </Slider>
                     </div>
                 </div>
             </section>
 
-            <Modal className='_blogModal' show={_showModal} onHide={() => setShowModal(false)} centered>
+            <Modal
+                className='_blogModal'
+                show={_showModal}
+                onHide={() => setShowModal(false)}
+                centered
+            >
                 <Modal.Header closeButton>
                     <Modal.Title className='d-flex'>
                         <Dropdown
@@ -637,7 +920,10 @@ const Blog = (props) => {
                                                     <Col className='g-col-3 d-flex align-items-center justify-content-end'>
                                                         <p>
                                                             {watch('_filterSort')}
-                                                            <FontAwesomeIcon icon={faAngleRight} className='ms-2' />
+                                                            <FontAwesomeIcon
+                                                                icon={faAngleRight}
+                                                                className='ms-2'
+                                                            />
                                                         </p>
                                                     </Col>
                                                 </Row>
@@ -740,7 +1026,10 @@ const Blog = (props) => {
                                                     <Col className='g-col-3 d-flex align-items-center justify-content-end'>
                                                         <p>
                                                             {watch('_filterTimeframe')}
-                                                            <FontAwesomeIcon icon={faAngleRight} className='ms-2' />
+                                                            <FontAwesomeIcon
+                                                                icon={faAngleRight}
+                                                                className='ms-2'
+                                                            />
                                                         </p>
                                                     </Col>
                                                 </Row>
@@ -842,42 +1131,69 @@ const Blog = (props) => {
                                                     </Col>
                                                     <Col className='g-col-3 d-flex align-items-center justify-content-end'>
                                                         <p>
-                                                            {_.size(watch('_filterCategory')) > 1 ? _.head(watch('_filterCategory')) + '...' : watch('_filterCategory')}
-                                                            <FontAwesomeIcon icon={faAngleRight} className='ms-2' />
+                                                            {_.size(watch('_filterCategory')) > 1
+                                                                ? _.head(watch('_filterCategory')) + '...'
+                                                                : watch('_filterCategory')}
+                                                            <FontAwesomeIcon
+                                                                icon={faAngleRight}
+                                                                className='ms-2'
+                                                            />
                                                         </p>
                                                     </Col>
                                                 </Row>
                                             </Dropdown.Toggle>
                                             <Dropdown.Menu className='border rounded-0'>
-                                                {
-                                                    _.map(
-                                                        _.uniq(_.map(_.filter(_articles, (_articleSort) => { return !_articleSort._article_isPrivate }), '_article_category'))
-                                                        , (__aCategory, __index) => {
-                                                            return (
-                                                                <Dropdown.Item as='span' key={__index}>
-                                                                    <Form.Group
-                                                                        controlId='_filterCategory'
-                                                                        className='_formGroup _checkGroup'
+                                                {_.map(
+                                                    _.uniq(
+                                                        _.map(
+                                                            _.filter(_articles, (_articleSort) => {
+                                                                return !_articleSort._article_isPrivate;
+                                                            }),
+                                                            '_article_category'
+                                                        )
+                                                    ),
+                                                    (__aCategory, __index) => {
+                                                        return (
+                                                            <Dropdown.Item as='span' key={__index}>
+                                                                <Form.Group
+                                                                    controlId='_filterCategory'
+                                                                    className='_formGroup _checkGroup'
+                                                                >
+                                                                    <FloatingLabel
+                                                                        label={`${__aCategory}.`}
+                                                                        className='_formLabel __checkBox'
                                                                     >
-                                                                        <FloatingLabel
-                                                                            label={`${__aCategory}.`}
-                                                                            className='_formLabel __checkBox'
-                                                                        >
-                                                                            <Form.Check
-                                                                                type='checkbox'
-                                                                                className='_formCheckbox d-flex'
-                                                                                name={`${__aCategory}`}
-                                                                                onChange={handleSwitchCategoryChange}
-                                                                                checked={_switchCategory[__aCategory]}
-                                                                            />
-                                                                            <Badge bg='info'>{_.size(_.filter(_.filter(_articles, (_articleSort) => { return !_articleSort._article_isPrivate }), (_a) => { return _.isEqual(__aCategory, _a._article_category) }))}</Badge>
-                                                                        </FloatingLabel>
-                                                                    </Form.Group>
-                                                                </Dropdown.Item>
-                                                            )
-                                                        }
-                                                    )
-                                                }
+                                                                        <Form.Check
+                                                                            type='checkbox'
+                                                                            className='_formCheckbox d-flex'
+                                                                            name={`${__aCategory}`}
+                                                                            onChange={handleSwitchCategoryChange}
+                                                                            checked={_switchCategory[__aCategory]}
+                                                                        />
+                                                                        <Badge bg='info'>
+                                                                            {_.size(
+                                                                                _.filter(
+                                                                                    _.filter(
+                                                                                        _articles,
+                                                                                        (_articleSort) => {
+                                                                                            return !_articleSort._article_isPrivate;
+                                                                                        }
+                                                                                    ),
+                                                                                    (_a) => {
+                                                                                        return _.isEqual(
+                                                                                            __aCategory,
+                                                                                            _a._article_category
+                                                                                        );
+                                                                                    }
+                                                                                )
+                                                                            )}
+                                                                        </Badge>
+                                                                    </FloatingLabel>
+                                                                </Form.Group>
+                                                            </Dropdown.Item>
+                                                        );
+                                                    }
+                                                )}
                                             </Dropdown.Menu>
                                         </Dropdown>
                                     </Dropdown.Item>
@@ -889,7 +1205,8 @@ const Blog = (props) => {
                                             render={({ field }) => (
                                                 <Form.Group
                                                     controlId='_tagInput'
-                                                    className={`_formGroup _searchGroup ${_tagFocused ? 'focused' : ''}`}
+                                                    className={`_formGroup _searchGroup ${_tagFocused ? 'focused' : ''
+                                                        }`}
                                                 >
                                                     <FloatingLabel
                                                         label='Tags.'
@@ -898,81 +1215,121 @@ const Blog = (props) => {
                                                     >
                                                         <FontAwesomeIcon icon={faHashtag} />
                                                         <Form.Control
-                                                            {...getInputPropsTag({
-                                                                ...field,
-                                                                onFocus: _handleFocusTag,
-                                                                onBlur: _handleBlurTag
-                                                            }, { suppressRefError: true })}
+                                                            {...getInputPropsTag(
+                                                                {
+                                                                    ...field,
+                                                                    onFocus: _handleFocusTag,
+                                                                    onBlur: _handleBlurTag,
+                                                                },
+                                                                {
+                                                                    suppressRefError: true,
+                                                                }
+                                                            )}
                                                             placeholder='Tags.'
-                                                            className={`_formControl border border-0 rounded-0 ${!_.isEmpty(_typedCharactersTag) ? '_typing' : ''}`}
+                                                            className={`_formControl border border-0 rounded-0 ${!_.isEmpty(_typedCharactersTag) ? '_typing' : ''
+                                                                }`}
                                                         />
                                                         <span className='d-flex align-items-center _autocorrect'>
-                                                            {
-                                                                (() => {
-                                                                    const __tagSuggestionSplit = _.split(_tagSuggestion, '');
-                                                                    const __typedCharactersTagSplit = _.split(_typedCharactersTag, '');
-                                                                    const __startIndex = _.indexOf(__tagSuggestionSplit, _.head(__typedCharactersTagSplit));
+                                                            {(() => {
+                                                                const __tagSuggestionSplit = _.split(
+                                                                    _tagSuggestion,
+                                                                    ''
+                                                                );
+                                                                const __typedCharactersTagSplit = _.split(
+                                                                    _typedCharactersTag,
+                                                                    ''
+                                                                );
+                                                                const __startIndex = _.indexOf(
+                                                                    __tagSuggestionSplit,
+                                                                    _.head(__typedCharactersTagSplit)
+                                                                );
 
-                                                                    return (
-                                                                        <>
-                                                                            {__startIndex !== -1 && (
-                                                                                <>
-                                                                                    <p className='_tagSuggestion'>
-                                                                                        {_.join(_.slice(__tagSuggestionSplit, 0, __startIndex), '')}
-                                                                                    </p>
-                                                                                </>
-                                                                            )}
-                                                                            <p className='_typedCharacters'>
-                                                                                {_typedCharactersTag}
-                                                                            </p>
-                                                                            {__startIndex !== -1 && (
-                                                                                <>
-                                                                                    <p className='_tagSuggestion'>
-                                                                                        {_.join(_.slice(__tagSuggestionSplit, __startIndex + _.size(__typedCharactersTagSplit)), '')}
-                                                                                    </p>
-                                                                                </>
-                                                                            )}
-                                                                        </>
-                                                                    );
-                                                                })()
-                                                            }
+                                                                return (
+                                                                    <>
+                                                                        {__startIndex !== -1 && (
+                                                                            <>
+                                                                                <p className='_tagSuggestion'>
+                                                                                    {_.join(
+                                                                                        _.slice(
+                                                                                            __tagSuggestionSplit,
+                                                                                            0,
+                                                                                            __startIndex
+                                                                                        ),
+                                                                                        ''
+                                                                                    )}
+                                                                                </p>
+                                                                            </>
+                                                                        )}
+                                                                        <p className='_typedCharacters'>
+                                                                            {_typedCharactersTag}
+                                                                        </p>
+                                                                        {__startIndex !== -1 && (
+                                                                            <>
+                                                                                <p className='_tagSuggestion'>
+                                                                                    {_.join(
+                                                                                        _.slice(
+                                                                                            __tagSuggestionSplit,
+                                                                                            __startIndex +
+                                                                                            _.size(
+                                                                                                __typedCharactersTagSplit
+                                                                                            )
+                                                                                        ),
+                                                                                        ''
+                                                                                    )}
+                                                                                </p>
+                                                                            </>
+                                                                        )}
+                                                                    </>
+                                                                );
+                                                            })()}
                                                         </span>
-                                                        {
-                                                            (!_.isEmpty(watch('_tagInput')) || !_.isEmpty(_typedCharactersTag)) && (
-                                                                <div className='_searchButton __close'
+                                                        {(!_.isEmpty(watch('_tagInput')) ||
+                                                            !_.isEmpty(_typedCharactersTag)) && (
+                                                                <div
+                                                                    className='_searchButton __close'
                                                                     onClick={() => {
                                                                         // calling setValue from react-hook-form only updates the value of the specified field, it does not trigger any event handlers associated with that field in useCombobox
                                                                         setValue('_tagInput', '');
                                                                         _handleChangeTag('');
                                                                     }}
-                                                                >
-                                                                </div>
-                                                            )
-                                                        }
+                                                                ></div>
+                                                            )}
                                                     </FloatingLabel>
-                                                    <SimpleBar className='_SimpleBar' style={{ maxHeight: '40vh' }} forceVisible='y' autoHide={false}>
+                                                    <SimpleBar
+                                                        className='_SimpleBar'
+                                                        style={{
+                                                            maxHeight: '40vh',
+                                                        }}
+                                                        forceVisible='y'
+                                                        autoHide={false}
+                                                    >
                                                         <ListGroup
-                                                            className={`border border-0 rounded-0 d-block ${!(isOpenTag && __itemsTags.length) && 'hidden'}`}
+                                                            className={`border border-0 rounded-0 d-block ${!(isOpenTag && __itemsTags.length) && 'hidden'
+                                                                }`}
                                                             {...getMenuPropsTag()}
                                                         >
-                                                            {
-                                                                isOpenTag &&
-                                                                _.map(
-                                                                    __itemsTags
-                                                                    , (item, index) => {
-                                                                        return (
-                                                                            <ListGroup.Item
-                                                                                className={`border border-0 rounded-0 d-flex align-items-center ${highlightedIndexTag === index && 'bg-blue-300'} ${selectedItemTag === item && 'font-bold'}`}
-                                                                                key={`${item.value}${index}`}
-                                                                                {...getItemPropsTag({ item, index })}
-                                                                            >
-                                                                                <FontAwesomeIcon icon={faHashtag} className='me-2' />
-                                                                                {item.value}
-                                                                            </ListGroup.Item>
-                                                                        )
-                                                                    }
-                                                                )
-                                                            }
+                                                            {isOpenTag &&
+                                                                _.map(__itemsTags, (item, index) => {
+                                                                    return (
+                                                                        <ListGroup.Item
+                                                                            className={`border border-0 rounded-0 d-flex align-items-center ${highlightedIndexTag === index &&
+                                                                                'bg-blue-300'
+                                                                                } ${selectedItemTag === item && 'font-bold'
+                                                                                }`}
+                                                                            key={`${item.value}${index}`}
+                                                                            {...getItemPropsTag({
+                                                                                item,
+                                                                                index,
+                                                                            })}
+                                                                        >
+                                                                            <FontAwesomeIcon
+                                                                                icon={faHashtag}
+                                                                                className='me-2'
+                                                                            />
+                                                                            {item.value}
+                                                                        </ListGroup.Item>
+                                                                    );
+                                                                })}
                                                         </ListGroup>
                                                     </SimpleBar>
                                                 </Form.Group>
@@ -997,81 +1354,116 @@ const Blog = (props) => {
                                             {...getLabelPropsSearch()}
                                         >
                                             <Form.Control
-                                                {...getInputPropsSearch({
-                                                    ...field,
-                                                    onFocus: _handleFocusSearch,
-                                                    onBlur: _handleBlurSearch
-                                                }, { suppressRefError: true })}
+                                                {...getInputPropsSearch(
+                                                    {
+                                                        ...field,
+                                                        onFocus: _handleFocusSearch,
+                                                        onBlur: _handleBlurSearch,
+                                                    },
+                                                    { suppressRefError: true }
+                                                )}
                                                 placeholder='Search.'
-                                                className={`_formControl border border-0 rounded-0 ${!_.isEmpty(_typedCharactersSearch) ? '_typing' : ''}`}
+                                                className={`_formControl border border-0 rounded-0 ${!_.isEmpty(_typedCharactersSearch) ? '_typing' : ''
+                                                    }`}
                                             />
                                             <span className='d-flex align-items-center _autocorrect'>
-                                                {
-                                                    (() => {
-                                                        const __searchSuggestionSplit = _.split(_searchSuggestion, '');
-                                                        const __typedCharactersSearchSplit = _.split(_typedCharactersSearch, '');
-                                                        const __startIndex = _.indexOf(__searchSuggestionSplit, _.head(__typedCharactersSearchSplit));
+                                                {(() => {
+                                                    const __searchSuggestionSplit = _.split(
+                                                        _searchSuggestion,
+                                                        ''
+                                                    );
+                                                    const __typedCharactersSearchSplit = _.split(
+                                                        _typedCharactersSearch,
+                                                        ''
+                                                    );
+                                                    const __startIndex = _.indexOf(
+                                                        __searchSuggestionSplit,
+                                                        _.head(__typedCharactersSearchSplit)
+                                                    );
 
-                                                        return (
-                                                            <>
-                                                                {__startIndex !== -1 && (
-                                                                    <>
-                                                                        <p className='_searchSuggestion'>
-                                                                            {_.join(_.slice(__searchSuggestionSplit, 0, __startIndex), '')}
-                                                                        </p>
-                                                                    </>
-                                                                )}
-                                                                <p className='_typedCharacters'>
-                                                                    {_typedCharactersSearch}
-                                                                </p>
-                                                                {__startIndex !== -1 && (
-                                                                    <>
-                                                                        <p className='_searchSuggestion'>
-                                                                            {_.join(_.slice(__searchSuggestionSplit, __startIndex + _.size(__typedCharactersSearchSplit)), '')}
-                                                                        </p>
-                                                                    </>
-                                                                )}
-                                                            </>
-                                                        );
-                                                    })()
-                                                }
+                                                    return (
+                                                        <>
+                                                            {__startIndex !== -1 && (
+                                                                <>
+                                                                    <p className='_searchSuggestion'>
+                                                                        {_.join(
+                                                                            _.slice(
+                                                                                __searchSuggestionSplit,
+                                                                                0,
+                                                                                __startIndex
+                                                                            ),
+                                                                            ''
+                                                                        )}
+                                                                    </p>
+                                                                </>
+                                                            )}
+                                                            <p className='_typedCharacters'>
+                                                                {_typedCharactersSearch}
+                                                            </p>
+                                                            {__startIndex !== -1 && (
+                                                                <>
+                                                                    <p className='_searchSuggestion'>
+                                                                        {_.join(
+                                                                            _.slice(
+                                                                                __searchSuggestionSplit,
+                                                                                __startIndex +
+                                                                                _.size(__typedCharactersSearchSplit)
+                                                                            ),
+                                                                            ''
+                                                                        )}
+                                                                    </p>
+                                                                </>
+                                                            )}
+                                                        </>
+                                                    );
+                                                })()}
                                             </span>
-                                            {
-                                                (!_.isEmpty(watch('_searchInput')) || !_.isEmpty(_typedCharactersSearch)) && (
-                                                    <div className='_searchButton __close'
+                                            {(!_.isEmpty(watch('_searchInput')) ||
+                                                !_.isEmpty(_typedCharactersSearch)) && (
+                                                    <div
+                                                        className='_searchButton __close'
                                                         onClick={() => {
                                                             // calling setValue from react-hook-form only updates the value of the specified field, it does not trigger any event handlers associated with that field in useCombobox
                                                             setValue('_searchInput', '');
                                                             _handleChangeSearch('');
                                                         }}
-                                                    >
-                                                    </div>
-                                                )
-                                            }
+                                                    ></div>
+                                                )}
                                         </FloatingLabel>
-                                        <SimpleBar className='_SimpleBar' style={{ maxHeight: '40vh' }} forceVisible='y' autoHide={false}>
+                                        <SimpleBar
+                                            className='_SimpleBar'
+                                            style={{ maxHeight: '40vh' }}
+                                            forceVisible='y'
+                                            autoHide={false}
+                                        >
                                             <ListGroup
-                                                className={`border border-0 rounded-0 d-block ${!(isOpenSearch && __itemsSearch.length) && 'hidden'}`}
+                                                className={`border border-0 rounded-0 d-block ${!(isOpenSearch && __itemsSearch.length) && 'hidden'
+                                                    }`}
                                                 {...getMenuPropsSearch()}
                                             >
-                                                {
-                                                    (isOpenSearch && !_showFilterDropdown) &&
-                                                    _.map(
-                                                        __itemsSearch
-                                                        , (item, index) => {
-                                                            return (
-                                                                <ListGroup.Item
-                                                                    className={`border border-0 rounded-0 d-flex align-items-center ${highlightedIndexSearch === index && 'bg-blue-300'} ${selectedItemSearch === item && 'font-bold'}`}
-                                                                    key={`${item.value}${index}`}
-                                                                    {...getItemPropsSearch({ item, index })}
-                                                                >
-                                                                    <FontAwesomeIcon icon={faMagnifyingGlass} className='me-2' />
-                                                                    {item.value}
-                                                                </ListGroup.Item>
-                                                            )
-                                                        }
-                                                    )
-                                                }
+                                                {isOpenSearch &&
+                                                    !_showFilterDropdown &&
+                                                    _.map(__itemsSearch, (item, index) => {
+                                                        return (
+                                                            <ListGroup.Item
+                                                                className={`border border-0 rounded-0 d-flex align-items-center ${highlightedIndexSearch === index &&
+                                                                    'bg-blue-300'
+                                                                    } ${selectedItemSearch === item && 'font-bold'
+                                                                    }`}
+                                                                key={`${item.value}${index}`}
+                                                                {...getItemPropsSearch({
+                                                                    item,
+                                                                    index,
+                                                                })}
+                                                            >
+                                                                <FontAwesomeIcon
+                                                                    icon={faMagnifyingGlass}
+                                                                    className='me-2'
+                                                                />
+                                                                {item.value}
+                                                            </ListGroup.Item>
+                                                        );
+                                                    })}
                                             </ListGroup>
                                         </SimpleBar>
                                     </Form.Group>
@@ -1083,93 +1475,120 @@ const Blog = (props) => {
                 <Modal.Body>
                     <h1>Journal</h1>
                     <div className='_page grid m-auto'>
-                        {
-                            _.map(
-                                _.slice(
-                                    _articlesToShow(_articles),
-                                    ((_currentPage * _cardsPerPage) - _cardsPerPage),
-                                    (_currentPage * _cardsPerPage)
-                                ),
-                                (_article, index) => {
-                                    return (
-                                        <Card className={`g-col-4 border border-0 rounded-0 card_${index}`} key={index}>
-                                            <Card.Body className='d-flex flex-column'>
-                                                <figure>{_handleJSONTOHTML('_blogModal', _article._article_body, index)}</figure>
-                                                <p className='text-muted author'>by <b>{(_.isEmpty(_article._article_author._user_lastname) && _.isEmpty(_article._article_author._user_firstname) ? _article._article_author._user_username : (!_.isEmpty(_article._article_author._user_lastname) ? _article._article_author._user_lastname + ' ' + _article._article_author._user_firstname : _article._article_author._user_firstname))}</b>, {<Moment local fromNow>{_article.updatedAt}</Moment>}</p>
-                                                <h4>{_article._article_title}</h4>
-                                                <p className='category align-self-end'>{_article._article_category}</p>
-                                                <ul className='text-muted tags d-flex flex-row align-items-start'>
-                                                    {
-                                                        _.map(_article._article_tags, (_t, _i) => {
-                                                            return (
-                                                                <li
-                                                                    key={`${_i}`}
-                                                                    className={`tag_item border rounded-0 d-flex align-items-center`}
-                                                                >
-                                                                    <FontAwesomeIcon
-                                                                        icon={
-                                                                            faHashtag
-                                                                        }
-                                                                    />
-                                                                    <p>
-                                                                        {_.upperFirst(
-                                                                            _t
-                                                                        )}
-                                                                        .
-                                                                    </p>
-                                                                </li>
-                                                            )
-                                                        })
-                                                    }
-                                                </ul>
-                                                <Button
-                                                    type='button'
-                                                    className='border border-0 rounded-0 inverse mt-auto align-self-end'
-                                                    variant='outline-light'
-                                                    href={`/blog/${_article._id}`}
-                                                    data-am-linearrow='tooltip tooltip-bottom'
-                                                    display-name='Read More'
-                                                >
-                                                    <div className='line line-1'></div>
-                                                    <div className='line line-2'></div>
-                                                </Button>
-                                                <div className='_footerInformation d-flex'>
-                                                    <p className='d-flex align-items-center text-muted _views'><b>{_.size(_article._article_views)}</b><FontAwesomeIcon icon={faEye} /></p>
-                                                    <p className='d-flex align-items-center text-muted _comments'><b>{_.size(_article._article_comments)}</b><FontAwesomeIcon icon={faCommentAlt} /></p>
-                                                    <p className='d-flex align-items-center text-muted _upvotes'><b>{_.size(_article._article_upvotes)}</b><FontAwesomeIcon icon={faThumbsUp} /></p>
-                                                    <p className='d-flex align-items-center text-muted _downvotes'><b>{_.size(_article._article_downvotes)}</b><FontAwesomeIcon icon={faThumbsDown} /></p>
-                                                </div>
-                                            </Card.Body>
-                                        </Card>
-                                    )
-                                })
-                        }
+                        {_.map(
+                            _.slice(
+                                _articlesToShow(_articles),
+                                _currentPage * _cardsPerPage - _cardsPerPage,
+                                _currentPage * _cardsPerPage
+                            ),
+                            (_article, index) => {
+                                return (
+                                    <Card
+                                        className={`g-col-4 border border-0 rounded-0 card_${index}`}
+                                        key={index}
+                                    >
+                                        <Card.Body className='d-flex flex-column'>
+                                            <figure>
+                                                {_handleJSONTOHTML(
+                                                    '_blogModal',
+                                                    _article._article_body,
+                                                    index
+                                                )}
+                                            </figure>
+                                            <p className='text-muted author'>
+                                                by{' '}
+                                                <b>
+                                                    {_.isEmpty(_article._article_author._user_lastname) &&
+                                                        _.isEmpty(_article._article_author._user_firstname)
+                                                        ? _article._article_author._user_username
+                                                        : !_.isEmpty(
+                                                            _article._article_author._user_lastname
+                                                        )
+                                                            ? _article._article_author._user_lastname +
+                                                            ' ' +
+                                                            _article._article_author._user_firstname
+                                                            : _article._article_author._user_firstname}
+                                                </b>
+                                                ,{' '}
+                                                {
+                                                    <Moment local fromNow>
+                                                        {_article.updatedAt}
+                                                    </Moment>
+                                                }
+                                            </p>
+                                            <h4>{_article._article_title}</h4>
+                                            <p className='category align-self-end'>
+                                                {_article._article_category}
+                                            </p>
+                                            <ul className='text-muted tags d-flex flex-row align-items-start'>
+                                                {_.map(_article._article_tags, (_t, _i) => {
+                                                    return (
+                                                        <li
+                                                            key={`${_i}`}
+                                                            className={`tag_item border rounded-0 d-flex align-items-center`}
+                                                        >
+                                                            <FontAwesomeIcon icon={faHashtag} />
+                                                            <p>{_.upperFirst(_t)}.</p>
+                                                        </li>
+                                                    );
+                                                })}
+                                            </ul>
+                                            <Button
+                                                type='button'
+                                                className='border border-0 rounded-0 inverse mt-auto align-self-end'
+                                                variant='outline-light'
+                                                href={`/blog/${_article._id}`}
+                                                data-am-linearrow='tooltip tooltip-bottom'
+                                                display-name='Read More'
+                                            >
+                                                <div className='line line-1'></div>
+                                                <div className='line line-2'></div>
+                                            </Button>
+                                            <div className='_footerInformation d-flex'>
+                                                <p className='d-flex align-items-center text-muted _views'>
+                                                    <b>{_.size(_article._article_views)}</b>
+                                                    <FontAwesomeIcon icon={faEye} />
+                                                </p>
+                                                <p className='d-flex align-items-center text-muted _comments'>
+                                                    <b>{_.size(_article._article_comments)}</b>
+                                                    <FontAwesomeIcon icon={faCommentAlt} />
+                                                </p>
+                                                <p className='d-flex align-items-center text-muted _upvotes'>
+                                                    <b>{_.size(_article._article_upvotes)}</b>
+                                                    <FontAwesomeIcon icon={faThumbsUp} />
+                                                </p>
+                                                <p className='d-flex align-items-center text-muted _downvotes'>
+                                                    <b>{_.size(_article._article_downvotes)}</b>
+                                                    <FontAwesomeIcon icon={faThumbsDown} />
+                                                </p>
+                                            </div>
+                                        </Card.Body>
+                                    </Card>
+                                );
+                            }
+                        )}
                     </div>
                     <ul className='_pageNumbers d-flex justify-content-center m-auto w-80'>
-                        {
-                            _.map(
-                                _.keys(
-                                    [
-                                        ...Array(
-                                            _.ceil(
-                                                _.size(_articlesToShow(_articles)) / _cardsPerPage
-                                            )
-                                        )
-                                    ]
-                                )
-                                , (_number) => {
-                                    _number++;
-                                    return (
-                                        <li
-                                            key={_number}
-                                            onClick={() => _handleClickPage(_number)}
-                                            className={`border-0 ${_.isEqual(_.toNumber(_currentPage), _.toNumber(_number)) ? 'current' : ''}`}
-                                        >
-                                        </li>
-                                    );
-                                }
-                            )
-                        }
+                        {_.map(
+                            _.keys([
+                                ...Array(
+                                    _.ceil(_.size(_articlesToShow(_articles)) / _cardsPerPage)
+                                ),
+                            ]),
+                            (_number) => {
+                                _number++;
+                                return (
+                                    <li
+                                        key={_number}
+                                        onClick={() => _handleClickPage(_number)}
+                                        className={`border-0 ${_.isEqual(_.toNumber(_currentPage), _.toNumber(_number))
+                                            ? 'current'
+                                            : ''
+                                            }`}
+                                    ></li>
+                                );
+                            }
+                        )}
                     </ul>
                 </Modal.Body>
                 <Modal.Footer>
@@ -1177,37 +1596,31 @@ const Blog = (props) => {
                         <div>
                             Showing &nbsp;
                             <strong>
-                                {
-                                    ((_currentPage * _cardsPerPage) - _cardsPerPage) + 1
-                                }
+                                {_currentPage * _cardsPerPage - _cardsPerPage + 1}
                             </strong>
                             &nbsp; to &nbsp;
                             <strong>
-                                {
-                                    ((_currentPage * _cardsPerPage) - _cardsPerPage) + _.toNumber(
+                                {_currentPage * _cardsPerPage -
+                                    _cardsPerPage +
+                                    _.toNumber(
                                         _.size(
                                             _.slice(
                                                 _articlesToShow(_articles),
-                                                ((_currentPage * _cardsPerPage) - _cardsPerPage),
-                                                (_currentPage * _cardsPerPage)
+                                                _currentPage * _cardsPerPage - _cardsPerPage,
+                                                _currentPage * _cardsPerPage
                                             )
                                         )
-                                    )
-                                }
+                                    )}
                             </strong>
                             &nbsp; of &nbsp;
-                            <strong>
-                                {
-                                    _.toNumber(
-                                        _.size(
-                                            _articlesToShow(_articles)
-                                        )
-                                    )
-                                }
-                            </strong>
+                            <strong>{_.toNumber(_.size(_articlesToShow(_articles)))}</strong>
                             &nbsp; articles.
                         </div>
-                        <Button className='border border-0 rounded-0 inverse' variant='outline-light' onClick={() => setShowModal(false)}>
+                        <Button
+                            className='border border-0 rounded-0 inverse'
+                            variant='outline-light'
+                            onClick={() => setShowModal(false)}
+                        >
                             <div className='buttonBorders'>
                                 <div className='borderTop'></div>
                                 <div className='borderRight'></div>
@@ -1220,10 +1633,13 @@ const Blog = (props) => {
                         </Button>
                     </Form>
                 </Modal.Footer>
-                <div className='_shadowIndex d-flex'><p>{_currentPage < 10 ? '0' + _currentPage : _currentPage}</p><b className='pink_dot'>.</b></div>
+                <div className='_shadowIndex d-flex'>
+                    <p>{_currentPage < 10 ? '0' + _currentPage : _currentPage}</p>
+                    <b className='pink_dot'>.</b>
+                </div>
             </Modal>
         </main>
     );
-}
+};
 
 export default Blog;

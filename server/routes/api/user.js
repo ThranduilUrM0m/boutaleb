@@ -15,8 +15,17 @@ const User = mongoose.model('User');
 const Token = mongoose.model('Token');
 const router = express.Router();
 
-const sendEmail = async (sender, name, phone, newsletter, subject, message, receiver) => {
-    SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey = process.env.API_KEY;
+const sendEmail = async (
+    sender,
+    name,
+    phone,
+    newsletter,
+    subject,
+    message,
+    receiver,
+) => {
+    SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey =
+        process.env.API_KEY;
 
     const emailData = {
         sender: {
@@ -58,9 +67,22 @@ router.post('/', uploadMiddleware, async (req, res, next) => {
         return res.status(422).json({ errors });
     }
 
-    const { emailExists, usernameExists } = await checkForDuplicates(body._user_email, body._user_username);
-    if (emailExists) return res.status(400).json({ text: 'This Email exists already, please submit another Email.' });
-    if (usernameExists) return res.status(400).json({ text: 'This Username exists already, please submit another Username.' });
+    const { emailExists, usernameExists } = await checkForDuplicates(
+        body._user_email,
+        body._user_username,
+    );
+    if (emailExists)
+        return res
+            .status(400)
+            .json({
+                text: 'This Email exists already, please submit another Email.',
+            });
+    if (usernameExists)
+        return res
+            .status(400)
+            .json({
+                text: 'This Username exists already, please submit another Username.',
+            });
 
     const newUser = new User({
         _user_email: body._user_email,
@@ -79,8 +101,18 @@ router.post('/', uploadMiddleware, async (req, res, next) => {
     await token.save();
 
     try {
-        await sendEmail(process.env.EMAIL, 'Boutaleb.', null, null, 'Hello ✔ and Welcome', `<h1>We are happy to be working with you ${body._user_username}</h1><br/><p style="margin: 0;">Please verify your account by clicking the link: http://${req.headers.host}/confirmation/${token._token_body}.</p><br/><p style="margin: 0;">We thank you for your faith in us.</p>`, newUser._user_email);
-        return res.status(200).json({ _user: newUser, text: 'Verification email sent.' });
+        await sendEmail(
+            process.env.EMAIL,
+            'Boutaleb.',
+            null,
+            null,
+            'Hello ✔ and Welcome',
+            `<h1>We are happy to be working with you ${body._user_username}</h1><br/><p style="margin: 0;">Please verify your account by clicking the link: http://${req.headers.host}/confirmation/${token._token_body}.</p><br/><p style="margin: 0;">We thank you for your faith in us.</p>`,
+            newUser._user_email,
+        );
+        return res
+            .status(200)
+            .json({ _user: newUser, text: 'Verification email sent.' });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Failed to send email.' });
@@ -99,7 +131,7 @@ router.get('/', async (req, res) => {
             .populate('Mentor')
             .sort({ createdAt: 'descending' });
 
-        res.json({ _users: users.map(user => user.toJSON()) });
+        res.json({ _users: users.map((user) => user.toJSON()) });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error fetching users.' });
@@ -118,7 +150,8 @@ router.post('/_confirm', async (req, res) => {
     const user = await User.findById(token._userId);
     if (!user) return res.status(400).json({ text: 'User not found.' });
 
-    if (user._user_isVerified) return res.status(400).json({ text: 'User already verified.' });
+    if (user._user_isVerified)
+        return res.status(400).json({ text: 'User already verified.' });
 
     user._user_isVerified = true;
     token._userIsVerified = true;
@@ -126,7 +159,13 @@ router.post('/_confirm', async (req, res) => {
     try {
         await user.save();
         await token.save();
-        return res.status(200).json({ _user: user, _token: token, text: 'Account verified successfully.' });
+        return res
+            .status(200)
+            .json({
+                _user: user,
+                _token: token,
+                text: 'Account verified successfully.',
+            });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Verification failed.' });
@@ -146,7 +185,9 @@ router.get('/_checkToken', async (req, res) => {
             .populate('Department')
             .populate('Mentor');
 
-        return user ? res.status(200).json({ _user: user }) : res.sendStatus(401);
+        return user
+            ? res.status(200).json({ _user: user })
+            : res.sendStatus(401);
     } catch (error) {
         console.error(error);
         res.sendStatus(401);
@@ -158,8 +199,18 @@ router.post('/_sendMessage', async (req, res) => {
     const { body } = req;
 
     try {
-        await sendEmail(body._emailSender, body._name, body._phone, body._newsletter, 'Feedback', body._message, process.env.EMAIL);
-        return res.status(200).json({ _message: 'Feedback sent successfully.' });
+        await sendEmail(
+            body._emailSender,
+            body._name,
+            body._phone,
+            body._newsletter,
+            'Feedback',
+            body._message,
+            process.env.EMAIL,
+        );
+        return res
+            .status(200)
+            .json({ _message: 'Feedback sent successfully.' });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Failed to send feedback.' });
@@ -172,20 +223,31 @@ router.post('/_login', async (req, res) => {
 
     try {
         if (!body._user_identification || !body._user_password) {
-            return res.status(400).json({ text: 'Please fill out both identification and password.' });
+            return res
+                .status(400)
+                .json({
+                    text: 'Please fill out both identification and password.',
+                });
         }
 
         const user = await User.findOne({
-            $or: [{ _user_email: body._user_identification }, { _user_username: body._user_identification }],
-        }).populate({ path: '_user_teams.Team', model: 'Team' })
+            $or: [
+                { _user_email: body._user_identification },
+                { _user_username: body._user_identification },
+            ],
+        })
+            .populate({ path: '_user_teams.Team', model: 'Team' })
             .populate('Role')
             .populate('Expertise')
             .populate('Department')
             .populate('Mentor');
 
-        if (!user) return res.status(401).json({ text: 'User not registered.' });
-        if (!user._user_isVerified) return res.status(401).json({ text: 'Account not verified.' });
-        if (!user.authenticate(body._user_password, user)) return res.status(401).json({ text: 'Incorrect password.' });
+        if (!user)
+            return res.status(401).json({ text: 'User not registered.' });
+        if (!user._user_isVerified)
+            return res.status(401).json({ text: 'Account not verified.' });
+        if (!user.authenticate(body._user_password, user))
+            return res.status(401).json({ text: 'Incorrect password.' });
 
         user._user_isActive = true;
         user._user_toDelete = false;
@@ -193,7 +255,9 @@ router.post('/_login', async (req, res) => {
         await user.save();
 
         const token = user.getToken();
-        return res.status(200).json({ _user: user, token, text: 'Authentication successful.' });
+        return res
+            .status(200)
+            .json({ _user: user, token, text: 'Authentication successful.' });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Login failed.' });
@@ -205,7 +269,10 @@ router.post('/_logout/:id', async (req, res) => {
     const { body } = req;
 
     try {
-        if (!_.isEmpty(body._user_isVerified) && !_.isUndefined(body._user_isVerified)) {
+        if (
+            !_.isEmpty(body._user_isVerified) &&
+            !_.isUndefined(body._user_isVerified)
+        ) {
             req._user._user_isVerified = false;
         }
         await req._user.save();

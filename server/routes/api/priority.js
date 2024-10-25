@@ -16,7 +16,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalPriority = new Priority(body);
-    return finalPriority.save()
+    return finalPriority
+        .save()
         .then(() => {
             res.json({ _priority: finalPriority.toJSON() });
         })
@@ -26,13 +27,17 @@ router.post('/', (req, res, next) => {
 router.get('/', (req, res, next) => {
     return Priority.find()
         .sort({ createdAt: 'descending' })
-        .then((_prioritys) => res.json({ _prioritys: _prioritys.map(_priority => _priority.toJSON()) }))
+        .then((_prioritys) =>
+            res.json({
+                _prioritys: _prioritys.map((_priority) => _priority.toJSON()),
+            }),
+        )
         .catch(next);
 });
 
 router.param('id', (req, res, next, id) => {
     return Priority.findById(id)
-        .then(_priority => {
+        .then((_priority) => {
             if (!_priority) {
                 return res.sendStatus(404);
             }
@@ -44,8 +49,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _priority: req._priority.toJSON()
-    })
+        _priority: req._priority.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -59,7 +64,8 @@ router.patch('/:id', (req, res, next) => {
         req._priority._priority_description = body._priority_description;
     }
 
-    return req._priority.save()
+    return req._priority
+        .save()
         .then(() => res.json({ _priority: req._priority.toJSON() }))
         .catch(next);
 });

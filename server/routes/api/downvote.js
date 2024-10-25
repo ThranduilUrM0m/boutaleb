@@ -16,7 +16,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalDownvote = new Downvote(body);
-    return finalDownvote.save()
+    return finalDownvote
+        .save()
         .then(() => {
             res.json({ _downvote: finalDownvote.toJSON() });
         })
@@ -26,13 +27,17 @@ router.post('/', (req, res, next) => {
 router.get('/', (req, res, next) => {
     return Downvote.find()
         .sort({ createdAt: 'descending' })
-        .then((_downvotes) => res.json({ _downvotes: _downvotes.map(_downvote => _downvote.toJSON()) }))
+        .then((_downvotes) =>
+            res.json({
+                _downvotes: _downvotes.map((_downvote) => _downvote.toJSON()),
+            }),
+        )
         .catch(next);
 });
 
 router.param('id', (req, res, next, id) => {
     return Downvote.findById(id)
-        .then(_downvote => {
+        .then((_downvote) => {
             if (!_downvote) {
                 return res.sendStatus(404);
             }
@@ -44,8 +49,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _downvote: req._downvote.toJSON()
-    })
+        _downvote: req._downvote.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -55,7 +60,8 @@ router.patch('/:id', (req, res, next) => {
         req._downvote._downvoter = body._downvoter;
     }
 
-    return req._downvote.save()
+    return req._downvote
+        .save()
         .then(() => res.json({ _downvote: req._downvote.toJSON() }))
         .catch(next);
 });

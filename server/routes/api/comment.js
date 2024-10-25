@@ -32,7 +32,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalComment = new Comment(body);
-    return finalComment.save()
+    return finalComment
+        .save()
         .then(() => {
             res.json({ _comment: finalComment.toJSON() });
         })
@@ -45,7 +46,11 @@ router.get('/', (req, res, next) => {
         .populate('Downvote')
         .populate('Comment')
         .sort({ createdAt: 'descending' })
-        .then((_comments) => res.json({ _comments: _comments.map(_comment => _comment.toJSON()) }))
+        .then((_comments) =>
+            res.json({
+                _comments: _comments.map((_comment) => _comment.toJSON()),
+            }),
+        )
         .catch(next);
 });
 
@@ -54,7 +59,7 @@ router.param('id', (req, res, next, id) => {
         .populate('Upvote')
         .populate('Downvote')
         .populate('Comment')
-        .then(_comment => {
+        .then((_comment) => {
             if (!_comment) {
                 return res.sendStatus(404);
             }
@@ -66,8 +71,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _comment: req._comment.toJSON()
-    })
+        _comment: req._comment.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -105,7 +110,8 @@ router.patch('/:id', (req, res, next) => {
         req._comment._comment_downvotes = body._comment_downvotes;
     }
 
-    return req._comment.save()
+    return req._comment
+        .save()
         .then(() => res.json({ _comment: req._comment.toJSON() }))
         .catch(next);
 });

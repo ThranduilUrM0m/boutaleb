@@ -16,7 +16,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalUpvote = new Upvote(body);
-    return finalUpvote.save()
+    return finalUpvote
+        .save()
         .then(() => {
             res.json({ _upvote: finalUpvote.toJSON() });
         })
@@ -26,13 +27,17 @@ router.post('/', (req, res, next) => {
 router.get('/', (req, res, next) => {
     return Upvote.find()
         .sort({ createdAt: 'descending' })
-        .then((_testimonies) => res.json({ _testimonies: _testimonies.map(_upvote => _upvote.toJSON()) }))
+        .then((_testimonies) =>
+            res.json({
+                _testimonies: _testimonies.map((_upvote) => _upvote.toJSON()),
+            }),
+        )
         .catch(next);
 });
 
 router.param('id', (req, res, next, id) => {
     return Upvote.findById(id)
-        .then(_upvote => {
+        .then((_upvote) => {
             if (!_upvote) {
                 return res.sendStatus(404);
             }
@@ -44,8 +49,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _upvote: req._upvote.toJSON()
-    })
+        _upvote: req._upvote.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -55,7 +60,8 @@ router.patch('/:id', (req, res, next) => {
         req._upvote._upvoter = body._upvoter;
     }
 
-    return req._upvote.save()
+    return req._upvote
+        .save()
         .then(() => res.json({ _upvote: req._upvote.toJSON() }))
         .catch(next);
 });

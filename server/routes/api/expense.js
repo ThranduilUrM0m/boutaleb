@@ -40,7 +40,8 @@ router.post('/', (req, res, next) => {
     }
 
     const finalExpense = new Expense(body);
-    return finalExpense.save()
+    return finalExpense
+        .save()
         .then(() => {
             res.json({ _expense: finalExpense.toJSON() });
         })
@@ -51,14 +52,18 @@ router.get('/', (req, res, next) => {
     return Expense.find()
         .populate('Priority')
         .sort({ createdAt: 'descending' })
-        .then((_expenses) => res.json({ _expenses: _expenses.map(_expense => _expense.toJSON()) }))
+        .then((_expenses) =>
+            res.json({
+                _expenses: _expenses.map((_expense) => _expense.toJSON()),
+            }),
+        )
         .catch(next);
 });
 
 router.param('id', (req, res, next, id) => {
     return Expense.findById(id)
         .populate('Priority')
-        .then(_expense => {
+        .then((_expense) => {
             if (!_expense) {
                 return res.sendStatus(404);
             }
@@ -70,8 +75,8 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/:id', (req, res, next) => {
     return res.json({
-        _expense: req._expense.toJSON()
-    })
+        _expense: req._expense.toJSON(),
+    });
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -97,7 +102,8 @@ router.patch('/:id', (req, res, next) => {
         req._expense.Priority = body.Priority;
     }
 
-    return req._expense.save()
+    return req._expense
+        .save()
         .then(() => res.json({ _expense: req._expense.toJSON() }))
         .catch(next);
 });

@@ -15,9 +15,17 @@ export const socketHandler = (io, db) => {
 
         // Function to send a notification
         const sendNotification = async (recipientId, message, type) => {
-            const notification = new Notification({ recipient: recipientId, message, type });
+            const notification = new Notification({
+                recipient: recipientId,
+                message,
+                type,
+            });
             await notification.save();
-            io.to(recipientId).emit('notification', { message, createdAt: notification.createdAt, type });
+            io.to(recipientId).emit('notification', {
+                message,
+                createdAt: notification.createdAt,
+                type,
+            });
         };
 
         // Handle actions with a generic notification system
