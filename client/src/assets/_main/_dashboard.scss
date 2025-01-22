@@ -868,7 +868,7 @@ section {
 
                                     .col {
                                         overflow: hidden;
-                                        
+
                                         .card {
                                             overflow: hidden;
                                             border: .25vh solid darken($color: $sectionBackground, $amount: 5);
@@ -925,7 +925,7 @@ section {
                                                         tbody {
                                                             tr {
                                                                 border: none;
-                                                                
+
                                                                 td {
                                                                     overflow: hidden;
                                                                     text-overflow: ellipsis;
@@ -959,6 +959,14 @@ section {
                                                                                 stroke: rgba($black, .5);
                                                                                 color: rgba($black, .5);
                                                                                 @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
+                                                                            }
+
+                                                                            &:hover {
+                                                                                svg {
+                                                                                    fill: rgba($black, .75);
+                                                                                    stroke: rgba($black, .75);
+                                                                                    color: rgba($black, .75);
+                                                                                }
                                                                             }
                                                                         }
                                                                     }
@@ -1005,17 +1013,6 @@ section {
                                                                                 @include _transitions($property: 'all', $duration: .25s, $timing: 'ease', $delay: '');
                                                                             }
                                                                         }
-
-                                                                        &::before {
-                                                                            position: absolute;
-                                                                            content: '';
-                                                                            background: $greenOnline;
-                                                                            border: .125vh solid $white;
-                                                                            border-radius: 100%;
-                                                                            z-index: 1;
-                                                                            @include _dimensions($width: 1.5vh, $height: 1.5vh);
-                                                                            @include _transform($top: 6.5vh, $left: 6.5vh, $bottom: '', $right: '', $t_x: -1.75vh, $t_y: -1.75vh, $r_deg: 0, $s_x: 1, $s_y: 1);
-                                                                        }
                                                                     }
 
                                                                     .category {
@@ -1049,7 +1046,7 @@ section {
                                                                             padding: 0 .5vh 0 3vh;
                                                                             margin: auto 0 .5vh 1vh;
                                                                             @include _dimensions($width: fit-content, $height: 3.5vh);
-                            
+
                                                                             svg {
                                                                                 position: absolute;
                                                                                 margin: 0 .5vh;

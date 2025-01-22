@@ -84,6 +84,20 @@ const Dashboard = (props) => {
 
     const setProjects = project['_projects_SET_STATE'];
 
+    // Assume '_user' includes role and permissions populated from the API
+    const _userPermissions = _.uniq(
+        _.flatMap(_user.Role, __r =>
+            _.map(__r.Permission, __p =>
+                __p._permission_title
+            )
+        )
+    );
+
+    const _hasPermission = (__p) => {
+        // Check if the user has the specified permission
+        return _.includes(_userPermissions, __p);
+    };
+
     let location = useLocation();
     let navigate = useNavigate();
 
@@ -150,17 +164,13 @@ const Dashboard = (props) => {
     );
 
     const _getArticles = useCallback(async () => {
-        try {
-            axios('/api/article')
-                .then((response) => {
-                    setArticles(response.data._articles);
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
-        } catch (error) {
-            console.log(error);
-        }
+        axios('/api/article')
+            .then((response) => {
+                setArticles(response.data._articles);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
     }, [setArticles]);
 
     let _projectItems = _.orderBy(
@@ -195,17 +205,13 @@ const Dashboard = (props) => {
     );
 
     const _getProjects = useCallback(async () => {
-        try {
-            axios('/api/project')
-                .then((response) => {
-                    setProjects(response.data._projects);
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
-        } catch (error) {
-            console.log(error);
-        }
+        axios('/api/project')
+            .then((response) => {
+                setProjects(response.data._projects);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
     }, [setProjects]);
 
     const _validationSchemaSearch = Yup.object().shape({
@@ -275,7 +281,7 @@ const Dashboard = (props) => {
         setSearchItems(firstSuggestions);
     };
     const _handleBlurSearch = () => {
-        setSearchFocused(!_.isEmpty(watchSearch('_searchInput')) ? true : false);
+        setSearchFocused(!_.isEmpty(watchSearch('_searchInput')));
     };
     const _handleFocusSearch = () => {
         setSearchFocused(true);
@@ -352,7 +358,7 @@ const Dashboard = (props) => {
                 .then((response) => {
                     return response.data._user;
                 })
-                .catch((error) => {
+                .catch(() => {
                     return false;
                 });
         } catch (error) {
@@ -403,71 +409,81 @@ const Dashboard = (props) => {
                                     <img className='img-fluid' src={logo} alt='#' />
                                 </NavLink>
                             </Nav.Item>
-                            <Nav.Item>
-                                <Nav.Link
-                                    className='d-flex align-items-start'
-                                    eventKey='_dashboard'
-                                >
-                                    <FontAwesomeIcon icon={faCube} />
-                                    <p>
-                                        Dashboard<b className='pink_dot'>.</b>
-                                    </p>
-                                </Nav.Link>
-                            </Nav.Item>
-                            <Nav.Item>
-                                <Nav.Link
-                                    className='d-flex align-items-start'
-                                    eventKey='_wallet'
-                                >
-                                    <FontAwesomeIcon icon={faWallet} />
-                                    <p>
-                                        Wallet<b className='pink_dot'>.</b>
-                                    </p>
-                                </Nav.Link>
-                            </Nav.Item>
-                            <Nav.Item>
-                                <Nav.Link
-                                    className='d-flex align-items-start'
-                                    eventKey='_products'
-                                >
-                                    <FontAwesomeIcon icon={faBarsProgress} />
-                                    <p>
-                                        Products<b className='pink_dot'>.</b>
-                                    </p>
-                                </Nav.Link>
-                            </Nav.Item>
-                            <Nav.Item>
-                                <Nav.Link
-                                    className='d-flex align-items-start'
-                                    eventKey='_clients'
-                                >
-                                    <FontAwesomeIcon icon={faCircleNotch} />
-                                    <p>
-                                        Clients<b className='pink_dot'>.</b>
-                                    </p>
-                                </Nav.Link>
-                            </Nav.Item>
-
-                            <Nav.Item>
-                                <Nav.Link
-                                    className='d-flex align-items-start'
-                                    eventKey='_testimonies'
-                                >
-                                    <FontAwesomeIcon icon={faMessage} />
-                                    <p>
-                                        Testimonies<b className='pink_dot'>.</b>
-                                    </p>
-                                </Nav.Link>
-                            </Nav.Item>
-                            <Nav.Item>
-                                <Nav.Link className='d-flex align-items-start' eventKey='_blog'>
-                                    <FontAwesomeIcon icon={faNewspaper} />
-                                    <p>
-                                        Blog<b className='pink_dot'>.</b>
-                                    </p>
-                                </Nav.Link>
-                            </Nav.Item>
-
+                            {_hasPermission('view_dashboard') && (
+                                <Nav.Item>
+                                    <Nav.Link
+                                        className='d-flex align-items-start'
+                                        eventKey='_dashboard'
+                                    >
+                                        <FontAwesomeIcon icon={faCube} />
+                                        <p>
+                                            Dashboard<b className='pink_dot'>.</b>
+                                        </p>
+                                    </Nav.Link>
+                                </Nav.Item>
+                            )}
+                            {_hasPermission('view_wallet') && (
+                                <Nav.Item>
+                                    <Nav.Link
+                                        className='d-flex align-items-start'
+                                        eventKey='_wallet'
+                                    >
+                                        <FontAwesomeIcon icon={faWallet} />
+                                        <p>
+                                            Wallet<b className='pink_dot'>.</b>
+                                        </p>
+                                    </Nav.Link>
+                                </Nav.Item>
+                            )}
+                            {_hasPermission('view_products') && (
+                                <Nav.Item>
+                                    <Nav.Link
+                                        className='d-flex align-items-start'
+                                        eventKey='_products'
+                                    >
+                                        <FontAwesomeIcon icon={faBarsProgress} />
+                                        <p>
+                                            Products<b className='pink_dot'>.</b>
+                                        </p>
+                                    </Nav.Link>
+                                </Nav.Item>
+                            )}
+                            {_hasPermission('view_clients') && (
+                                <Nav.Item>
+                                    <Nav.Link
+                                        className='d-flex align-items-start'
+                                        eventKey='_clients'
+                                    >
+                                        <FontAwesomeIcon icon={faCircleNotch} />
+                                        <p>
+                                            Clients<b className='pink_dot'>.</b>
+                                        </p>
+                                    </Nav.Link>
+                                </Nav.Item>
+                            )}
+                            {_hasPermission('view_testimonies') && (
+                                <Nav.Item>
+                                    <Nav.Link
+                                        className='d-flex align-items-start'
+                                        eventKey='_testimonies'
+                                    >
+                                        <FontAwesomeIcon icon={faMessage} />
+                                        <p>
+                                            Testimonies<b className='pink_dot'>.</b>
+                                        </p>
+                                    </Nav.Link>
+                                </Nav.Item>
+                            )}
+                            {_hasPermission('view_articles') && (
+                                <Nav.Item>
+                                    <Nav.Link className='d-flex align-items-start' eventKey='_blog'>
+                                        <FontAwesomeIcon icon={faNewspaper} />
+                                        <p>
+                                            Blog<b className='pink_dot'>.</b>
+                                        </p>
+                                    </Nav.Link>
+                                </Nav.Item>
+                            )}
                             <Nav.Item className='mt-auto'>
                                 <Dropdown
                                     show={_showDropdown}
@@ -492,7 +508,7 @@ const Dashboard = (props) => {
                                             </span>
                                             <span className='d-flex flex-column justify-content-center me-auto'>
                                                 <p>{_.capitalize(_user._user_email)}</p>
-                                                <p>{'boutaleb.dev/' + _user._user_username}</p>
+                                                <p>{'@' + _user._user_username + ' - ' + _.map(_user.Role, '_role_title')}</p>
                                             </span>
                                             <span className='align-self-center'>
                                                 <FontAwesomeIcon icon={faCaretRight} />
@@ -526,7 +542,7 @@ const Dashboard = (props) => {
                                                     <p>
                                                         {_.join(
                                                             _.map(_user.Permission, (__p) =>
-                                                                _.capitalize(__p._permission_titre)
+                                                                _.capitalize(__p._permission_title)
                                                             ),
                                                             ', '
                                                         )}
@@ -542,18 +558,19 @@ const Dashboard = (props) => {
                                             </Nav.Link>
                                         </Dropdown.Item>
                                         <Dropdown.Divider />
-                                        <Dropdown.Item as='span'>
-                                            <Nav.Link
-                                                className='d-flex align-items-start'
-                                                eventKey='_teams'
-                                            >
-                                                <FontAwesomeIcon icon={faUserGroup} />
-                                                <p>
-                                                    Teams
-                                                    <b className='pink_dot'>.</b>
-                                                </p>
-                                            </Nav.Link>
-                                        </Dropdown.Item>
+                                        {_hasPermission('manage_teams') && (
+                                            <Dropdown.Item as='span'>
+                                                <Nav.Link
+                                                    className='d-flex align-items-start'
+                                                    eventKey='_teams'
+                                                >
+                                                    <FontAwesomeIcon icon={faUserGroup} />
+                                                    <p>
+                                                        Teams <b className='pink_dot'>.</b>
+                                                    </p>
+                                                </Nav.Link>
+                                            </Dropdown.Item>
+                                        )}
                                         <Dropdown.Item as='span'>
                                             <Nav.Link
                                                 className='d-flex align-items-start'
@@ -561,8 +578,7 @@ const Dashboard = (props) => {
                                             >
                                                 <FontAwesomeIcon icon={faGear} />
                                                 <p>
-                                                    Settings
-                                                    <b className='pink_dot'>.</b>
+                                                    Settings <b className='pink_dot'>.</b>
                                                 </p>
                                             </Nav.Link>
                                         </Dropdown.Item>
@@ -570,8 +586,7 @@ const Dashboard = (props) => {
                                             <Nav.Link className='d-flex align-items-start'>
                                                 <FontAwesomeIcon icon={faRightFromBracket} />
                                                 <p>
-                                                    Logout
-                                                    <b className='pink_dot'>.</b>
+                                                    Logout <b className='pink_dot'>.</b>
                                                 </p>
                                             </Nav.Link>
                                         </Dropdown.Item>
@@ -643,37 +658,33 @@ const Dashboard = (props) => {
                                                             return (
                                                                 <>
                                                                     {__startIndex !== -1 && (
-                                                                        <>
-                                                                            <p className='_searchSuggestion'>
-                                                                                {_.join(
-                                                                                    _.slice(
-                                                                                        __searchSuggestionSplit,
-                                                                                        0,
-                                                                                        __startIndex
-                                                                                    ),
-                                                                                    ''
-                                                                                )}
-                                                                            </p>
-                                                                        </>
+                                                                        <p className='_searchSuggestion'>
+                                                                            {_.join(
+                                                                                _.slice(
+                                                                                    __searchSuggestionSplit,
+                                                                                    0,
+                                                                                    __startIndex
+                                                                                ),
+                                                                                ''
+                                                                            )}
+                                                                        </p>
                                                                     )}
                                                                     <p className='_typedCharacters'>
                                                                         {_typedCharactersSearch}
                                                                     </p>
                                                                     {__startIndex !== -1 && (
-                                                                        <>
-                                                                            <p className='_searchSuggestion'>
-                                                                                {_.join(
-                                                                                    _.slice(
-                                                                                        __searchSuggestionSplit,
-                                                                                        __startIndex +
-                                                                                        _.size(
-                                                                                            __typedCharactersSearchSplit
-                                                                                        )
-                                                                                    ),
-                                                                                    ''
-                                                                                )}
-                                                                            </p>
-                                                                        </>
+                                                                        <p className='_searchSuggestion'>
+                                                                            {_.join(
+                                                                                _.slice(
+                                                                                    __searchSuggestionSplit,
+                                                                                    __startIndex +
+                                                                                    _.size(
+                                                                                        __typedCharactersSearchSplit
+                                                                                    )
+                                                                                ),
+                                                                                ''
+                                                                            )}
+                                                                        </p>
                                                                     )}
                                                                 </>
                                                             );
@@ -736,43 +747,61 @@ const Dashboard = (props) => {
                                     />
                                 </Form>
                             </Nav.Item>
-                            <Nav.Item className='_notifications'>
-                                <Nav.Link
-                                    className='d-flex align-items-center justify-content-center'
-                                    eventKey='_notifications'
-                                >
-                                    <FontAwesomeIcon icon={faBell} />
-                                </Nav.Link>
-                            </Nav.Item>
+                            {_hasPermission('manage_notifications') && (
+                                <Nav.Item className='_notifications'>
+                                    <Nav.Link
+                                        className='d-flex align-items-center justify-content-center'
+                                        eventKey='_notifications'
+                                    >
+                                        <FontAwesomeIcon icon={faBell} />
+                                    </Nav.Link>
+                                </Nav.Item>
+                            )}
                         </Nav>
                         <Tab.Content>
-                            <Tab.Pane eventKey='_dashboard'>
-                                <PDashboard />
-                            </Tab.Pane>
-                            <Tab.Pane eventKey='_wallet'>
-                                <PWallet />
-                            </Tab.Pane>
-                            <Tab.Pane eventKey='_products'>
-                                <PProducts />
-                            </Tab.Pane>
-                            <Tab.Pane eventKey='_clients'>
-                                <PClients />
-                            </Tab.Pane>
-                            <Tab.Pane eventKey='_testimonies'>
-                                <PTestimonies />
-                            </Tab.Pane>
-                            <Tab.Pane eventKey='_blog'>
-                                <PBlog />
-                            </Tab.Pane>
-                            <Tab.Pane eventKey='_teams'>
-                                <PTeams />
-                            </Tab.Pane>
+                            {_hasPermission('view_dashboard') && (
+                                <Tab.Pane eventKey='_dashboard'>
+                                    <PDashboard />
+                                </Tab.Pane>
+                            )}
+                            {_hasPermission('view_wallet') && (
+                                <Tab.Pane eventKey='_wallet'>
+                                    <PWallet />
+                                </Tab.Pane>
+                            )}
+                            {_hasPermission('view_products') && (
+                                <Tab.Pane eventKey='_products'>
+                                    <PProducts />
+                                </Tab.Pane>
+                            )}
+                            {_hasPermission('view_clients') && (
+                                <Tab.Pane eventKey='_clients'>
+                                    <PClients />
+                                </Tab.Pane>
+                            )}
+                            {_hasPermission('view_testimonies') && (
+                                <Tab.Pane eventKey='_testimonies'>
+                                    <PTestimonies />
+                                </Tab.Pane>
+                            )}
+                            {_hasPermission('view_articles') && (
+                                <Tab.Pane eventKey='_blog'>
+                                    <PBlog />
+                                </Tab.Pane>
+                            )}
+                            {_hasPermission('manage_teams') && (
+                                <Tab.Pane eventKey='_teams'>
+                                    <PTeams />
+                                </Tab.Pane>
+                            )}
                             <Tab.Pane eventKey='_settings'>
                                 <PSettings />
                             </Tab.Pane>
-                            <Tab.Pane eventKey='_notifications'>
-                                <PNotifications />
-                            </Tab.Pane>
+                            {_hasPermission('manage_notifications') && (
+                                <Tab.Pane eventKey='_notifications'>
+                                    <PNotifications />
+                                </Tab.Pane>
+                            )}
                         </Tab.Content>
                     </div>
                 </Tab.Container>

@@ -1754,6 +1754,38 @@ form {
                                             }
                                         }
                                     }
+
+                                    &>.form-text {
+                                        position: absolute;
+                                        margin: 0;
+                                        padding: 0.5vh 1.25vh;
+                                        font-size: x-small;
+                                        @include _transform($top: 50%,
+                                            $left: 100%,
+                                            $bottom: '',
+                                            $right: '',
+                                            $t_x: 1vh,
+                                            $t_y: -50%,
+                                            $r_deg: 0,
+                                            $s_x: 1,
+                                            $s_y: 1);
+                                        @include _transitions($property: 'all',
+                                            $duration: 0.25s,
+                                            $timing: 'ease',
+                                            $delay: ''
+                                        );
+                                        @include _dimensions($width: max-content, $height: '');
+
+                                        &::before {
+                                            position: absolute;
+                                            content: '';
+                                            border-style: solid;
+                                            border-width: 0 1vh 1vh 0;
+                                            border-color: transparent rgba(var(--bs-danger-rgb), var(--bs-bg-opacity)) transparent transparent;
+                                            @include _dimensions($width: 1vh, $height: 1vh);
+                                            @include _transform($top: 50%, $left: 0, $bottom: '', $right: '', $t_x: -1vh, $t_y: -50%, $r_deg: 0, $s_x: 1, $s_y: 1);
+                                        }
+                                    }
                                 }
                             }
                         }

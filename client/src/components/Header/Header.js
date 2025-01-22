@@ -160,11 +160,10 @@ const Header = (props) => {
                                     return !_article._article_isPrivate;
                                 }),
                                 (_article) => ({
-                                    username: _article._article_author.username,
-                                    firstname: _article._article_author.firstname,
-                                    lastname: _article._article_author.lastname,
-                                    email: _article._article_author.email,
-                                    teamTitle: _article._article_author.Team?._team_title,
+                                    username: _article._article_author._user_username,
+                                    firstname: _article._article_author._user_firstname,
+                                    lastname: _article._article_author._user_lastname,
+                                    email: _article._article_author._user_email
                                 })
                             ),
                             (__u) => [

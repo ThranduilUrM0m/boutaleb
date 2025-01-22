@@ -145,7 +145,7 @@ const Signup = (props) => {
                 .then((response) => {
                     return response.data._user;
                 })
-                .catch((error) => {
+                .catch(() => {
                     return false;
                 });
         } catch (error) {

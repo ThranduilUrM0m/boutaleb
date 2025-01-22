@@ -125,7 +125,10 @@ router.get('/', async (req, res) => {
     try {
         const users = await User.find()
             .populate({ path: '_user_teams.Team', model: 'Team' })
-            .populate('Role')
+            .populate({
+                path: 'Role',
+                populate: { path: 'Permission', model: 'Permission' }
+            })
             .populate('Expertise')
             .populate('Department')
             .populate('Mentor')
@@ -180,7 +183,10 @@ router.get('/_checkToken', async (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.sub)
             .populate({ path: '_user_teams.Team', model: 'Team' })
-            .populate('Role')
+            .populate({
+                path: 'Role',
+                populate: { path: 'Permission', model: 'Permission' }
+            })
             .populate('Expertise')
             .populate('Department')
             .populate('Mentor');
@@ -237,7 +243,10 @@ router.post('/_login', async (req, res) => {
             ],
         })
             .populate({ path: '_user_teams.Team', model: 'Team' })
-            .populate('Role')
+            .populate({
+                path: 'Role',
+                populate: { path: 'Permission', model: 'Permission' }
+            })
             .populate('Expertise')
             .populate('Department')
             .populate('Mentor');
@@ -288,7 +297,10 @@ router.param('id', async (req, res, next, id) => {
     try {
         const user = await User.findById(id)
             .populate({ path: '_user_teams.Team', model: 'Team' })
-            .populate('Role')
+            .populate({
+                path: 'Role',
+                populate: { path: 'Permission', model: 'Permission' }
+            })
             .populate('Expertise')
             .populate('Department')
             .populate('Mentor');

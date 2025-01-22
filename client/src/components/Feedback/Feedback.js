@@ -300,10 +300,6 @@ const Feedback = (props) => {
     };
 
     const onSubmit = async (values) => {
-        _.isEmpty(values._testimonial_fingerprint) &&
-            (values._testimonial_fingerprint = _fingerprint);
-        console.log(values);
-
         try {
             if (_.isEmpty(_testimonialToEdit)) {
                 return axios
@@ -368,7 +364,6 @@ const Feedback = (props) => {
     const onError = (error) => {
         setModalHeader('We\'re sorry!');
         setModalBody('Please check the fields for valid information.');
-        console.log(error);
         setModalIcon(<FontAwesomeIcon icon={faRectangleXmark} />);
         setShowModal(true);
     };

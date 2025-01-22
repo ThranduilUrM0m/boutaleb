@@ -56,6 +56,12 @@ const Article = new Schema(
                 ref: 'Downvote',
             },
         ],
+        _article_status: {
+            type: String,
+            enum: ['pending', 'approved', 'rejected'],
+            default: 'pending',
+        }
+        /* Need to go over all places where i show articles and check the status next to isPrivate */
     },
     { timestamps: true },
 );

@@ -47,7 +47,7 @@ import {
     faEllipsisV,
     faHashtag,
     faPen
-} from "@fortawesome/free-solid-svg-icons";
+} from '@fortawesome/free-solid-svg-icons';
 import {
     faEye,
     faEyeSlash,
@@ -55,8 +55,13 @@ import {
     faCircleXmark,
     faCommentAlt,
     faThumbsDown,
-    faThumbsUp
-} from "@fortawesome/free-regular-svg-icons";
+    faThumbsUp,
+    faRectangleXmark,
+    faSquareCheck,
+    faClock,
+    faTimesCircle,
+    faCheckCircle
+} from '@fortawesome/free-regular-svg-icons';
 
 // SimpleBar for Virtual Scrolling
 import SimpleBar from 'simplebar-react';
@@ -132,18 +137,95 @@ const __modules = {
     ],
 };
 
+const mainColors = ["#3dc1d3", "#f985de"];
+const gradientColors = ["#FF3CAC", "#784BA0", "#2B86C5"];
+const generateShades = (color, shades = 5) => {
+    return Array.from({ length: shades }, (_, i) => {
+        const shadeFactor = 1 - (i / shades) * 0.2;
+        return shadeColor(color, shadeFactor);
+    });
+};
+const shadeColor = (color, factor) => {
+    const f = parseInt(color.slice(1), 16);
+    const t = factor < 0 ? 0 : 255;
+    const p = factor < 0 ? factor * -1 : factor;
+    const R = f >> 16;
+    const G = (f >> 8) & 0x00ff;
+    const B = f & 0x0000ff;
+    return (
+        "#" +
+        (
+            0x1000000 +
+            (Math.round((t - R) * p) + R) * 0x10000 +
+            (Math.round((t - G) * p) + G) * 0x100 +
+            (Math.round((t - B) * p) + B)
+        )
+            .toString(16)
+            .slice(1)
+    );
+};
+const uiColors = [
+    ...generateShades(mainColors[0], 5),
+    ...generateShades(mainColors[1], 5),
+    ...gradientColors,
+];
+
+/* Check the chatbot project to make the table look more organized like in there */
 const PBlog = (props) => {
-    const { article } = _useStore();
+    const { user, article } = _useStore();
 
     // Access your states and actions like this:
-    const _articles = article._articles;
+    const _user = user._user;
+
+    // Assume '_user' includes role and permissions populated from the API
+    const _userPermissions = _.uniq(
+        _.flatMap(_user.Role, __r =>
+            _.map(__r.Permission, __p =>
+                __p._permission_title
+            )
+        )
+    );
+
+    const _hasPermission = (__p) => {
+        // Check if the user has the specified permission
+        return _.includes(_userPermissions, __p);
+    };
+
+    const _articles = _.filter(_.sortBy(article._articles, '_article_author'), (article) => {
+        if (_hasPermission('view_articles')) {
+            return true;
+        }
+        if (
+            _hasPermission('create_article') ||
+            _hasPermission('update_article') ||
+            _hasPermission('delete_article')
+        ) {
+            return article._article_author === _user._id || !article._article_isPrivate;
+        }
+        if (
+            _hasPermission('create_own_article') ||
+            _hasPermission('update_own_article') ||
+            _hasPermission('delete_own_article')
+        ) {
+            return article._article_author === _user._id;
+        }
+        return false;
+    });
     const _articleToEdit = article._articleToEdit;
 
+    const addArticle = article['_article_ADD_STATE'];
+
     const setArticles = article['_articles_SET_STATE'];
+    const updateArticles = article['_articles_UPDATE_STATE_ITEM'];
 
     const clearArticleToEdit = article['_articleToEdit_CLEAR_STATE'];
 
     const [_showModal, setShowModal] = useState(false);
+
+    const [_showModalSubmit, setShowModalSubmit] = useState(false);
+    const [_modalHeaderSubmit, setModalHeaderSubmit] = useState('');
+    const [_modalBodySubmit, setModalBodySubmit] = useState('');
+    const [_modalIconSubmit, setModalIconSubmit] = useState('');
 
     const _validationSchema = Yup.object()
         .shape({
@@ -153,11 +235,21 @@ const PBlog = (props) => {
             _article_body: Yup.string()
                 .default('')
                 .required('Please provide some content.'),
-            _article_author: Yup.string().default(null),
-            _article_category: Yup.string().default(''),
-            _article_isPrivate: Yup.boolean().default(false),
-            _article_tags: Yup.array().default([]),
-            _article_comments: Yup.array().default([]),
+            _article_author: Yup.object({
+                _id: Yup.string()
+                    .required('Author ID is required')
+            })
+                .default({ _id: _user._id })
+                .required('Author is required'),
+            _article_category: Yup.string()
+                .default('')
+                .required('Please pick a category.'),
+            _article_isPrivate: Yup.boolean()
+                .default(false),
+            _article_tags: Yup.array()
+                .default([]),
+            _article_comments: Yup.array()
+                .default([]),
         })
         .required();
     const {
@@ -167,6 +259,7 @@ const PBlog = (props) => {
         watch,
         setValue,
         resetField,
+        reset,
         trigger,
         setError,
         clearErrors,
@@ -178,7 +271,7 @@ const PBlog = (props) => {
         defaultValues: {
             _article_title: '',
             _article_body: '',
-            _article_author: null,
+            _article_author: { _id: _user._id } || null,
             _article_category: '',
             _article_isPrivate: false,
             _article_tags: [],
@@ -193,6 +286,18 @@ const PBlog = (props) => {
         {
             dataField: '_article_title',
             text: 'Title',
+            style: {
+                maxWidth: '20vh',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+            },
+            headerStyle: {
+                maxWidth: '20vh',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+            },
             sort: true,
             formatter: (cell, row) => {
                 return (
@@ -243,7 +348,7 @@ const PBlog = (props) => {
         },
         {
             dataField: 'createdAt',
-            text: 'Created At',
+            text: 'Creation Date',
             sort: true,
             formatter: (cell, row) => {
                 return <Moment format='MMM Do, YYYY'>{cell}</Moment>;
@@ -251,7 +356,7 @@ const PBlog = (props) => {
         },
         {
             dataField: '_article_isPrivate',
-            text: 'Status',
+            text: 'Privacy',
             sort: true,
             editor: {
                 type: Type.CHECKBOX,
@@ -272,91 +377,39 @@ const PBlog = (props) => {
             },
         },
         {
-            dataField: '_article_tags',
-            text: 'Tags',
-            sort: false,
-            style: {
-                flex: '1',
-            },
+            dataField: '_article_status',
+            text: 'Status',
+            sort: true,
             formatter: (cell) => {
                 return (
-                    <ul className='text-muted tags d-flex flex-row align-items-start'>
-                        {_.map(cell, (_tag) => (
-                            <li
-                                key={`${_tag}`}
-                                className={`tag_item border rounded-0 d-flex align-items-center`}
-                            >
-                                <FontAwesomeIcon icon={faHashtag} />
-                                <p>{_.upperFirst(_tag)}.</p>
-                            </li>
-                        ))}
-                    </ul>
-                );
+                    <Badge
+                        bg={
+                            cell === 'approved' ? 'success' :
+                                cell === 'denied' ? 'danger' :
+                                    'warning'
+                        }
+                    >
+                        <FontAwesomeIcon
+                            icon={
+                                cell === 'approved' ? faCheckCircle :
+                                    cell === 'denied' ? faTimesCircle :
+                                        faClock
+                            }
+                        />
+                        {cell}.
+                    </Badge>
+                )
             },
-        },
-        {
-            dataField: '_article_comments',
-            text: 'Comments',
-            sort: true,
-            headerAlign: 'center',
-            align: 'center',
-            headerFormatter: (column, colIndex) => {
-                return <FontAwesomeIcon icon={faCommentAlt} />;
-            },
-            formatter: (cell, row) => {
-                return _.size(cell.value);
-            },
-            type: 'number',
-            editable: false,
-        },
-        {
-            dataField: '_article_views',
-            text: 'Views',
-            sort: true,
-            headerAlign: 'center',
-            align: 'center',
-            headerFormatter: (column, colIndex) => {
-                return <FontAwesomeIcon icon={faEye} />;
-            },
-            formatter: (cell, row) => {
-                return _.size(cell.value);
-            },
-            type: 'number',
-            editable: false,
-        },
-        {
-            dataField: '_article_upvotes',
-            text: 'Upvotes',
-            sort: true,
-            headerAlign: 'center',
-            align: 'center',
-            headerFormatter: (column, colIndex) => {
-                return <FontAwesomeIcon icon={faThumbsUp} />;
-            },
-            formatter: (cell, row) => {
-                return _.size(cell.value);
-            },
-            type: 'number',
-            editable: false,
-        },
-        {
-            dataField: '_article_downvotes',
-            text: 'Downvotes',
-            sort: true,
-            headerAlign: 'center',
-            align: 'center',
-            headerFormatter: (column, colIndex) => {
-                return <FontAwesomeIcon icon={faThumbsDown} />;
-            },
-            formatter: (cell, row) => {
-                return _.size(cell.value);
-            },
-            type: 'number',
-            editable: false,
         },
         {
             dataField: '_edit',
             text: '',
+            style: {
+                textAlign: 'center'
+            },
+            headerStyle: {
+                textAlign: 'center'
+            },
             isDummyField: true,
             formatter: () => {
                 return (
@@ -372,81 +425,56 @@ const PBlog = (props) => {
         },
     ];
 
-    const _selectRow = {
-        mode: 'checkbox',
-        clickToSelect: false,
-        onSelect: (row, isSelect, rowIndex, e) => {
-            isSelect
-                ? setSelectedArticles([..._selectedArticles, row])
-                : setSelectedArticles(
-                    _.filter(_selectedArticles, (_a) => {
-                        return _a._id !== row._id;
-                    })
-                );
+    const _selectRow = _hasPermission('delete_article') || _hasPermission('delete_own_article')
+        ? {
+            mode: 'checkbox',
+            clickToSelect: false,
+            classes: 'bg-light',
+            onSelect: (row, isSelect, rowIndex, e) => {
+                isSelect
+                    ? setSelectedArticles([..._selectedArticles, row])
+                    : setSelectedArticles(
+                        _.filter(_selectedArticles, (_a) => _a._id !== row._id)
+                    );
+                return true;
+            },
+            onSelectAll: (isSelect, rows, e) => {
+                isSelect ? setSelectedArticles(rows) : setSelectedArticles([]);
+            },
+            selectionRenderer: ({ mode, checked, disabled }) => (
+                <Form.Group className='_formGroup _checkGroup'>
+                    <FloatingLabel label='' className='_formLabel __checkBox'>
+                        <Form.Check
+                            type={mode}
+                            className='_formCheckbox d-flex align-items-center justify-content-center'
+                            checked={checked}
+                            onChange={() => { }}
+                        />
+                    </FloatingLabel>
+                </Form.Group>
+            ),
+            selectionHeaderRenderer: ({ mode, checked, indeterminate }) => (
+                <Form.Group className='_formGroup _checkGroup'>
+                    <FloatingLabel label='' className='_formLabel __checkBox'>
+                        <Form.Check
+                            type={mode}
+                            className='_formCheckbox d-flex align-items-center justify-content-center'
+                            checked={checked}
+                            onChange={() => { }}
+                            ref={(input) => {
+                                if (input) input.indeterminate = indeterminate;
+                            }}
+                        />
+                    </FloatingLabel>
+                </Form.Group>
+            ),
+        }
+        : {};
 
-            return true;
-        },
-        onSelectAll: (isSelect, rows, e) => {
-            isSelect ? setSelectedArticles(rows) : setSelectedArticles([]);
-        },
-        selectionRenderer: ({ mode, checked, disabled }) => (
-            <Form.Group className='_formGroup _checkGroup'>
-                <FloatingLabel label='' className='_formLabel __checkBox'>
-                    <Form.Check
-                        type={mode}
-                        className='_formCheckbox d-flex'
-                        checked={checked}
-                        /*
-                                        Since react-bootstrap-table-next manages selection and
-                                        I provide the checked state through the selectionRenderer
-                                        and selectionHeaderRenderer functions, we need to ensure
-                                        the checkboxes are correctly set up without additional
-                                        state management in the render functions.
-            
-                                        To fix the warning, ensure that the onChange handler
-                                        is included, even if it just acts as a placeholder because
-                                        the actual state management is handled elsewhere.
-                                    */
-                        onChange={() => { }}
-                    />
-                </FloatingLabel>
-            </Form.Group>
-        ),
-        selectionHeaderRenderer: ({ mode, checked, indeterminate }) => (
-            <Form.Group className='_formGroup _checkGroup'>
-                <FloatingLabel label='' className='_formLabel __checkBox'>
-                    <Form.Check
-                        type={mode}
-                        className='_formCheckbox d-flex'
-                        checked={checked}
-                        /*
-                                        Since react-bootstrap-table-next manages selection and
-                                        I provide the checked state through the selectionRenderer
-                                        and selectionHeaderRenderer functions, we need to ensure
-                                        the checkboxes are correctly set up without additional
-                                        state management in the render functions.
-            
-                                        To fix the warning, ensure that the onChange handler
-                                        is included, even if it just acts as a placeholder because
-                                        the actual state management is handled elsewhere.
-                                    */
-                        onChange={() => { }}
-                        ref={(input) => {
-                            if (input) input.indeterminate = indeterminate;
-                        }}
-                    />
-                </FloatingLabel>
-            </Form.Group>
-        ),
-    };
     /* Bootstrap Table For Articles */
 
     const [_articleTitleFocused, setArticleTitleFocused] = useState(false);
     const [_articleBodyFocused, setArticleBodyFocused] = useState(false);
-
-    /* Temporary Value for the React Quill */
-    const [__reactQuill, setReactQuill] = useState('');
-    /* Temporary Value for the React Quill */
 
     /*** Category ***/
     /** Variables **/
@@ -610,7 +638,7 @@ const PBlog = (props) => {
     };
     const _handleBlurCategory = async () => {
         setArticleCategoryFocused(
-            !_.isEmpty(watch('_article_category')) ? true : false
+            !_.isEmpty(watch('_article_category'))
         );
     };
     const _handleFocusCategory = () => {
@@ -842,124 +870,120 @@ const PBlog = (props) => {
     /*** Tags ***/
 
     const _getArticles = useCallback(async () => {
-        try {
-            axios('/api/article')
-                .then((response) => {
-                    setArticles(response.data._articles);
-                    setCategories(
+        axios('/api/article')
+            .then((response) => {
+                setArticles(response.data._articles);
+                setCategories(
+                    _.orderBy(
+                        _.uniqBy(
+                            _.map(
+                                _.map(
+                                    _.filter(response.data._articles, (_article) => {
+                                        return !_article._article_isPrivate;
+                                    }),
+                                    '_article_category'
+                                ),
+                                (_category, _index) => {
+                                    return {
+                                        value: _.toLower(_category.replace(/\.$/, '')),
+                                    };
+                                }
+                            ),
+                            'value'
+                        ),
+                        ['value'],
+                        ['asc']
+                    )
+                );
+                setTags(
+                    _.orderBy(
+                        _.uniqBy(
+                            _.map(
+                                _.flatMap(
+                                    _.filter(response.data._articles, (_article) => {
+                                        return !_article._article_isPrivate;
+                                    }),
+                                    '_article_tags'
+                                ),
+                                (_tag, _index) => {
+                                    return {
+                                        value: _.toLower(_tag.replace(/\.$/, '')),
+                                    };
+                                }
+                            ),
+                            'value'
+                        ),
+                        ['value'],
+                        ['asc']
+                    )
+                );
+                setItemsCategory(
+                    _.orderBy(
+                        _.uniqBy(
+                            _.map(
+                                _.map(
+                                    _.filter(response.data._articles, (_article) => {
+                                        return !_article._article_isPrivate;
+                                    }),
+                                    '_article_category'
+                                ),
+                                (_category, _index) => {
+                                    return {
+                                        value: _.toLower(_category.replace(/\.$/, '')),
+                                    };
+                                }
+                            ),
+                            'value'
+                        ),
+                        ['value'],
+                        ['asc']
+                    )
+                );
+                setItemsTag(
+                    _.orderBy(
+                        _.uniqBy(
+                            _.map(
+                                _.flatMap(
+                                    _.filter(response.data._articles, (_article) => {
+                                        return !_article._article_isPrivate;
+                                    }),
+                                    '_article_tags'
+                                ),
+                                (_tag, _index) => {
+                                    return {
+                                        value: _.toLower(_tag.replace(/\.$/, '')),
+                                    };
+                                }
+                            ),
+                            'value'
+                        ),
+                        ['value'],
+                        ['asc']
+                    )
+                );
+                set4topCategories(
+                    _.slice(
                         _.orderBy(
-                            _.uniqBy(
-                                _.map(
-                                    _.map(
-                                        _.filter(response.data._articles, (_article) => {
-                                            return !_article._article_isPrivate;
-                                        }),
-                                        '_article_category'
-                                    ),
-                                    (_category, _index) => {
-                                        return {
-                                            value: _.toLower(_category.replace(/\.$/, '')),
-                                        };
-                                    }
+                            _.map(
+                                _.countBy(
+                                    _.map(response.data._articles, '_article_category')
                                 ),
-                                'value'
+                                (count, categoryName) => ({
+                                    name: _.toLower(categoryName),
+                                    frequency: count,
+                                })
                             ),
-                            ['value'],
-                            ['asc']
-                        )
-                    );
-                    setTags(
-                        _.orderBy(
-                            _.uniqBy(
-                                _.map(
-                                    _.flatMap(
-                                        _.filter(response.data._articles, (_article) => {
-                                            return !_article._article_isPrivate;
-                                        }),
-                                        '_article_tags'
-                                    ),
-                                    (_tag, _index) => {
-                                        return {
-                                            value: _.toLower(_tag.replace(/\.$/, '')),
-                                        };
-                                    }
-                                ),
-                                'value'
-                            ),
-                            ['value'],
-                            ['asc']
-                        )
-                    );
-                    setItemsCategory(
-                        _.orderBy(
-                            _.uniqBy(
-                                _.map(
-                                    _.map(
-                                        _.filter(response.data._articles, (_article) => {
-                                            return !_article._article_isPrivate;
-                                        }),
-                                        '_article_category'
-                                    ),
-                                    (_category, _index) => {
-                                        return {
-                                            value: _.toLower(_category.replace(/\.$/, '')),
-                                        };
-                                    }
-                                ),
-                                'value'
-                            ),
-                            ['value'],
-                            ['asc']
-                        )
-                    );
-                    setItemsTag(
-                        _.orderBy(
-                            _.uniqBy(
-                                _.map(
-                                    _.flatMap(
-                                        _.filter(response.data._articles, (_article) => {
-                                            return !_article._article_isPrivate;
-                                        }),
-                                        '_article_tags'
-                                    ),
-                                    (_tag, _index) => {
-                                        return {
-                                            value: _.toLower(_tag.replace(/\.$/, '')),
-                                        };
-                                    }
-                                ),
-                                'value'
-                            ),
-                            ['value'],
-                            ['asc']
-                        )
-                    );
-                    set4topCategories(
-                        _.slice(
-                            _.orderBy(
-                                _.map(
-                                    _.countBy(
-                                        _.map(response.data._articles, '_article_category')
-                                    ),
-                                    (count, categoryName) => ({
-                                        name: _.toLower(categoryName),
-                                        frequency: count,
-                                    })
-                                ),
-                                ['frequency'],
-                                ['desc']
-                            ),
-                            0,
-                            4
-                        )
-                    );
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
-        } catch (error) {
-            console.log(error);
-        }
+                            ['frequency'],
+                            ['desc']
+                        ),
+                        0,
+                        4
+                    )
+                );
+            })
+            .catch((error) => {
+                console.log(error);
+            });
     }, [
         setArticles,
         setCategories,
@@ -1010,11 +1034,80 @@ const PBlog = (props) => {
       }; */
 
     const onSubmit = async (values) => {
-        console.log(values);
+        // Ensure author is correctly set before submission
+        values._article_author = _user._id;
+
+        try {
+            if (_.isEmpty(_articleToEdit)) {
+                return axios
+                    .post('/api/article', values)
+                    .then((res) => {
+                        addArticle(res.data._testimonial);
+                    })
+                    .then(() => {
+                        reset({
+                            _article_title: '',
+                            _article_body: '',
+                            _article_author: _user._id || null,
+                            _article_category: '',
+                            _article_isPrivate: false,
+                            _article_tags: [],
+                            _article_comments: [],
+                        });
+
+                        setModalHeaderSubmit('Done ✔ Congratulation !');
+                        setModalBodySubmit('Thank you for submitting your article! It\'s currently under review by our team to ensure it meets our guidelines. Once approved, it will be published and available for others to read.\nWe\'ll notify you as soon as it\'s live. In the meantime, feel free to continue exploring and contributing!');
+                        setModalIconSubmit(<FontAwesomeIcon icon={faSquareCheck} />);
+                    })
+                    .catch((error) => {
+                        setModalHeaderSubmit('We\'re sorry!');
+                        setModalBodySubmit(JSON.stringify(error));
+                        setModalIconSubmit(<FontAwesomeIcon icon={faRectangleXmark} />);
+                    });
+            } else {
+                return axios
+                    .patch(`/api/article/${_articleToEdit._id}`, values)
+                    .then((res) => {
+                        updateArticles(res.data);
+                    })
+                    .then(() => {
+                        reset({
+                            _article_title: '',
+                            _article_body: '',
+                            _article_author: _user._id || null,
+                            _article_category: '',
+                            _article_isPrivate: false,
+                            _article_tags: [],
+                            _article_comments: [],
+                        });
+
+                        // Clear the _testimonialToEdit state
+                        clearArticleToEdit();
+
+                        setModalHeaderSubmit('Done ✔ Congratulation !');
+                        setModalBodySubmit('Thank you for submitting your article! It\'s currently under review by our team to ensure it meets our guidelines. Once approved, it will be published and available for others to read.\nWe\'ll notify you as soon as it\'s live. In the meantime, feel free to continue exploring and contributing!');
+                        setModalIconSubmit(<FontAwesomeIcon icon={faSquareCheck} />);
+                    })
+                    .catch((error) => {
+                        setModalHeaderSubmit('We\'re sorry!');
+                        setModalBodySubmit(JSON.stringify(error));
+                        setModalIconSubmit(<FontAwesomeIcon icon={faRectangleXmark} />);
+                    });
+            }
+        } catch (error) {
+            setModalHeaderSubmit('We\'re sorry!');
+            setModalBodySubmit(JSON.stringify(error));
+            setModalIconSubmit(<FontAwesomeIcon icon={faRectangleXmark} />);
+        }
+
+        setShowModalSubmit(true);
     };
 
     const onError = (error) => {
-        console.log(error);
+        setModalHeaderSubmit('We\'re sorry!');
+        setModalBodySubmit('Please check the fields for valid information.');
+        setModalIconSubmit(<FontAwesomeIcon icon={faRectangleXmark} />);
+        setShowModalSubmit(true);
     };
 
     useEffect(() => {
@@ -1044,40 +1137,74 @@ const PBlog = (props) => {
                                         <Col className='g-col-3 d-flex align-items-end'>
                                             <span>
                                                 Articles.
-                                                <p className='text-muted'>Manage your Articles Here.</p>
+                                                <p className='text-muted'>
+                                                    {
+                                                        (() => {
+                                                            let message = 'Welcome! In here, you can ';
+                                                            const permissions = {
+                                                                manageAll:
+                                                                    _hasPermission('create_article') &&
+                                                                    _hasPermission('update_article') &&
+                                                                    _hasPermission('delete_article'),
+                                                                manageOwn:
+                                                                    _hasPermission('create_own_article') &&
+                                                                    _hasPermission('update_own_article') &&
+                                                                    _hasPermission('delete_own_article'),
+                                                                view: _hasPermission('view_articles'),
+                                                            };
+                                                            switch (true) {
+                                                                case permissions.manageAll:
+                                                                    message += 'manage all articles.';
+                                                                    break;
+                                                                case permissions.manageOwn:
+                                                                    message += 'manage your own articles.';
+                                                                    break;
+                                                                case permissions.view:
+                                                                    message += 'view articles.';
+                                                                    break;
+                                                                default:
+                                                                    message += 'You do not have permission to manage articles.';
+                                                            }
+                                                            return message;
+                                                        })()
+                                                    }
+                                                </p>
                                             </span>
                                         </Col>
                                         <Col className='g-col-3'></Col>
                                         <Col className='g-col-3'></Col>
                                         <Col className='g-col-3 d-flex justify-content-end'>
                                             {
-                                                //Upon click it just disapears or appears too fast
-                                                !_.isEmpty(_selectedArticles) && (
+                                                (_hasPermission('delete_article') || _hasPermission('delete_own_article')) && !_.isEmpty(_selectedArticles) && (
                                                     <Button
                                                         type='button'
-                                                        className='border border-0 rounded-0 _red'
+                                                        className='border border-0 rounded-0 _red w-50'
                                                         variant='link'
                                                         onClick={() => _handleDelete()}
                                                     >
-                                                        Delete
-                                                        <b className='pink_dot'>.</b>
+                                                        Delete {_.size(_selectedArticles)} articles<b className='pink_dot'>.</b>
                                                     </Button>
                                                 )
                                             }
-                                            <Button
-                                                type='button'
-                                                className='border border-0 rounded-0 inverse w-50'
-                                                variant='outline-light'
-                                                onClick={() => setShowModal(true)}
-                                            >
-                                                <div className='buttonBorders'>
-                                                    <div className='borderTop'></div>
-                                                    <div className='borderRight'></div>
-                                                    <div className='borderBottom'></div>
-                                                    <div className='borderLeft'></div>
-                                                </div>
-                                                <span>Add Article.</span>
-                                            </Button>
+                                            {
+                                                // Show add article button if user has permission to create articles
+                                                (_hasPermission('create_article') || _hasPermission('create_own_article')) && (
+                                                    <Button
+                                                        type='button'
+                                                        className='border border-0 rounded-0 inverse w-50'
+                                                        variant='outline-light'
+                                                        onClick={() => setShowModal(true)}
+                                                    >
+                                                        <div className='buttonBorders'>
+                                                            <div className='borderTop'></div>
+                                                            <div className='borderRight'></div>
+                                                            <div className='borderBottom'></div>
+                                                            <div className='borderLeft'></div>
+                                                        </div>
+                                                        <span>Add Article.</span>
+                                                    </Button>
+                                                )
+                                            }
                                         </Col>
                                     </Row>
                                 </Form>
@@ -1098,6 +1225,7 @@ const PBlog = (props) => {
                                         condensed
                                         bordered={false}
                                         noDataIndication={() => 'No articles found'}
+                                        rowClasses={(row, rowIndex) => { const authorColor = uiColors[rowIndex % uiColors.length]; return `border-start border-5 author-${authorColor}`; }}
                                     />
                                 </SimpleBar>
                             </Card.Body>
@@ -1180,7 +1308,7 @@ const PBlog = (props) => {
                                 <Controller
                                     name='_article_body'
                                     control={control}
-                                    render={({ field }) => (
+                                    render={({ field: { onChange, onBlur, value } }) => (
                                         <Form.Group
                                             controlId='_article_body'
                                             className={`_formGroup _articleGroup rounded-1 ${_articleBodyFocused ? 'focused' : ''
@@ -1196,13 +1324,16 @@ const PBlog = (props) => {
                                                     placeholder='Tell us your story.'
                                                     theme='snow'
                                                     modules={__modules}
-                                                    value={__reactQuill}
-                                                    onChange={() => setReactQuill()}
+                                                    value={value || ''}
+                                                    onChange={(content) => onChange(content)}
                                                     onBlur={() => {
+                                                        onBlur();
                                                         setArticleBodyFocused(false);
                                                         trigger('_article_body');
                                                     }}
-                                                    onFocus={() => setArticleBodyFocused(true)}
+                                                    onFocus={() => {
+                                                        setArticleBodyFocused(true);
+                                                    }}
                                                 />
                                                 {errors._article_body && (
                                                     <Form.Text
@@ -1262,35 +1393,31 @@ const PBlog = (props) => {
                                                 return (
                                                     <>
                                                         {__startIndex !== -1 && (
-                                                            <>
-                                                                <p className='_tagSuggestion'>
-                                                                    {_.join(
-                                                                        _.slice(
-                                                                            __tagSuggestionSplit,
-                                                                            0,
-                                                                            __startIndex
-                                                                        ),
-                                                                        ''
-                                                                    )}
-                                                                </p>
-                                                            </>
+                                                            <p className='_tagSuggestion'>
+                                                                {_.join(
+                                                                    _.slice(
+                                                                        __tagSuggestionSplit,
+                                                                        0,
+                                                                        __startIndex
+                                                                    ),
+                                                                    ''
+                                                                )}
+                                                            </p>
                                                         )}
                                                         <p className='_typedCharacters'>
                                                             {_typedCharactersTag}
                                                         </p>
                                                         {__startIndex !== -1 && (
-                                                            <>
-                                                                <p className='_tagSuggestion'>
-                                                                    {_.join(
-                                                                        _.slice(
-                                                                            __tagSuggestionSplit,
-                                                                            __startIndex +
-                                                                            _.size(__typedCharactersTagSplit)
-                                                                        ),
-                                                                        ''
-                                                                    )}
-                                                                </p>
-                                                            </>
+                                                            <p className='_tagSuggestion'>
+                                                                {_.join(
+                                                                    _.slice(
+                                                                        __tagSuggestionSplit,
+                                                                        __startIndex +
+                                                                        _.size(__typedCharactersTagSplit)
+                                                                    ),
+                                                                    ''
+                                                                )}
+                                                            </p>
                                                         )}
                                                     </>
                                                 );
@@ -1426,11 +1553,11 @@ const PBlog = (props) => {
                                     className='g-col-1'
                                 >
                                     <Dropdown.Toggle as='span'>
-                                        <span className='d-flex align-items-center justify-content-center border'>
+                                        <span className={`d-flex align-items-center justify-content-center border ${errors._article_category ? 'border-danger' : ''}`}>
                                             <FontAwesomeIcon icon={faEllipsisV} />
                                         </span>
                                     </Dropdown.Toggle>
-                                    <Dropdown.Menu className='border rounded-0'>
+                                    <Dropdown.Menu className={`border rounded-0 ${errors._article_category ? 'border-danger' : ''}`}>
                                         {_.map(__4topCategories, (__aCategory, __index) => {
                                             return (
                                                 <Dropdown.Item as='span' key={__index}>
@@ -1497,10 +1624,8 @@ const PBlog = (props) => {
                                                                     }
                                                                 )}
                                                                 placeholder='Category.'
-                                                                className={`_formControl border rounded-0 ${errors._article_category
-                                                                    ? 'border-danger'
-                                                                    : ''
-                                                                    } ${!_.isEmpty(_typedCharactersCategory)
+                                                                className={`_formControl border rounded-0 
+                                                                    ${!_.isEmpty(_typedCharactersCategory)
                                                                         ? '_typing'
                                                                         : ''
                                                                     }`}
@@ -1521,52 +1646,38 @@ const PBlog = (props) => {
                                                                     return (
                                                                         <>
                                                                             {__startIndex !== -1 && (
-                                                                                <>
-                                                                                    <p className='_categorySuggestion'>
-                                                                                        {_.join(
-                                                                                            _.slice(
-                                                                                                __categorySuggestionSplit,
-                                                                                                0,
-                                                                                                __startIndex
-                                                                                            ),
-                                                                                            ''
-                                                                                        )}
-                                                                                    </p>
-                                                                                </>
+                                                                                <p className='_categorySuggestion'>
+                                                                                    {_.join(
+                                                                                        _.slice(
+                                                                                            __categorySuggestionSplit,
+                                                                                            0,
+                                                                                            __startIndex
+                                                                                        ),
+                                                                                        ''
+                                                                                    )}
+                                                                                </p>
                                                                             )}
                                                                             <p className='_typedCharacters'>
                                                                                 {_typedCharactersCategory}
                                                                             </p>
                                                                             {__startIndex !== -1 && (
-                                                                                <>
-                                                                                    <p className='_categorySuggestion'>
-                                                                                        {_.join(
-                                                                                            _.slice(
-                                                                                                __categorySuggestionSplit,
-                                                                                                __startIndex +
-                                                                                                _.size(
-                                                                                                    __typedCharactersCategorySplit
-                                                                                                )
-                                                                                            ),
-                                                                                            ''
-                                                                                        )}
-                                                                                    </p>
-                                                                                </>
+                                                                                <p className='_categorySuggestion'>
+                                                                                    {_.join(
+                                                                                        _.slice(
+                                                                                            __categorySuggestionSplit,
+                                                                                            __startIndex +
+                                                                                            _.size(
+                                                                                                __typedCharactersCategorySplit
+                                                                                            )
+                                                                                        ),
+                                                                                        ''
+                                                                                    )}
+                                                                                </p>
                                                                             )}
                                                                         </>
                                                                     );
                                                                 })()}
                                                             </span>
-                                                            {errors._article_category && (
-                                                                <Form.Text
-                                                                    className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watch('_article_category'))
-                                                                        ? '_fieldNotEmpty'
-                                                                        : ''
-                                                                        }`}
-                                                                >
-                                                                    {errors._article_category.message}
-                                                                </Form.Text>
-                                                            )}
                                                             {(!_.isEmpty(watch('_article_category')) ||
                                                                 !_.isEmpty(_typedCharactersCategory)) && (
                                                                     <div
@@ -1622,6 +1733,16 @@ const PBlog = (props) => {
                                             />
                                         </Dropdown.Item>
                                     </Dropdown.Menu>
+                                    {errors._article_category && (
+                                        <Form.Text
+                                            className={`bg-danger text-danger d-flex align-items-start bg-opacity-25 ${!_.isEmpty(watch('_article_category'))
+                                                ? '_fieldNotEmpty'
+                                                : ''
+                                                }`}
+                                        >
+                                            {errors._article_category.message}
+                                        </Form.Text>
+                                    )}
                                 </Dropdown>
                             </Col>
                             <Col className='g-col-6 d-flex justify-content-end'>
@@ -1643,6 +1764,35 @@ const PBlog = (props) => {
                                 </Button>
                             </Col>
                         </Row>
+                    </Modal.Footer>
+                </Form>
+            </Modal>
+
+            <Modal show={_showModalSubmit} onHide={() => setShowModalSubmit(false)} centered>
+                <Form>
+                    <Modal.Header closeButton>
+                        <Modal.Title>{_modalHeaderSubmit}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body className='text-muted'>
+                        <pre>{_modalBodySubmit}</pre>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        {_modalIconSubmit}
+                        <Button
+                            className='border border-0 rounded-0 inverse w-50'
+                            variant='outline-light'
+                            onClick={() => setShowModalSubmit(false)}
+                        >
+                            <div className='buttonBorders'>
+                                <div className='borderTop'></div>
+                                <div className='borderRight'></div>
+                                <div className='borderBottom'></div>
+                                <div className='borderLeft'></div>
+                            </div>
+                            <span>
+                                Close<b className='pink_dot'>.</b>
+                            </span>
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </Modal>

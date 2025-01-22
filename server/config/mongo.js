@@ -6,7 +6,10 @@ dotenv.config();
 export const connectDB = async () => {
     try {
         mongoose.Promise = global.Promise;
-        await mongoose.connect(process.env.MONGODB_URI);
+        await mongoose.connect(process.env.MONGODB_URI, {
+            connectTimeoutMS: 10000, // 10 seconds
+            socketTimeoutMS: 45000, // 45 seconds
+        });
         console.log('Successfully connected to MongoDB');
     } catch (err) {
         console.error('Error connecting to MongoDB:', err);

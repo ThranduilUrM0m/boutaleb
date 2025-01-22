@@ -1,21 +1,30 @@
+// React and Routing
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
+
+// Bootstrap
 import Container from 'react-bootstrap/Container';
 
-// Components
+// Layout Component
 import Layout from './components/Layout/Layout';
+
+// Public Components
 import Home from './components/Home/Home';
 import Login from './components/Login/Login';
 import Signup from './components/Signup/Signup';
 import Confirmation from './components/Confirmation/Confirmation';
 import Blog from './components/Blog/Blog';
 import Post from './components/Post/Post';
-import Dashboard from './components/Dashboard/Dashboard';
 import Process from './components/Process/Process';
 import AboutUs from './components/AboutUs/AboutUs';
 import Feedback from './components/Feedback/Feedback';
-import NotFound from './components/NotFound/NotFound';
+
+// Protected Components
+import Dashboard from './components/Dashboard/Dashboard';
 import RequireAuth from './components/RequireAuth';
+
+// Error Handling
+import NotFound from './components/NotFound/NotFound';
 
 const App = () => {
 	/*
