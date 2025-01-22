@@ -1,28 +1,27 @@
 {
-  "extends": ["config:recommended", ":semanticCommits"],
-  "packageRules": [
-    {
-      "enabled": true,
-      "groupName": "all-deps",
-      "minor": {
-        "automerge": true
-      },
-      "patch": {
-        "automerge": true
-      },
-      "matchUpdateTypes": ["minor", "patch"],
-      "matchPackageNames": ["*"]
-    },
-    {
-      "enabled": true,
-      "groupName": "major-deps",
-      "matchUpdateTypes": ["major"],
-      "matchPackageNames": ["*"]
-    }
-  ],
-  "automerge": true,
-  "major": {
-    "automerge": false
-  },
-  "dependencyDashboard": true
+    "extends": ["config:recommended", ":semanticCommits"],
+    "automerge": true,
+    "automergeType": "branch",
+    "packageRules": [
+        {
+            "enabled": true,
+            "groupName": "all-deps",
+            "minor": {
+                "automerge": true
+            },
+            "patch": {
+                "automerge": true
+            },
+            "matchUpdateTypes": ["minor", "patch"],
+            "matchPackageNames": ["*"]
+        },
+        {
+            "enabled": true,
+            "groupName": "major-deps",
+            "matchUpdateTypes": ["major"],
+            "matchPackageNames": ["*"],
+            "automerge": true
+        }
+    ],
+    "dependencyDashboard": true
 }
