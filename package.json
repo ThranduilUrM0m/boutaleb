@@ -10,12 +10,12 @@
         "@eslint/js": "^9.13.0",
         "dotenv": "^16.4.5",
         "eslint": "^9.13.0",
-        "eslint-config-prettier": "^9.1.0",
+        "eslint-config-prettier": "^10.0.0",
         "eslint-plugin-prettier": "^5.2.1",
         "eslint-plugin-react": "^7.37.2",
         "globals": "^15.11.0",
         "prettier": "^3.3.3",
-        "renovate": "^38.130.0",
+        "renovate": "^39.0.0",
         "typescript-eslint": "^8.11.0"
     }
 }
