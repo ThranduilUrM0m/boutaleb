@@ -1,31 +1,23 @@
 {
-  "extends": [
-    "config:base",
-    ":semanticCommits"
-  ],
+  "extends": ["config:recommended", ":semanticCommits"],
   "packageRules": [
     {
-      "matchPackagePatterns": [
-        "*"
-      ],
       "enabled": true,
       "groupName": "all-deps",
-      "automergeMinor": true,
-      "automergePatch": true,
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ]
+      "minor": {
+        "automerge": true
+      },
+      "patch": {
+        "automerge": true
+      },
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchPackageNames": ["*"]
     },
     {
-      "matchPackagePatterns": [
-        "*"
-      ],
       "enabled": true,
       "groupName": "major-deps",
-      "matchUpdateTypes": [
-        "major"
-      ]
+      "matchUpdateTypes": ["major"],
+      "matchPackageNames": ["*"]
     }
   ],
   "automerge": true,
