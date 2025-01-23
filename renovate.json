@@ -1,27 +1,25 @@
 {
-    "extends": ["config:recommended", ":semanticCommits"],
-    "automerge": true,
-    "automergeType": "branch",
+    "extends": ["config:base"],
     "packageRules": [
         {
-            "enabled": true,
-            "groupName": "all-deps",
-            "minor": {
-                "automerge": true
-            },
-            "patch": {
-                "automerge": true
-            },
-            "matchUpdateTypes": ["minor", "patch"],
-            "matchPackageNames": ["*"]
-        },
-        {
-            "enabled": true,
-            "groupName": "major-deps",
-            "matchUpdateTypes": ["major"],
-            "matchPackageNames": ["*"],
+            "matchUpdateTypes": ["major", "minor", "patch", "pin", "digest"],
             "automerge": true
         }
     ],
-    "dependencyDashboard": true
+    "postUpdateOptions": ["yarnDedupeHighest"],
+    "prHourlyLimit": 2,
+    "prConcurrentLimit": 10,
+    "dependencyDashboard": false,
+    "rangeStrategy": "bump",
+    "semanticCommits": "enabled",
+    "semanticCommitScope": "deps",
+    "semanticCommitType": "fix",
+    "updateNotScheduled": false,
+    "schedule": ["before 3am on monday"],
+    "lockFileMaintenance": {
+        "enabled": true,
+        "schedule": ["before 3am on monday"]
+    },
+    "automerge": true,
+    "automergeType": "branch"
 }
