@@ -16,6 +16,6 @@
         "globals": "^15.15.0",
         "prettier": "^3.7.4",
         "renovate": "^39.264.1",
-        "typescript-eslint": "^8.11.0"
+        "typescript-eslint": "^8.54.0"
     }
 }
